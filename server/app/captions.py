@@ -9,6 +9,7 @@ from pathlib import Path
 
 MAX_CHARS = 84  # two lines of 42 characters: a common caption limit
 MAX_SECONDS = 7.0  # long cues are hard to read along with
+MIN_SECONDS = 1.2  # shorter cues flash by too fast to read
 MAX_LINE = 42
 
 
@@ -66,8 +67,16 @@ def cues_from_words(words: list[Word]) -> list[Cue]:
     def flush():
         if current:
             text = "".join(w.text for w in current).strip()
-            if text:
-                cues.append(Cue(current[0].start, current[-1].end, wrap_two_lines(text)))
+            start, end = current[0].start, current[-1].end
+            previous = cues[-1] if cues else None
+            # A cue shorter than MIN_SECONDS flashes by too fast to read: join it
+            # to the previous cue if the result still fits on two lines.
+            if (previous and end - start < MIN_SECONDS
+                    and len(previous.text.replace("\n", " ") + " " + text) <= MAX_CHARS
+                    and start - previous.end < 1.0):
+                cues[-1] = Cue(previous.start, end, wrap_two_lines(previous.text.replace("\n", " ") + " " + text))
+            elif text:
+                cues.append(Cue(start, end, wrap_two_lines(text)))
             current.clear()
 
     for word in words:

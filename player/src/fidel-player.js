@@ -13,7 +13,8 @@
 //   src, src-webm, poster            video files
 //   captions-en, captions-am         WebVTT captions
 //   captions-am-status               "draft" (machine-made) or "reviewed"
-//   chapters, descriptions           WebVTT chapters / description text
+//   chapters-en, chapters-am         WebVTT chapter titles ("chapters" = English)
+//   descriptions-en, descriptions-am audio description text ("descriptions" = English)
 //   sign                             sign-language video (WebM or MP4)
 //   lang                             default interface language ("en" or "am")
 //
@@ -164,6 +165,9 @@ export class FidelPlayer extends HTMLElement {
       fromManifest[`captions-${track.lang}`] = track.url;
       fromManifest[`captions-${track.lang}-status`] = track.status;
     }
+    for (const [lang, url] of Object.entries(manifest.chapters || {})) fromManifest[`chapters-${lang}`] = url;
+    for (const [lang, url] of Object.entries(manifest.descriptions || {})) fromManifest[`descriptions-${lang}`] = url;
+    fromManifest.sign = manifest.sign;
     for (const [name, value] of Object.entries(fromManifest)) {
       if (value && !this.hasAttribute(name)) this.setAttribute(name, value);
     }
@@ -197,9 +201,34 @@ export class FidelPlayer extends HTMLElement {
     };
     addTrack('captions', this.getAttribute('captions-en'), 'en', 'English');
     addTrack('captions', this.getAttribute('captions-am'), 'am', 'አማርኛ');
-    addTrack('chapters', this.getAttribute('chapters'), 'en', 'Chapters');
-    addTrack('descriptions', this.getAttribute('descriptions'), 'en', 'Audio description');
+    // "chapters" / "descriptions" are short for the English ones.
+    const en = (kind) => this.getAttribute(`${kind}-en`) || this.getAttribute(kind);
+    addTrack('chapters', en('chapters'), 'en', 'Chapters');
+    addTrack('chapters', this.getAttribute('chapters-am'), 'am', 'ምዕራፎች');
+    addTrack('descriptions', en('descriptions'), 'en', 'Audio description');
+    addTrack('descriptions', this.getAttribute('descriptions-am'), 'am', 'የድምፅ መግለጫ');
     return video;
+  }
+
+  /**
+   * Chapter titles must be read in their real language (WCAG 3.1.2). If the
+   * transcript is in Amharic but there are only English chapters, Able Player
+   * shows the English titles inside Amharic text; we mark them lang="en" so
+   * screen readers switch voice. Runs whenever Able Player redraws.
+   */
+  markChapterLanguages() {
+    const player = this.ablePlayer;
+    if (!player?.chapters?.length) return;
+    const chapterLangs = player.chapters.map((track) => track.language);
+    const langFor = (wanted) => (chapterLangs.includes(wanted) ? wanted : chapterLangs[0]);
+    const transcriptLang = langFor(player.transcriptLang || player.captionLang || 'en');
+    for (const heading of this.querySelectorAll('.able-transcript-chapter-heading')) {
+      if (heading.getAttribute('lang') !== transcriptLang) heading.setAttribute('lang', transcriptLang);
+    }
+    const menuLang = langFor(player.captionLang || 'en');
+    for (const item of this.querySelectorAll('.able-popup-chapters li, .able-chapters-div li')) {
+      if (item.getAttribute('lang') !== menuLang) item.setAttribute('lang', menuLang);
+    }
   }
 
   onReady({ startTime, focus }) {
@@ -260,6 +289,14 @@ export class FidelPlayer extends HTMLElement {
     this.signDock.addEventListener('click', resync);
 
     this.setUpFollowAlong();
+
+    // Able Player redraws the transcript and chapter menu when the language
+    // changes; re-mark chapter languages each time (attribute changes do not
+    // trigger this observer, so it cannot loop).
+    this.markChapterLanguages();
+    this.chapterObserver?.disconnect();
+    this.chapterObserver = new MutationObserver(() => this.markChapterLanguages());
+    this.chapterObserver.observe(this, { childList: true, subtree: true });
 
     if (focus) this.querySelector(focus)?.focus();
   }

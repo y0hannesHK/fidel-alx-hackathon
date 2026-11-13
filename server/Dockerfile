@@ -23,10 +23,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY server/app ./app
 COPY server/tests ./tests
 COPY demo ./demo
+COPY studio ./studio
 COPY --from=player /build/player/dist ./embed
 
 ENV FIDEL_EMBED_DIR=/app/embed \
     FIDEL_DEMO_DIR=/app/demo \
+    FIDEL_STUDIO_DIR=/app/studio \
     FIDEL_DATA_DIR=/app/data \
     PYTHONUNBUFFERED=1
 

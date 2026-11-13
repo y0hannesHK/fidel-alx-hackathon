@@ -4,6 +4,7 @@ Plain sqlite3 from the standard library. One small file: data/fidel.db.
 No learner data and no disability data is ever stored here.
 """
 
+import json
 import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -15,7 +16,8 @@ CREATE TABLE IF NOT EXISTS lessons (
     title           TEXT NOT NULL,
     spoken_language TEXT NOT NULL,          -- 'en' or 'am'
     source_file     TEXT NOT NULL,          -- e.g. 'source.mp4' in the lesson folder
-    created_at      TEXT NOT NULL
+    created_at      TEXT NOT NULL,
+    published       INTEGER NOT NULL DEFAULT 0  -- 1 = learners can see it
 );
 
 CREATE TABLE IF NOT EXISTS steps (
@@ -31,10 +33,17 @@ CREATE TABLE IF NOT EXISTS captions (
     lesson_id   TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
     lang        TEXT NOT NULL,              -- 'en' or 'am'
     status      TEXT NOT NULL,              -- draft (machine-made) | reviewed (checked by a person)
+    cue_reviews TEXT,                       -- JSON list: true/false per cue, in order
     updated_at  TEXT NOT NULL,
     PRIMARY KEY (lesson_id, lang)
 );
 """
+
+# Columns added after the first version. Older databases get them on start.
+MIGRATIONS = [
+    ("lessons", "published", "INTEGER NOT NULL DEFAULT 0"),
+    ("captions", "cue_reviews", "TEXT"),
+]
 
 
 def now() -> str:
@@ -47,6 +56,10 @@ class Database:
         path.parent.mkdir(parents=True, exist_ok=True)
         with self.connect() as db:
             db.executescript(SCHEMA)
+            for table, column, kind in MIGRATIONS:
+                columns = {row["name"] for row in db.execute(f"PRAGMA table_info({table})")}
+                if column not in columns:
+                    db.execute(f"ALTER TABLE {table} ADD COLUMN {column} {kind}")
 
     @contextmanager
     def connect(self):
@@ -75,10 +88,19 @@ class Database:
             row = db.execute("SELECT * FROM lessons WHERE id = ?", (lesson_id,)).fetchone()
         return dict(row) if row else None
 
-    def list_lessons(self) -> list[dict]:
+    def list_lessons(self, include_unpublished: bool = False) -> list[dict]:
+        query = "SELECT * FROM lessons" + ("" if include_unpublished else " WHERE published = 1")
         with self.connect() as db:
-            rows = db.execute("SELECT * FROM lessons ORDER BY created_at DESC").fetchall()
+            rows = db.execute(query + " ORDER BY created_at DESC").fetchall()
         return [dict(r) for r in rows]
+
+    def delete_lesson(self, lesson_id: str) -> None:
+        with self.connect() as db:
+            db.execute("DELETE FROM lessons WHERE id = ?", (lesson_id,))  # steps and captions follow (CASCADE)
+
+    def set_published(self, lesson_id: str, published: bool) -> None:
+        with self.connect() as db:
+            db.execute("UPDATE lessons SET published = ? WHERE id = ?", (int(published), lesson_id))
 
     # --- pipeline steps --------------------------------------------------------
 
@@ -107,13 +129,20 @@ class Database:
 
     # --- caption tracks ----------------------------------------------------------
 
-    def set_caption_status(self, lesson_id: str, lang: str, status: str) -> None:
+    def set_caption_status(self, lesson_id: str, lang: str, status: str, cue_reviews: list[bool] | None = None) -> None:
+        """cue_reviews: one true/false per cue. None = all cues unreviewed (new machine draft)."""
         with self.connect() as db:
             db.execute(
-                """INSERT INTO captions (lesson_id, lang, status, updated_at) VALUES (?, ?, ?, ?)
-                   ON CONFLICT (lesson_id, lang) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at""",
-                (lesson_id, lang, status, now()),
+                """INSERT INTO captions (lesson_id, lang, status, cue_reviews, updated_at) VALUES (?, ?, ?, ?, ?)
+                   ON CONFLICT (lesson_id, lang) DO UPDATE SET
+                     status = excluded.status, cue_reviews = excluded.cue_reviews, updated_at = excluded.updated_at""",
+                (lesson_id, lang, status, json.dumps(cue_reviews) if cue_reviews is not None else None, now()),
             )
+
+    def get_cue_reviews(self, lesson_id: str, lang: str) -> list[bool]:
+        with self.connect() as db:
+            row = db.execute("SELECT cue_reviews FROM captions WHERE lesson_id = ? AND lang = ?", (lesson_id, lang)).fetchone()
+        return json.loads(row["cue_reviews"]) if row and row["cue_reviews"] else []
 
     def get_captions(self, lesson_id: str) -> dict[str, str]:
         with self.connect() as db:

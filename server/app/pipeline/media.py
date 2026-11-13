@@ -55,7 +55,18 @@ def make_renditions(source: Path, folder: Path) -> list[str]:
     ffmpeg("-i", str(source), "-vf", scale(360), "-c:v", "libx264", "-preset", "veryfast", "-crf", "30",
            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "48k", "-ac", "1", "-movflags", "+faststart",
            str(folder / "video-small.mp4"))
-    # Audio only, about 24 kbps, for the offline pack.
-    ffmpeg("-i", str(source), "-vn", "-ac", "1", "-c:a", "libopus", "-b:a", "24k", "-application", "voip",
-           str(folder / "audio.opus"))
-    return ["video.mp4", "video.webm", "video-small.mp4", "audio.opus"]
+    made = ["video.mp4", "video.webm", "video-small.mp4"]
+    # Audio only, about 24 kbps, for the offline pack (silent videos have none).
+    if probe(source)["has_audio"]:
+        ffmpeg("-i", str(source), "-vn", "-ac", "1", "-c:a", "libopus", "-b:a", "24k", "-application", "voip",
+               str(folder / "audio.opus"))
+        made.append("audio.opus")
+    return made
+
+
+def make_sign_video(source: Path, out: Path) -> None:
+    """Sign-language video for the small window: at most 480x360, low bitrate
+    WebM, no sound (the interpreter's room sound is not needed)."""
+    ffmpeg("-i", str(source), "-vf", "scale='min(480,iw)':'min(360,ih)':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2",
+           "-c:v", "libvpx-vp9", "-b:v", "250k", "-deadline", "realtime", "-cpu-used", "8", "-row-mt", "1",
+           "-an", str(out))

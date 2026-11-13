@@ -5,7 +5,7 @@ Ethiopian learner. It is an open, embeddable accessible media module for learnin
 platforms such as ALX Savanna, built for Deaf, blind, low-vision and low-bandwidth
 learners, and for learners who read Amharic better than English.
 
-> Status: **Phase 3 (pipeline)**. Built for the Digital Bridge Accessibility
+> Status: **Phase 4 (Studio)**. Built for the Digital Bridge Accessibility
 > Hackathon 2026, Track 2. This README grows with each phase.
 
 ## Quick start
@@ -35,7 +35,8 @@ Then open:
    docker compose run --rm server python -m app.download_models
    ```
 
-3. Upload a video (see the Level 2 examples below). Fidel then, in the
+3. Open **Fidel Studio** at `http://localhost:8000/studio/`, sign in with the
+   staff token, and upload a video (or use the API, below). Fidel then, in the
    background:
    - extracts the audio,
    - makes web versions: 720p MP4 and WebM, a 360p low-data MP4, and a 24 kbps
@@ -43,7 +44,17 @@ Then open:
    - writes English captions with Whisper (speech-to-text),
    - writes an Amharic **draft** with MADLAD-400 (machine translation). Machine
      Amharic is never final: it is marked `draft` until a person reviews it.
-4. Watch it at `http://localhost:8000/demo/savanna-mock/lesson.html?id=LESSON_ID`.
+4. In Studio, open the lesson and:
+   - **check the Amharic captions** next to the video: fix the text, tick
+     "Amharic checked" (or press Ctrl+Enter for "Checked, go to next"), save.
+     When every caption is checked, learners no longer see the "not yet
+     reviewed" notice;
+   - add **chapters** (English and Amharic titles), **audio description** text,
+     and the **sign-language video**;
+   - **publish**. Unpublished lessons are only visible to staff.
+5. Learners see it at `http://localhost:8000/demo/savanna-mock/lesson.html?id=LESSON_ID`.
+
+Captions a person has checked are never overwritten when steps are run again.
 
 If a model is missing, that step fails with a message saying how to download
 it; the video itself still plays.
@@ -102,10 +113,10 @@ to a server.
 | `src-webm` | Optional WebM version, used first when the browser supports it. |
 | `poster` | Optional image shown before playing. |
 | `captions-en`, `captions-am` | English / Amharic captions (WebVTT). |
+| `chapters-en` (or `chapters`), `chapters-am` | Chapter titles (WebVTT). |
+| `descriptions-en` (or `descriptions`), `descriptions-am` | Audio description text (WebVTT). |
 | `captions-am-status` | `draft` (machine-made: shows a "not yet reviewed" notice) or `reviewed`. |
 | `sign` | Sign-language video (WebM or MP4), shown in its own window. |
-| `chapters` | Chapter list (WebVTT). |
-| `descriptions` | Audio description text (WebVTT). |
 | `lang` | Default interface language: `en` or `am`. |
 | `lesson` | Instead of the above: the URL of a lesson on a Fidel server. |
 
@@ -126,6 +137,9 @@ curl http://localhost:8000/api/v1/lessons/LESSON_ID
 
 # Captions as WebVTT
 curl http://localhost:8000/api/v1/lessons/LESSON_ID/captions/am
+
+# Publish (learners can only see published lessons)
+curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json"      -d '{"published": true}' http://localhost:8000/api/v1/lessons/LESSON_ID/publish
 
 # Run steps again, e.g. after downloading a model
 curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json"      -d '{"steps": ["transcribe", "translate"]}'      http://localhost:8000/api/v1/lessons/LESSON_ID/rebuild
@@ -159,6 +173,7 @@ CPU only is fine; it is just slower.
 | `player/` | `<fidel-player>` (Able Player + our code), built with Vite | `npm install`, `npm run build`, `npm test` (unit tests) |
 | `server/` | FastAPI server | `docker compose run --rm server pytest` |
 | `e2e/` | Browser tests: Playwright + axe-core | `npm install`, `npx playwright install chromium`, `npm test` |
+| `studio/` | Fidel Studio (staff page): plain HTML + JS, no build step | |
 | `demo/` | Mock Savanna page and demo captions | |
 | `scripts/` | Helper scripts (demo clip, caption cutting) | |
 | `tools/translation-eval/` | One-off test of English → Amharic machine translation | `sh tools/translation-eval/run.sh` |
@@ -174,6 +189,8 @@ Docker). Use `FIDEL_BASE_URL` to test another server.
 | Player styles `fidel.css`, gzipped | 6 KB |
 | Ethiopic font (2 weights, downloaded only when Amharic text is shown) | 2 × 75 KB |
 | Demo clip, 2 min 39 s, 720p: WebM / MP4 | 1.5 MB / 2.2 MB |
+| Audio-only (Opus 24 kbps) | 187 KB per minute (about 2.8 MB for 15 minutes) |
+| Processing time, CPU only (laptop, Intel i5-12500H), Whisper small + MADLAD | about 30 s per minute of video, plus about 30 s to make the web videos for a 2.5-minute clip |
 
 ## Licence
 

@@ -4,7 +4,7 @@ import secrets
 from pathlib import Path
 from typing import Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Path as PathParam, Request, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Header, HTTPException, Path as PathParam, Request, UploadFile, status
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
@@ -13,7 +13,7 @@ from ..db import Database
 from ..pipeline import media
 from ..pipeline.runner import queue_steps, run_steps
 from ..pipeline.steps import STEPS, lesson_folder
-from .auth import require_staff
+from .auth import is_staff, require_staff
 
 router = APIRouter(prefix="/api/v1/lessons", tags=["lessons"])
 db = Database(settings.data_dir / "fidel.db")
@@ -47,6 +47,10 @@ class Manifest(BaseModel):
     video: dict[str, str] = Field(description="Video files: mp4, webm, small_mp4 (low-data)")
     audio: dict[str, str] = Field(description="Audio-only files: opus")
     captions: list[CaptionTrack]
+    chapters: dict[str, str] = Field(description="Chapter lists (WebVTT) by language")
+    descriptions: dict[str, str] = Field(description="Audio description text (WebVTT) by language")
+    sign: str | None = Field(description="Sign-language video (WebM)")
+    published: bool
     steps: dict[str, StepStatus]
 
 
@@ -55,6 +59,7 @@ class LessonSummary(BaseModel):
     title: str
     spoken_language: Language
     created_at: str
+    published: bool
     manifest_url: str
 
 
@@ -101,6 +106,9 @@ def build_manifest(lesson: dict, request: Request) -> Manifest:
         for lang, state in sorted(db.get_captions(lesson["id"]).items())
         if (folder / f"captions-{lang}.vtt").is_file()
     ]
+    by_language = lambda kind: {  # noqa: E731
+        lang: url for lang in ("en", "am") if (url := if_exists(f"{kind}-{lang}.vtt"))
+    }
     return Manifest(
         id=lesson["id"],
         title=lesson["title"],
@@ -109,6 +117,10 @@ def build_manifest(lesson: dict, request: Request) -> Manifest:
         video=video,
         audio=audio,
         captions=captions,
+        chapters=by_language("chapters"),
+        descriptions=by_language("descriptions"),
+        sign=if_exists("sign.webm"),
+        published=bool(lesson["published"]),
         steps=db.get_steps(lesson["id"]),
     )
 
@@ -167,18 +179,23 @@ async def upload_lesson(
 
 
 @router.get("", response_model=list[LessonSummary])
-def list_lessons(request: Request):
+def list_lessons(request: Request, authorization: str = Header(default="")):
+    """Published lessons. Staff (with the token) also see unpublished ones."""
     return [
-        LessonSummary(**{k: lesson[k] for k in ("id", "title", "spoken_language", "created_at")},
+        LessonSummary(**{k: lesson[k] for k in ("id", "title", "spoken_language", "created_at", "published")},
                       manifest_url=f"{base_url(request)}/api/v1/lessons/{lesson['id']}")
-        for lesson in db.list_lessons()
+        for lesson in db.list_lessons(include_unpublished=is_staff(authorization))
     ]
 
 
 @router.get("/{lesson_id}", response_model=Manifest)
-def get_manifest(request: Request, lesson_id: str = LessonId):
-    """Everything a player needs: file URLs and caption statuses."""
-    return build_manifest(get_lesson_or_404(lesson_id), request)
+def get_manifest(request: Request, lesson_id: str = LessonId, authorization: str = Header(default="")):
+    """Everything a player needs: file URLs and caption statuses.
+    Unpublished lessons are only shown to staff."""
+    lesson = get_lesson_or_404(lesson_id)
+    if not lesson["published"] and not is_staff(authorization):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No lesson with this id.")
+    return build_manifest(lesson, request)
 
 
 @router.get("/{lesson_id}/status", response_model=dict[str, StepStatus])

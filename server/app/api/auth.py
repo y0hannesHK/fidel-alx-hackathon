@@ -25,3 +25,23 @@ def require_staff(authorization: str = Header(default="", description="Bearer <s
             "Missing or wrong staff token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+def is_staff(authorization: str) -> bool:
+    """True if the header carries the right staff token (no error if not)."""
+    if not settings.staff_token:
+        return False
+    scheme, _, token = authorization.partition(" ")
+    return scheme.lower() == "bearer" and secrets.compare_digest(token.strip(), settings.staff_token)
+
+
+# Lets Fidel Studio check a token at sign-in.
+from fastapi import APIRouter, Depends  # noqa: E402
+
+router = APIRouter(prefix="/api/v1/staff", tags=["editing (staff)"])
+
+
+@router.get("/check", dependencies=[Depends(require_staff)])
+def check_token() -> dict:
+    """Returns ok if the staff token is right (401 if not)."""
+    return {"ok": True}

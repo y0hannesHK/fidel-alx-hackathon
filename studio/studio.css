@@ -1,0 +1,99 @@
+/* Fidel Studio styles. All text/background pairs are at least 4.5:1,
+   controls and focus rings at least 3:1. */
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #1a1a1a;
+  background: #f5f6f8;
+}
+:lang(am) {
+  font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif;
+  line-height: 1.6;
+}
+a { color: #0b4f9c; }
+:focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+main:focus, h1:focus { outline: none; }
+
+.skip-link { position: absolute; left: 0.5rem; top: -4rem; padding: 0.75rem 1rem; background: #fff; z-index: 10; }
+.skip-link:focus { top: 0.5rem; }
+
+.site-header {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+  padding: 0.5rem 1rem; background: #0a1f44; color: #fff;
+}
+.brand { margin: 0; font-weight: 700; font-size: 1.25rem; }
+.site-header .button.secondary { color: #fff; background: transparent; border-color: #fff; }
+
+main { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+h1 { font-size: 1.75rem; line-height: 1.25; margin: 0.5rem 0 1rem; }
+h2 { font-size: 1.35rem; margin: 0 0 0.75rem; }
+
+.card { background: #fff; border: 1px solid #c4c8cf; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+
+.button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; min-width: 44px; padding: 0.5rem 1rem;
+  font: inherit; font-weight: 600; text-decoration: none;
+  color: #fff; background: #0b4f9c; border: 2px solid #0b4f9c; border-radius: 6px; cursor: pointer;
+}
+.button:hover { background: #083b75; }
+.button.secondary { color: #0b4f9c; background: #fff; }
+.button.secondary:hover { background: #e8f0fa; }
+.button.small { min-height: 44px; padding: 0.25rem 0.75rem; font-weight: 500; }
+
+.row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+.field { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; max-width: 40rem; }
+.field.time { flex-direction: row; flex-wrap: wrap; align-items: end; gap: 0.5rem; }
+.field.time label { flex-basis: 100%; }
+.field.time input { width: 8rem; }
+label { font-weight: 600; }
+input[type=text], input:not([type]), input[type=password], select, textarea {
+  font: inherit; padding: 0.5rem; min-height: 44px;
+  border: 2px solid #5c5c5c; border-radius: 6px; background: #fff; color: #1a1a1a;
+  max-width: 100%;
+}
+textarea { width: 100%; resize: vertical; }
+input[type=checkbox] { width: 1.5rem; height: 1.5rem; accent-color: #0b4f9c; margin: 0; flex: none; }
+.check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
+fieldset { border: 1px solid #c4c8cf; border-radius: 6px; margin: 0 0 0.75rem; padding: 0.5rem 0.75rem; min-width: 0; }
+legend { font-weight: 700; padding: 0 0.25rem; }
+progress { width: 100%; max-width: 30rem; height: 1rem; }
+
+.status:empty, .error:empty { display: none; }
+.status { font-weight: 600; }
+.error { color: #a00020; font-weight: 600; }
+.hint { color: #444; }
+.counter { font-weight: 700; margin: 0; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: start; padding: 0.5rem; border-bottom: 1px solid #c4c8cf; }
+
+/* Progress steps: state shown by text, not colour alone. */
+.steps { list-style: none; padding: 0; margin: 0 0 0.5rem; }
+.step { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; padding: 0.5rem; border-left: 6px solid #767676; margin-bottom: 0.25rem; background: #fafafa; }
+.step.done { border-color: #1e7b34; }
+.step.failed { border-color: #a00020; }
+.step.running { border-color: #0b4f9c; }
+.step-name { font-weight: 600; }
+.step-status { font-weight: 700; }
+.step-message { flex-basis: 100%; color: #333; }
+
+/* Caption editor: video beside the list on wide screens, stacked on narrow ones. */
+.toolbar { position: sticky; top: 0; z-index: 2; background: #fff; padding: 0.5rem 0; border-bottom: 1px solid #c4c8cf; }
+.editor { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+.editor-video-wrap { flex: 1 1 22rem; position: sticky; top: 9rem; min-width: 0; }
+.editor-video { width: 100%; background: #000; }
+.cue-list { flex: 1 1 28rem; min-width: 0; list-style: none; margin: 0; padding: 0; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows .empty { color: #444; padding: 0.5rem 0; }
+
+@media (max-width: 40rem) {
+  .toolbar, .editor-video-wrap { position: static; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; }
+}

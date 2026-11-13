@@ -55,9 +55,14 @@ def test_upload_runs_the_whole_pipeline(client, tiny_video):
     steps_done = wait_for_steps(client, lesson_id)
     assert {name: s["status"] for name, s in steps_done.items()} == {
         "extract_audio": "done", "renditions": "done", "transcribe": "done", "translate": "done",
+        "sign_video": "skipped",
     }
 
-    manifest = client.get(f"/api/v1/lessons/{lesson_id}").json()
+    # Unpublished: hidden from the public, visible to staff.
+    assert client.get(f"/api/v1/lessons/{lesson_id}").status_code == 404
+    assert all(l["id"] != lesson_id for l in client.get("/api/v1/lessons").json())
+    manifest = client.get(f"/api/v1/lessons/{lesson_id}", headers=STAFF).json()
+    assert manifest["published"] is False
     assert manifest["title"] == "Test lesson"
     assert set(manifest["video"]) == {"mp4", "webm", "small_mp4"}
     assert "opus" in manifest["audio"]
@@ -74,6 +79,11 @@ def test_upload_runs_the_whole_pipeline(client, tiny_video):
     video_path = manifest["video"]["mp4"].split("testserver", 1)[1]
     assert client.get(video_path).status_code == 200
 
+    assert any(l["id"] == lesson_id for l in client.get("/api/v1/lessons", headers=STAFF).json())
+
+    # Published: visible to everyone.
+    assert client.post(f"/api/v1/lessons/{lesson_id}/publish", headers=STAFF, json={"published": True}).status_code == 200
+    assert client.get(f"/api/v1/lessons/{lesson_id}").json()["published"] is True
     assert any(l["id"] == lesson_id for l in client.get("/api/v1/lessons").json())
 
 

@@ -3,6 +3,7 @@
   /api/v1/lessons...  lesson API (see /api/docs)
   /files/lessons/     processed lesson files (video, audio)
   /embed/             the built player (fidel.js, fidel.css, fonts)
+  /studio/            Fidel Studio, the staff page
   /demo/              demo pages, e.g. the mock Savanna lesson page
   /media/             demo media from data/demo (git-ignored)
   /api/docs           interactive API documentation
@@ -17,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import lessons
+from .api import auth, editing, lessons
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -55,6 +56,8 @@ app.add_middleware(
 )
 
 app.include_router(lessons.router)
+app.include_router(editing.router)
+app.include_router(auth.router)
 
 
 @app.get("/health", tags=["system"])
@@ -79,5 +82,6 @@ for folder in (settings.data_dir / "demo", settings.data_dir / "lessons"):
     folder.mkdir(parents=True, exist_ok=True)
 mount_if_present("/files/lessons", settings.data_dir / "lessons", "lesson-files")
 mount_if_present("/embed", settings.embed_dir, "embed")
+mount_if_present("/studio", settings.studio_dir, "studio")
 mount_if_present("/demo", settings.demo_dir, "demo")
 mount_if_present("/media", settings.data_dir / "demo", "media")
