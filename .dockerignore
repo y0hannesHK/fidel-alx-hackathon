@@ -1,0 +1,8 @@
+.git
+**/node_modules
+player/dist
+data
+assets
+e2e
+**/__pycache__
+.env

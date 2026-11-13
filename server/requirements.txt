@@ -1,0 +1,7 @@
+# Runtime
+fastapi==0.162.7
+uvicorn[standard]==0.54.0
+
+# Tests (small; kept in the image so `docker compose run server pytest` works)
+pytest==9.2.0
+httpx==0.28.1

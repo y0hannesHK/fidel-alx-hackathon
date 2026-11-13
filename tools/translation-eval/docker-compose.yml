@@ -1,0 +1,7 @@
+# Standalone: only for the translation quality test. Not part of the Fidel stack.
+services:
+  eval:
+    build: .
+    volumes:
+      - ../../data/models:/models   # model cache (~3 GB, git-ignored)
+      - ./results:/results

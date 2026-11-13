@@ -1,0 +1,25 @@
+# English sentences to translate. One per line. Lines starting with # are ignored.
+# From the demo clip (10 Nov training session):
+We need to increase participants from other demographics.
+This includes people with disability, and also refugees.
+We firmly believe that technical education is the ultimate equalizer.
+Once you equip yourself with exceptional tech talent, you can be hired remotely.
+You will be evaluated by your technical capabilities and technical delivery.
+We want this to be true for Ethiopian youth with disability.
+If you are an ALX student, you have interacted with our platform.
+Our platform has trained thousands of students across the globe.
+Now, what we are trying to do is to make it accessible for everyone.
+# Typical technical lesson sentences:
+In this lesson, you will learn how to create a simple web page.
+A variable stores a value that your program can use later.
+Open the terminal and type the following command.
+Save the file and refresh the page in your browser.
+A function is a block of code that runs when it is called.
+If the test fails, read the error message carefully.
+Your project must be submitted before the deadline.
+# Player interface and job card phrases:
+Turn on captions.
+Download the lesson for offline use.
+These captions are machine-generated and not yet reviewed.
+Sign language interpreter available.
+The application closes on 30 November.

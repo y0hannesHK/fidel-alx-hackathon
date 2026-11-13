@@ -1,0 +1,15 @@
+{
+  "name": "fidel-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser tests for Fidel: Playwright + axe-core accessibility checks",
+  "license": "MIT",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.0"
+  }
+}

@@ -1,0 +1,28 @@
+/* Fidel's own styles. Loaded after Able Player's CSS so these win. */
+
+fidel-player {
+  display: block;
+  max-width: 100%;
+}
+
+/* Clear, high-contrast focus outline on every control (WCAG 2.4.7 / 1.4.11).
+   Two colours (dark ring + light ring) so it is visible on any background. */
+fidel-player :focus-visible {
+  outline: 3px solid #ffbf47;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #1a1a1a;
+}
+
+.fidel-error {
+  padding: 1rem;
+  border: 2px solid #b00020;
+  color: #b00020;
+  background: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  fidel-player * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+player/dist/
+
+# Runtime data and large source media (never commit)
+data/
+assets/
+
+# Test output
+e2e/test-results/
+e2e/playwright-report/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Local secrets
+.env

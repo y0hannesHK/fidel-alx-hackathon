@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accessible tech careers – Lesson 1 – Savanna (mock)</title>
+
+  <!-- Fidel install: these two lines plus the <fidel-player> tag below. -->
+  <link rel="stylesheet" href="/embed/fidel.css">
+  <script src="/embed/fidel.js" defer></script>
+
+  <!-- Styles for this mock page only (not part of Fidel). -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #1a1a1a;
+      background: #f5f6f8;
+    }
+    a { color: #0b4f9c; }
+    :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+
+    .skip-link {
+      position: absolute; left: 0.5rem; top: -4rem;
+      padding: 0.75rem 1rem; background: #fff; color: #0b4f9c; z-index: 10;
+    }
+    .skip-link:focus { top: 0.5rem; }
+
+    header {
+      background: #0a1f44; color: #fff;
+      padding: 0.75rem 1rem;
+      display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center;
+    }
+    header .brand { font-weight: 700; font-size: 1.25rem; color: #fff; text-decoration: none; }
+    header nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+    header nav a { color: #fff; display: inline-block; padding: 0.5rem 0; min-height: 44px; }
+
+    main { max-width: 960px; margin: 0 auto; padding: 1rem; }
+    .breadcrumb { font-size: 0.9375rem; margin: 0 0 0.5rem; }
+    .breadcrumb ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .breadcrumb li + li::before { content: "/"; margin-right: 0.25rem; color: #555; }
+    h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 1rem; }
+    .card { background: #fff; border: 1px solid #d0d4da; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    footer { text-align: center; padding: 1.5rem 1rem; color: #444; font-size: 0.9375rem; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to lesson</a>
+
+  <header>
+    <a class="brand" href="/demo/savanna-mock/">Savanna <span>(mock)</span></a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="#main">My courses</a></li>
+        <li><a href="#main">Curriculum</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="#main">Digital Bridge</a></li>
+        <li><a href="#main">Week 1</a></li>
+        <li aria-current="page">Lesson 1</li>
+      </ol>
+    </nav>
+
+    <h1>Lesson 1: Why accessible tech education matters</h1>
+
+    <section class="card" aria-labelledby="video-heading">
+      <h2 id="video-heading">Lesson video</h2>
+      <fidel-player
+        id="lesson-player"
+        src="/media/lesson.mp4"
+        src-webm="/media/lesson.webm"
+        captions-en="/demo/media/en.vtt"
+        chapters="/demo/media/chapters.vtt"
+        lang="en">
+      </fidel-player>
+    </section>
+
+    <section class="card" aria-labelledby="about-heading">
+      <h2 id="about-heading">About this lesson</h2>
+      <p>
+        In this short talk from the Digital Bridge training session, the speaker
+        explains why ALX wants its learning platforms to work for everyone,
+        including people with disabilities, refugees and internally displaced people.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>This is a mock page for testing Fidel. It is not the real Savanna platform.</p>
+  </footer>
+</body>
+</html>
