@@ -114,6 +114,13 @@ export class FidelPlayer extends HTMLElement {
     });
 
     const video = this.buildVideo(lang, this.transcript.bodyId);
+    // If no video file can be loaded, say so (instead of an empty black box).
+    const sources = [...video.querySelectorAll('source')];
+    sources.at(-1)?.addEventListener('error', () => {
+      if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        this.statusArea.prepend(h('p', { class: 'fidel-error' }, t(lang, 'videoError')));
+      }
+    });
     playerSlot.append(video);
     this.replaceChildren(
       h(
