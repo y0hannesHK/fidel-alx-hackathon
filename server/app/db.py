@@ -37,6 +37,22 @@ CREATE TABLE IF NOT EXISTS captions (
     updated_at  TEXT NOT NULL,
     PRIMARY KEY (lesson_id, lang)
 );
+
+CREATE TABLE IF NOT EXISTS jobs (
+    id          TEXT PRIMARY KEY,
+    data        TEXT NOT NULL,              -- JSON: the job as entered by staff
+    created_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS certificates (
+    id            TEXT PRIMARY KEY,         -- random and unguessable
+    learner_name  TEXT NOT NULL,            -- written as the learner chooses
+    course        TEXT NOT NULL,
+    issued_on     TEXT NOT NULL,            -- YYYY-MM-DD
+    issuer        TEXT NOT NULL,
+    status        TEXT NOT NULL,            -- valid | revoked
+    created_at    TEXT NOT NULL
+);
 """
 
 # Columns added after the first version. Older databases get them on start.
@@ -148,3 +164,50 @@ class Database:
         with self.connect() as db:
             rows = db.execute("SELECT lang, status FROM captions WHERE lesson_id = ?", (lesson_id,))
             return {r["lang"]: r["status"] for r in rows}
+
+    # --- jobs ----------------------------------------------------------------------
+
+    def save_job(self, job_id: str, data: dict) -> None:
+        with self.connect() as db:
+            db.execute(
+                """INSERT INTO jobs (id, data, created_at) VALUES (?, ?, ?)
+                   ON CONFLICT (id) DO UPDATE SET data = excluded.data""",
+                (job_id, json.dumps(data, ensure_ascii=False), now()),
+            )
+
+    def get_job(self, job_id: str) -> dict | None:
+        with self.connect() as db:
+            row = db.execute("SELECT data FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        return json.loads(row["data"]) if row else None
+
+    def list_jobs(self) -> list[tuple[str, dict]]:
+        with self.connect() as db:
+            rows = db.execute("SELECT id, data FROM jobs ORDER BY created_at DESC").fetchall()
+        return [(r["id"], json.loads(r["data"])) for r in rows]
+
+    def delete_job(self, job_id: str) -> None:
+        with self.connect() as db:
+            db.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
+
+    # --- certificates ----------------------------------------------------------------
+
+    def add_certificate(self, cert: dict) -> None:
+        with self.connect() as db:
+            db.execute(
+                "INSERT INTO certificates (id, learner_name, course, issued_on, issuer, status, created_at) "
+                "VALUES (:id, :learner_name, :course, :issued_on, :issuer, 'valid', :created_at)",
+                {**cert, "created_at": now()},
+            )
+
+    def get_certificate(self, cert_id: str) -> dict | None:
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM certificates WHERE id = ?", (cert_id,)).fetchone()
+        return dict(row) if row else None
+
+    def list_certificates(self) -> list[dict]:
+        with self.connect() as db:
+            return [dict(r) for r in db.execute("SELECT * FROM certificates ORDER BY created_at DESC")]
+
+    def set_certificate_status(self, cert_id: str, status: str) -> None:
+        with self.connect() as db:
+            db.execute("UPDATE certificates SET status = ? WHERE id = ?", (status, cert_id))

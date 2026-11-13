@@ -5,7 +5,7 @@ Ethiopian learner. It is an open, embeddable accessible media module for learnin
 platforms such as ALX Savanna, built for Deaf, blind, low-vision and low-bandwidth
 learners, and for learners who read Amharic better than English.
 
-> Status: **Phase 5 (offline + audio description)**. Built for the Digital Bridge Accessibility
+> Status: **Phase 6 (career gateway)**. Built for the Digital Bridge Accessibility
 > Hackathon 2026, Track 2. This README grows with each phase.
 
 ## Quick start
@@ -151,6 +151,39 @@ recording works); the player plays it at the right time and pauses the lesson
 | `description-recordings` | JSON list of recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
 | `lesson` | Instead of the above: the URL of a lesson on a Fidel server (fills in everything). |
 
+## Career gateway
+
+### Job card
+
+```html
+<link rel="stylesheet" href="https://YOUR-FIDEL-HOST/embed/fidel.css">
+<script src="https://YOUR-FIDEL-HOST/embed/fidel.js" defer></script>
+
+<fidel-job-card job="https://YOUR-FIDEL-HOST/api/v1/jobs/JOB_ID" lang="en"></fidel-job-card>
+```
+
+Shows the title, employer, place, closing date in **both calendars**
+(e.g. `30 Nov 2026 / ህዳር 21 2019`), how to apply, **workplace
+accommodations**, and a short summary that learners can read or **listen to**.
+Staff can attach a recording of each summary in Studio. Without one, English uses
+the browser's voice, and Amharic shows text only (most phones have no Amharic
+voice, so there is no Amharic button in that case). The card adds the job's
+schema.org/JobPosting JSON-LD to the page. Use `lang="am"` for an Amharic card and
+`heading-level` to fit the page's headings.
+
+The Ethiopian calendar conversion is our own code (`server/app/ethiopian_calendar.py`
+and `player/src/ethiopian-calendar.js`), tested against the official dates, the
+New Year on 11 or 12 September, Pagume, and every day for 12 years.
+
+### Certificates
+
+Staff issue certificates in Studio (Certificates) or with the API. Each has a
+random, unguessable link like `https://YOUR-FIDEL-HOST/verify/ID` that an
+employer can open: an accessible page in English and Amharic saying
+"Verified by ALX Digital Bridge" (or that it was revoked, or not found), with
+a Copy link button. The same data is at `/api/v1/certificates/ID` (JSON).
+Pages are marked `noindex` so names do not appear in search engines.
+
 ## REST API (Level 2)
 
 Interactive docs: `http://localhost:8000/api/docs`. Read endpoints are public;
@@ -158,27 +191,75 @@ write endpoints need `Authorization: Bearer <FIDEL_STAFF_TOKEN>`.
 
 ```sh
 # Upload a lesson (starts processing in the background)
-curl -H "Authorization: Bearer $FIDEL_STAFF_TOKEN"      -F "video=@lesson.mp4" -F "title=Intro to HTML" -F "spoken_language=en"      http://localhost:8000/api/v1/lessons
+curl -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" \
+     -F "video=@lesson.mp4" -F "title=Intro to HTML" -F "spoken_language=en" \
+     http://localhost:8000/api/v1/lessons
 
 # Follow progress of each step
 curl http://localhost:8000/api/v1/lessons/LESSON_ID/status
 
-# Lesson manifest: all file URLs and caption statuses (what the player reads)
-curl http://localhost:8000/api/v1/lessons/LESSON_ID
-
-# Offline: one-page lesson, or the .zip pack
-curl -OJ http://localhost:8000/api/v1/lessons/LESSON_ID/offline.html
-curl -OJ http://localhost:8000/api/v1/lessons/LESSON_ID/pack
+# Lesson manifest: all file URLs and caption statuses (what the player reads).
+# Unpublished lessons need the staff token.
+curl -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" http://localhost:8000/api/v1/lessons/LESSON_ID
 
 # Captions as WebVTT
 curl http://localhost:8000/api/v1/lessons/LESSON_ID/captions/am
 
 # Publish (learners can only see published lessons)
-curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json"      -d '{"published": true}' http://localhost:8000/api/v1/lessons/LESSON_ID/publish
+curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json" \
+     -d '{"published": true}' http://localhost:8000/api/v1/lessons/LESSON_ID/publish
+
+# Offline: one-page lesson, or the .zip pack (published lessons)
+curl -OJ http://localhost:8000/api/v1/lessons/LESSON_ID/offline.html
+curl -OJ http://localhost:8000/api/v1/lessons/LESSON_ID/pack
 
 # Run steps again, e.g. after downloading a model
-curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json"      -d '{"steps": ["transcribe", "translate"]}'      http://localhost:8000/api/v1/lessons/LESSON_ID/rebuild
+curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json" \
+     -d '{"steps": ["transcribe", "translate"]}' \
+     http://localhost:8000/api/v1/lessons/LESSON_ID/rebuild
+
+# Add a job (returns schema.org/JobPosting JSON-LD)
+curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json" \
+     -d '{"title": "Junior Web Developer", "organization": "Example Tech PLC",
+          "description": "Build accessible web pages.", "location": "Addis Ababa", "remote": true,
+          "closing_date": "2026-11-30", "how_to_apply": "Send your CV by email.",
+          "apply_email": "jobs@example.com",
+          "accommodations": ["sign_language_interpreter", "screen_reader_tools"],
+          "summary_en": "A full-time web developer job.", "summary_am": "የሙሉ ጊዜ የድር ገንቢ ሥራ።"}' \
+     http://localhost:8000/api/v1/jobs
+
+# Issue a certificate (the answer includes the verify_url to share)
+curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json" \
+     -d '{"learner_name": "Selam Tesfaye", "course": "Software Engineering"}' \
+     http://localhost:8000/api/v1/certificates
 ```
+
+## Level 3: schema.org/JobPosting
+
+`GET /api/v1/jobs/JOB_ID` returns standard JSON-LD that job boards and search
+engines read, for example:
+
+```json
+{
+  "@context": ["https://schema.org", {"fidel": "https://YOUR-FIDEL-HOST/api/v1/ns#"}],
+  "@type": "JobPosting",
+  "title": "Junior Web Developer",
+  "description": "Build accessible web pages with our team.",
+  "datePosted": "2026-11-14",
+  "validThrough": "2026-11-30T23:59:59+03:00",
+  "employmentType": "FULL_TIME",
+  "hiringOrganization": {"@type": "Organization", "name": "Example Tech PLC"},
+  "jobLocation": {"@type": "Place", "address": {"@type": "PostalAddress",
+                  "addressLocality": "Addis Ababa", "addressCountry": "ET"}},
+  "jobLocationType": "TELECOMMUTE",
+  "applicantLocationRequirements": {"@type": "Country", "name": "Ethiopia"},
+  "applicationContact": {"@type": "ContactPoint", "email": "jobs@example.com"},
+  "jobBenefits": "Workplace accommodations: Sign language interpreter available; Screen-reader compatible tools.",
+  "fidel:accommodations": ["sign_language_interpreter", "screen_reader_tools"]
+}
+```
+
+`<fidel-job-card>` puts this JSON-LD on the page it is embedded in.
 
 Embed a processed lesson with just its address:
 

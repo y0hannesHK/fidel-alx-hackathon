@@ -2,6 +2,7 @@
 // Pages are switched with the address hash: #/ (home) and #/lesson/ID.
 import { api, ApiError, token, uploadWithProgress } from './api.js';
 import { lessonPage } from './lesson.js';
+import { certificatesPage, jobsPage } from './career.js';
 import { h, say, uid } from './util.js';
 
 const main = document.getElementById('main');
@@ -15,10 +16,18 @@ signOut.addEventListener('click', () => {
 
 async function route() {
   signOut.hidden = !token.get();
+  document.getElementById('site-nav').hidden = !token.get();
   if (!token.get()) return signInPage();
   const match = location.hash.match(/^#\/lesson\/([a-f0-9]{12})$/);
+  for (const link of document.querySelectorAll('#site-nav a')) {
+    const current = link.getAttribute('href') === (location.hash || '#/') || (match && link.getAttribute('href') === '#/');
+    if (current) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
   try {
     if (match) await lessonPage(main, match[1]);
+    else if (location.hash === '#/jobs') await jobsPage(main);
+    else if (location.hash === '#/certificates') await certificatesPage(main);
     else await homePage();
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {

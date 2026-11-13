@@ -97,3 +97,15 @@ th, td { text-align: start; padding: 0.5rem; border-bottom: 1px solid #c4c8cf; }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Navigation, lists of items, tables on small screens */
+.site-header nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; }
+.site-header nav a { color: #fff; display: inline-block; padding: 0.6rem 0; font-weight: 600; }
+.site-header nav a[aria-current="page"] { text-decoration-thickness: 3px; }
+.items { list-style: none; padding: 0; margin: 0; }
+.item { border-top: 1px solid #c4c8cf; padding: 0.75rem 0; }
+.item h3 { margin: 0 0 0.25rem; }
+summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+h2.inline { display: inline; margin: 0; }
+.table-wrap { overflow-x: auto; }
+td .button { margin: 0.25rem 0.25rem 0.25rem 0; }

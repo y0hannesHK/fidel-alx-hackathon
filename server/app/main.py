@@ -1,6 +1,8 @@
 """Fidel server.
 
   /api/v1/lessons...  lesson API (see /api/docs)
+  /api/v1/jobs...     jobs as schema.org/JobPosting JSON-LD
+  /api/v1/certificates, /verify/ID   certificates and their public check page
   /files/lessons/     processed lesson files (video, audio)
   /embed/             the built player (fidel.js, fidel.css, fonts)
   /studio/            Fidel Studio, the staff page
@@ -18,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import auth, editing, lessons, offline
+from .api import auth, certificates, editing, jobs, lessons, offline
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -59,6 +61,8 @@ app.include_router(lessons.router)
 app.include_router(editing.router)
 app.include_router(auth.router)
 app.include_router(offline.router)
+app.include_router(jobs.router)
+app.include_router(certificates.router)
 
 
 @app.get("/health", tags=["system"])
@@ -86,9 +90,10 @@ def mount_if_present(url_path: str, folder: Path, name: str) -> None:
         app.mount(url_path, StaticFiles(directory=folder, html=True), name=name)
 
 
-for folder in (settings.data_dir / "demo", settings.data_dir / "lessons"):
+for folder in (settings.data_dir / "demo", settings.data_dir / "lessons", settings.data_dir / "jobs"):
     folder.mkdir(parents=True, exist_ok=True)
 mount_if_present("/files/lessons", settings.data_dir / "lessons", "lesson-files")
+mount_if_present("/files/jobs", settings.data_dir / "jobs", "job-files")
 mount_if_present("/embed", settings.embed_dir, "embed")
 mount_if_present("/studio", settings.studio_dir, "studio")
 mount_if_present("/demo", settings.demo_dir, "demo")

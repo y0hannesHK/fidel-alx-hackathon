@@ -300,3 +300,57 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
   font-weight: 600;
 }
 .fidel-save-status:empty { display: none; }
+
+/* ---------- Job card ---------------------------------------------------------- */
+fidel-job-card {
+  display: block;
+  max-width: 48rem;
+}
+fidel-job-card :lang(am) {
+  font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif;
+  line-height: 1.6;
+}
+fidel-job-card :focus-visible {
+  outline: 3px solid #ffbf47;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #1a1a1a;
+}
+.fidel-job {
+  --fidel-accent: #0b4f9c;
+  --fidel-paper: #ffffff;
+  border: 1px solid #5c5c5c;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fff;
+  color: #1a1a1a;
+  overflow-wrap: anywhere;   /* long words and emails never force sideways scrolling */
+}
+.fidel-job-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.4rem;
+  line-height: 1.25;
+}
+.fidel-job h3, .fidel-job h4, .fidel-job h5 {
+  font-size: 1.15rem;
+  margin: 1rem 0 0.5rem;
+}
+.fidel-job-facts {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0;
+}
+.fidel-job-facts dt { font-weight: 700; }
+.fidel-job-facts dd { margin: 0; }
+.fidel-job-facts dd p { margin: 0 0 0.25rem; }
+@media (max-width: 30rem) {
+  .fidel-job-facts { grid-template-columns: 1fr; }
+  .fidel-job-facts dd { margin-bottom: 0.5rem; }
+}
+.fidel-job a { color: #0b4f9c; }
+.fidel-job-accommodations { padding-inline-start: 1.25rem; margin: 0; }
+.fidel-job-accommodations li { margin: 0.25rem 0; }
+.fidel-job-accommodations li::marker { content: "✓  "; font-weight: 700; }
+.fidel-job .fidel-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.fidel-job-status:empty { display: none; }
+.fidel-job-note { font-style: italic; color: #444; }
