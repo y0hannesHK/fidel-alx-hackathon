@@ -103,3 +103,29 @@ def test_delete_removes_lesson_and_files(lesson):
     assert client.delete(f"/api/v1/lessons/{lesson_id}", headers=STAFF).status_code == 204
     assert client.get(f"/api/v1/lessons/{lesson_id}", headers=STAFF).status_code == 404
     assert not lesson_folder(lesson_id).exists()
+
+
+def test_description_recordings(lesson, tiny_video):
+    client, lesson_id = lesson
+    url = f"/api/v1/lessons/{lesson_id}/descriptions/am"
+    client.put(url, headers=STAFF, json={"cues": [{"start": 1.0, "end": 2.5, "text": "ስላይዱ ንድፍ ያሳያል።"}]})
+
+    # No description at that time: refused.
+    with open(tiny_video, "rb") as f:
+        bad = client.post(url + "/recording?start=9", headers=STAFF, files={"audio": ("r.mp4", f, "video/mp4")})
+    assert bad.status_code == 404
+
+    with open(tiny_video, "rb") as f:  # any file with sound works (e.g. a phone recording)
+        ok = client.post(url + "/recording?start=1", headers=STAFF, files={"audio": ("r.m4a", f, "audio/mp4")})
+    assert ok.status_code == 200, ok.text
+    assert ok.json()["cues"][0]["has_recording"] is True
+
+    manifest = client.get(f"/api/v1/lessons/{lesson_id}", headers=STAFF).json()
+    recording = manifest["description_recordings"]["am"][0]
+    assert recording["start"] == 1.0
+    assert client.get(recording["url"].split("testserver", 1)[1]).status_code == 200
+
+    # Deleting the description also removes its recording.
+    client.put(url, headers=STAFF, json={"cues": []})
+    manifest = client.get(f"/api/v1/lessons/{lesson_id}", headers=STAFF).json()
+    assert "am" not in manifest["description_recordings"]

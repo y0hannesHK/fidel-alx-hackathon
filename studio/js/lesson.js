@@ -56,6 +56,9 @@ export async function lessonPage(main, lessonId) {
       'chapters-am': manifest.chapters.am,
       'descriptions-en': manifest.descriptions.en,
       'descriptions-am': manifest.descriptions.am,
+      'src-small': manifest.video.small_mp4,
+      'description-recordings': Object.keys(manifest.description_recordings).length
+        ? JSON.stringify(manifest.description_recordings) : null,
     };
     for (const track of manifest.captions) {
       attrs[`captions-${track.lang}`] = `${track.url}?v=${Date.now()}`; // skip the browser cache after edits
@@ -244,14 +247,61 @@ async function descriptionsSection(lessonId, videoTime, onSaved) {
       getVideoTime: videoTime,
       save: async (rows) => {
         const body = rows.map((r) => ({ start: r.start, end: r.end, text: r.text.trim() }));
-        await api(`/api/v1/lessons/${lessonId}/descriptions/${lang}`, { method: 'PUT', json: { cues: body } });
+        const saved = await api(`/api/v1/lessons/${lessonId}/descriptions/${lang}`, { method: 'PUT', json: { cues: body } });
         onSaved();
-        return `Saved ${body.length} ${name} description(s).`;
+        return { message: `Saved ${body.length} ${name} description(s).`, rows: saved.cues };
       },
+      // A recording of each description being read aloud. Needed for Amharic:
+      // most phones have no Amharic voice to read the text.
+      extra: (row, { status, rerender }) => recordingControls(lessonId, lang, row, status, rerender, onSaved),
     });
     wrapper.append(editors[lang]);
   }
   return wrapper;
+}
+
+function recordingControls(lessonId, lang, row, status, rerender, onSaved) {
+  const url = (start) => `/api/v1/lessons/${lessonId}/descriptions/${lang}/recording?start=${start}`;
+  if (row.has_recording === undefined) {
+    return h('p', { class: 'hint' }, 'Save the descriptions first; then you can add a recording of this one.');
+  }
+  if (row.has_recording) {
+    return h('div', { class: 'row' },
+      h('span', {}, '✓ Recording attached.'),
+      h('button', {
+        type: 'button', class: 'button secondary small',
+        onclick: async () => {
+          await api(url(row.start), { method: 'DELETE' });
+          row.has_recording = false;
+          rerender();
+          onSaved();
+          say(status, 'Recording removed.');
+        },
+      }, 'Remove recording'));
+  }
+  const id = uid('recording');
+  const input = h('input', { type: 'file', id, accept: 'audio/*,video/*' });
+  return h('div', { class: 'field' },
+    h('label', { for: id }, 'Recording of this description (optional)'),
+    h('div', { class: 'row' }, input,
+      h('button', {
+        type: 'button', class: 'button secondary small',
+        onclick: async () => {
+          if (!input.files[0]) return say(status, 'Choose a recording first.');
+          const form = new FormData();
+          form.append('audio', input.files[0]);
+          say(status, 'Uploading recording…');
+          try {
+            await uploadWithProgress(url(row.start), form, () => {});
+            row.has_recording = true;
+            rerender();
+            onSaved();
+            say(status, 'Recording attached.');
+          } catch (error) {
+            say(status, `Recording not attached: ${error.message}`);
+          }
+        },
+      }, 'Attach recording')));
 }
 
 // --- Sign language video ----------------------------------------------------------------

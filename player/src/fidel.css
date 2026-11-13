@@ -287,3 +287,16 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Offline downloads ------------------------------------------------ */
+.fidel-downloads {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+.fidel-downloads a {
+  display: inline-block;
+  padding: 0.6rem 0;        /* comfortable touch target */
+  color: var(--fidel-accent);
+  font-weight: 600;
+}
+.fidel-save-status:empty { display: none; }

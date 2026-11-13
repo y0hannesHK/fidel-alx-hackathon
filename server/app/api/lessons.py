@@ -49,7 +49,10 @@ class Manifest(BaseModel):
     captions: list[CaptionTrack]
     chapters: dict[str, str] = Field(description="Chapter lists (WebVTT) by language")
     descriptions: dict[str, str] = Field(description="Audio description text (WebVTT) by language")
+    description_recordings: dict[str, list[dict]] = Field(
+        description="Recorded audio descriptions by language: [{start, url}]")
     sign: str | None = Field(description="Sign-language video (WebM)")
+    offline: dict[str, str] = Field(description="Offline downloads: page (one HTML file), page_with_video, pack (.zip)")
     published: bool
     steps: dict[str, StepStatus]
 
@@ -119,7 +122,17 @@ def build_manifest(lesson: dict, request: Request) -> Manifest:
         captions=captions,
         chapters=by_language("chapters"),
         descriptions=by_language("descriptions"),
+        description_recordings={
+            lang: [{"start": int(p.stem.rsplit("-", 1)[1]) / 1000, "url": f"{files}/{p.name}"}
+                   for p in sorted(folder.glob(f"desc-{lang}-*.opus"))]
+            for lang in ("en", "am") if any(folder.glob(f"desc-{lang}-*.opus"))
+        },
         sign=if_exists("sign.webm"),
+        offline={
+            "page": f"{api}/offline.html",
+            "page_with_video": f"{api}/offline.html?video=true",
+            "pack": f"{api}/pack",
+        } if (folder / "audio.opus").is_file() else {},
         published=bool(lesson["published"]),
         steps=db.get_steps(lesson["id"]),
     )

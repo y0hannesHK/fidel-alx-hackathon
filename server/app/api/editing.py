@@ -5,7 +5,7 @@ sign-language video upload, and publishing.
 
 import shutil
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Request, UploadFile, status
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ..captions import Cue, read_vtt, write_vtt
@@ -68,6 +68,7 @@ class DescriptionCue(BaseModel):
     start: float = Field(ge=0)
     end: float = Field(gt=0)
     text: str = Field(min_length=1, max_length=1000)
+    has_recording: bool = Field(default=False, description="A recording of it being read aloud exists (read-only)")
 
 
 class DescriptionsEdit(BaseModel):
@@ -159,12 +160,23 @@ def save_chapters(body: ChaptersEdit, lesson_id: str = LessonId):
 # --- Audio description text ----------------------------------------------------------------
 
 
+def recording_name(lang: str, start: float) -> str:
+    # Recordings are keyed by the description's start time (in milliseconds),
+    # so they stay with the right description when the list is reordered.
+    return f"desc-{lang}-{round(start * 1000)}.opus"
+
+
 @router.get("/{lesson_id}/descriptions/{lang}", response_model=DescriptionsEdit, dependencies=staff)
 def get_descriptions(lang: Language, lesson_id: str = LessonId):
     get_lesson_or_404(lesson_id)
-    path = lesson_folder(lesson_id) / f"descriptions-{lang}.vtt"
+    folder = lesson_folder(lesson_id)
+    path = folder / f"descriptions-{lang}.vtt"
     cues = read_vtt(path) if path.is_file() else []
-    return DescriptionsEdit(cues=[DescriptionCue(start=c.start, end=c.end, text=c.text) for c in cues])
+    return DescriptionsEdit(cues=[
+        DescriptionCue(start=c.start, end=c.end, text=c.text,
+                       has_recording=(folder / recording_name(lang, c.start)).is_file())
+        for c in cues
+    ])
 
 
 @router.put("/{lesson_id}/descriptions/{lang}", response_model=DescriptionsEdit, dependencies=staff)
@@ -180,7 +192,49 @@ def save_descriptions(body: DescriptionsEdit, lang: Language, lesson_id: str = L
         write_vtt(path, [Cue(c.start, c.end, c.text.strip()) for c in cues])
     else:
         path.unlink(missing_ok=True)
-    return DescriptionsEdit(cues=cues)
+    # Remove recordings whose description no longer exists.
+    keep = {recording_name(lang, c.start) for c in cues}
+    for recording in lesson_folder(lesson_id).glob(f"desc-{lang}-*.opus"):
+        if recording.name not in keep:
+            recording.unlink()
+    return get_descriptions(lang, lesson_id)
+
+
+@router.post("/{lesson_id}/descriptions/{lang}/recording", response_model=DescriptionsEdit, dependencies=staff)
+async def upload_description_recording(
+    lang: Language,
+    start: float = Query(ge=0, description="Start time of the description (seconds)"),
+    audio: UploadFile = File(description="Recording of the description being read aloud"),
+    lesson_id: str = LessonId,
+):
+    """Attach a recording to one description. Needed for Amharic: most phones
+    have no Amharic voice to read description text aloud."""
+    get_lesson_or_404(lesson_id)
+    folder = lesson_folder(lesson_id)
+    path = folder / f"descriptions-{lang}.vtt"
+    cues = read_vtt(path) if path.is_file() else []
+    match = next((c for c in cues if abs(c.start - start) < 0.05), None)
+    if match is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No saved description starts at that time. Save the descriptions first.")
+    upload = folder / "desc-upload.tmp"
+    try:
+        await save_upload(audio, upload)
+        info = media.probe(upload)
+        if not info["has_audio"]:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The file has no sound in it.")
+        media.make_description_audio(upload, folder / recording_name(lang, match.start))
+    except media.MediaError as problem:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "This file could not be read as audio.") from problem
+    finally:
+        upload.unlink(missing_ok=True)
+    return get_descriptions(lang, lesson_id)
+
+
+@router.delete("/{lesson_id}/descriptions/{lang}/recording", response_model=DescriptionsEdit, dependencies=staff)
+def delete_description_recording(lang: Language, start: float = Query(ge=0), lesson_id: str = LessonId):
+    get_lesson_or_404(lesson_id)
+    (lesson_folder(lesson_id) / recording_name(lang, start)).unlink(missing_ok=True)
+    return get_descriptions(lang, lesson_id)
 
 
 # --- Sign language video ----------------------------------------------------------------------

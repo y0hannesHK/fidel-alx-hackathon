@@ -14,6 +14,9 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 ## Before the demo
 
+- **Test the offline page on a real Android phone in airplane mode** (automated
+  tests block the network in desktop Chrome; a phone check is still needed).
+
 - Replace `data/demo/sign.webm` (colour-bar test pattern) with a real EthSL
   recording.
 - Speaker's name tile is visible in the demo clip: confirm consent or choose
@@ -21,6 +24,11 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 - Manual NVDA and TalkBack test (Able Player controls are `div role="button"`).
 
 ## Later / reminders
+
+- **Offline page has no description recordings.** Descriptions appear as text
+  in the one-page lesson; recordings play only in the online player.
+- **Amharic text-to-speech for descriptions** (speecht5_tts_amharic, needs
+  PyTorch) not added; staff attach recordings instead.
 
 - **Addis AI translation provider (reminder for the user).** Left out in
   Phase 3 because we have no API key or docs to test it. The translator slot is

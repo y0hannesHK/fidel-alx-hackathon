@@ -15,10 +15,10 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import auth, editing, lessons
+from .api import auth, editing, lessons, offline
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -58,12 +58,20 @@ app.add_middleware(
 app.include_router(lessons.router)
 app.include_router(editing.router)
 app.include_router(auth.router)
+app.include_router(offline.router)
 
 
 @app.get("/health", tags=["system"])
 def health() -> dict:
     """Simple liveness check used by Docker and by tests."""
     return {"status": "ok"}
+
+
+@app.get("/fidel-sw.js", include_in_schema=False)
+def service_worker() -> FileResponse:
+    """Service worker for "Save for offline" (must be served from the site root)."""
+    return FileResponse(Path(__file__).parent / "static" / "fidel-sw.js", media_type="text/javascript",
+                        headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/", include_in_schema=False)

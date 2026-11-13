@@ -54,6 +54,18 @@ export const STRINGS = {
     playFrom: 'Play from {time}',
 
     draftNotice: 'These Amharic captions are machine-generated and not yet reviewed.',
+
+    offline: 'Offline and data',
+    lowData: 'Use less data (smaller video)',
+    downloadPage: 'Download lesson for offline use (sound and text)',
+    downloadPageVideo: 'Download with the small video (bigger file)',
+    downloadPack: 'Download full pack (.zip) with caption files',
+    offlineHelp: 'Open the downloaded file in your browser. It works with no internet.',
+    saveOffline: 'Save for offline in this browser',
+    saving: 'Saving…',
+    saved: 'Saved. You can open this lesson without internet:',
+    openSaved: 'Open saved lesson',
+    saveFailed: 'Could not save. Check your connection and try again.',
   },
 
   am: {
@@ -105,6 +117,18 @@ export const STRINGS = {
     playFrom: 'ከ{time} ጀምሮ አጫውት',
 
     draftNotice: 'እነዚህ የአማርኛ የግርጌ ጽሑፎች በማሽን የተዘጋጁ ሲሆኑ ገና በሰው አልተገመገሙም።',
+
+    offline: 'ከመስመር ውጭ እና ዳታ',
+    lowData: 'አነስተኛ ዳታ ተጠቀም (ትንሽ ቪዲዮ)',
+    downloadPage: 'ትምህርቱን ከመስመር ውጭ ለመጠቀም ያውርዱ (ድምፅ እና ጽሑፍ)',
+    downloadPageVideo: 'ከትንሹ ቪዲዮ ጋር ያውርዱ (ትልቅ ፋይል)',
+    downloadPack: 'ሙሉውን ጥቅል (.zip) ከግርጌ ጽሑፍ ፋይሎች ጋር ያውርዱ',
+    offlineHelp: 'የወረደውን ፋይል በአሳሽዎ ይክፈቱ። ያለ ኢንተርኔት ይሠራል።',
+    saveOffline: 'በዚህ አሳሽ ውስጥ ከመስመር ውጭ ለመጠቀም አስቀምጥ',
+    saving: 'በማስቀመጥ ላይ…',
+    saved: 'ተቀምጧል። ይህን ትምህርት ያለ ኢንተርኔት መክፈት ይችላሉ፦',
+    openSaved: 'የተቀመጠውን ትምህርት ክፈት',
+    saveFailed: 'ማስቀመጥ አልተቻለም። ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ።',
   },
 };
 

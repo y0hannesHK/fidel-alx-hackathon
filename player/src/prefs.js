@@ -14,6 +14,7 @@ export const DEFAULT_PREFS = {
   signSize: 'medium', // 'small' | 'medium' | 'large'
   signCorner: 'bottom-right',
   playbackRate: 1,
+  lowData: false, // true = play the small video rendition
 };
 
 export const CAPTION_SIZE = { min: 100, max: 250, step: 25 };

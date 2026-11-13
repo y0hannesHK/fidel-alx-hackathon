@@ -9,7 +9,8 @@ import { formatTime, h, parseTime, say, uid } from './util.js';
  *   fields: [{ key, label, kind: 'time' | 'text', lang?, long? , optional? }],
  *   rows: [...initial values],
  *   getVideoTime: () => seconds,
- *   save: async (rows) => message   // throws on error
+ *   save: async (rows) => message | { message, rows }   // throws on error
+ *   extra?: (row, { status, rerender }) => Node   // more controls for one row
  * }
  */
 export function rowsEditor(options) {
@@ -54,6 +55,7 @@ export function rowsEditor(options) {
       h('fieldset', { class: 'cue' },
         h('legend', {}, legend),
         inputs,
+        options.extra?.(row, { status, rerender: render }),
         h('button', {
           type: 'button',
           class: 'button secondary small',
@@ -97,7 +99,13 @@ export function rowsEditor(options) {
     }
     say(status, 'Saving…');
     try {
-      say(status, await options.save(rows));
+      const result = await options.save(rows);
+      // save() may return { message, rows } to refresh the list from the server.
+      if (result?.rows) {
+        rows.splice(0, rows.length, ...result.rows.map((r) => ({ ...r })));
+        render();
+      }
+      say(status, result?.message ?? result);
     } catch (error) {
       say(status, `Not saved: ${error.message}`);
     }

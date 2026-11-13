@@ -5,7 +5,7 @@ Ethiopian learner. It is an open, embeddable accessible media module for learnin
 platforms such as ALX Savanna, built for Deaf, blind, low-vision and low-bandwidth
 learners, and for learners who read Amharic better than English.
 
-> Status: **Phase 4 (Studio)**. Built for the Digital Bridge Accessibility
+> Status: **Phase 5 (offline + audio description)**. Built for the Digital Bridge Accessibility
 > Hackathon 2026, Track 2. This README grows with each phase.
 
 ## Quick start
@@ -104,8 +104,36 @@ The player then shows, under the video:
   transcript (highlights the current line; "Follow along" scrolls with the video
   and switches off when you move into the text with the keyboard).
 
+- **Offline and data**: "Use less data" (switches to the 360p video), and
+  downloads for use with no internet (see below).
+
 Settings are saved in the learner's browser only (localStorage). Nothing is sent
 to a server.
+
+### Offline lessons (3G phones)
+
+Every processed lesson can be downloaded for use with **no internet**:
+
+| Download | What is inside | Size (measured) |
+|---|---|---|
+| One-page lesson (`offline.html`) | Audio (Opus 24 kbps), English + Amharic transcript with read-along highlighting (tap a sentence to play from there), chapters, descriptions, large-text option, Ethiopic font. **One file** so it opens from a phone's Downloads. | 778 KB for 2 min 39 s, about **3.9 MB per 15 minutes** |
+| Same, with the small video (`offline.html?video=true`) | As above plus the 360p video | 1.7 MB for 2 min 39 s |
+| Offline pack (`pack`, .zip) | The one-page lesson plus caption (.vtt), description (.vtt) and plain-text transcript files | 588 KB for 2 min 39 s, about 3.3 MB per 15 minutes |
+
+The page makes no network requests (tested with the network switched off).
+On pages served by the Fidel server itself, the player also offers **"Save for
+offline in this browser"** (a service worker keeps the lesson page). Browsers
+only allow this on the service worker's own site, so on other platforms the
+download links are offered instead.
+
+### Audio description
+
+Write descriptions in Studio (what is on screen but not said). Learners turn
+them on with the player's Descriptions button. English descriptions can be read
+by the browser's voice or the screen reader. **Most phones have no Amharic
+voice**, so staff can attach a **recording** to each description (any phone
+recording works); the player plays it at the right time and pauses the lesson
+(or lowers its volume) while it plays.
 
 | Attribute | Meaning |
 |---|---|
@@ -118,7 +146,10 @@ to a server.
 | `captions-am-status` | `draft` (machine-made: shows a "not yet reviewed" notice) or `reviewed`. |
 | `sign` | Sign-language video (WebM or MP4), shown in its own window. |
 | `lang` | Default interface language: `en` or `am`. |
-| `lesson` | Instead of the above: the URL of a lesson on a Fidel server. |
+| `src-small` | Small video for "Use less data". |
+| `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
+| `description-recordings` | JSON list of recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
+| `lesson` | Instead of the above: the URL of a lesson on a Fidel server (fills in everything). |
 
 ## REST API (Level 2)
 
@@ -134,6 +165,10 @@ curl http://localhost:8000/api/v1/lessons/LESSON_ID/status
 
 # Lesson manifest: all file URLs and caption statuses (what the player reads)
 curl http://localhost:8000/api/v1/lessons/LESSON_ID
+
+# Offline: one-page lesson, or the .zip pack
+curl -OJ http://localhost:8000/api/v1/lessons/LESSON_ID/offline.html
+curl -OJ http://localhost:8000/api/v1/lessons/LESSON_ID/pack
 
 # Captions as WebVTT
 curl http://localhost:8000/api/v1/lessons/LESSON_ID/captions/am

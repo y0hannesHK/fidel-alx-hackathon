@@ -9,6 +9,7 @@ import { t, UI_LANGUAGES } from './strings.js';
 import { COLOUR_PRESETS, BACKGROUND_OPACITIES, CAPTION_POSITIONS } from './caption-style.js';
 import { CAPTION_SIZE } from './prefs.js';
 import { SIGN_CORNERS } from './sign-window.js';
+import { canSaveOffline, isSaved, saveOffline, savedPageUrl } from './save-offline.js';
 
 const LANGUAGE_NAMES = { en: 'English', am: 'አማርኛ' };
 
@@ -176,6 +177,38 @@ export function buildPanel(options) {
     h('div', { class: 'fidel-group-body' }, signBody)
   );
 
+  // --- Offline and data ----------------------------------------------------
+  const offline = options.offline || {};
+  let offlineGroup = null;
+  if (offline.page || offline.pack || options.hasSmallVideo) {
+    const links = [
+      [offline.page, 'downloadPage'],
+      [offline.pageVideo, 'downloadPageVideo'],
+      [offline.pack, 'downloadPack'],
+    ].filter(([url]) => url);
+    offlineGroup = h(
+      'details',
+      { class: 'fidel-group', open: true },
+      h('summary', {}, tr('offline')),
+      h(
+        'div',
+        { class: 'fidel-group-body' },
+        options.hasSmallVideo &&
+          h('button', {
+            type: 'button',
+            class: 'fidel-button',
+            'aria-pressed': String(Boolean(prefs.lowData)),
+            'data-fidel-low-data': '',
+            onclick: () => on.lowData(!prefs.lowData),
+          }, tr('lowData')),
+        links.length > 0 && h('ul', { class: 'fidel-downloads' },
+          links.map(([url, key]) => h('li', {}, h('a', { href: url, download: '' }, tr(key))))),
+        links.length > 0 && h('p', {}, tr('offlineHelp')),
+        saveOfflineControls(offline.page, tr)
+      )
+    );
+  }
+
   const panel = h(
     'section',
     { class: 'fidel-panel', 'aria-labelledby': headingId },
@@ -187,7 +220,8 @@ export function buildPanel(options) {
       h('div', { class: 'fidel-row' }, languageButtons)
     ),
     captions,
-    sign
+    sign,
+    offlineGroup
   );
 
   // Methods so fidel-player.js can keep the panel in step when the learner
@@ -203,4 +237,32 @@ export function buildPanel(options) {
       signToggle?.setAttribute('aria-pressed', String(visible));
     },
   };
+}
+
+/** "Save for offline in this browser" (only where it can work: see save-offline.js). */
+function saveOfflineControls(offlinePage, tr) {
+  if (!canSaveOffline(offlinePage)) return null;
+  const status = h('p', { class: 'fidel-save-status', role: 'status' });
+  const showSaved = () => {
+    status.replaceChildren(tr('saved'), ' ', h('a', { href: savedPageUrl(offlinePage) }, tr('openSaved')));
+  };
+  const button = h('button', {
+    type: 'button',
+    class: 'fidel-button',
+    onclick: async () => {
+      button.disabled = true;
+      status.textContent = tr('saving');
+      let ok = false;
+      try {
+        ok = await saveOffline(offlinePage);
+      } catch {
+        ok = false;
+      }
+      button.disabled = false;
+      if (ok) showSaved();
+      else status.textContent = tr('saveFailed');
+    },
+  }, tr('saveOffline'));
+  isSaved(offlinePage).then((saved) => saved && showSaved());
+  return h('div', {}, button, status);
 }

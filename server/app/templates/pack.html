@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="{{PAGE_LANG}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<!--
+  Fidel offline lesson. Everything is inside this one file (audio, text,
+  font), so it works with no internet. It makes no network requests.
+-->
+<style>
+@font-face { font-family: "Fidel Ethiopic"; src: url("{{FONT}}") format("woff2"); unicode-range: U+1200-139F, U+2D80-2DDF, U+AB00-AB2F; }
+* { box-sizing: border-box; }
+html { font-size: 112.5%; }
+html.large { font-size: 150%; }
+body { margin: 0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; line-height: 1.5; color: #000; background: #fff; }
+:lang(am) { font-family: "Fidel Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif; line-height: 1.7; }
+main { max-width: 46rem; margin: 0 auto; padding: 0.75rem; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 0.5rem 0; }
+h2 { font-size: 1.2rem; margin: 1.25rem 0 0.25rem; }
+:focus-visible { outline: 3px solid #0040a0; outline-offset: 2px; }
+button { font: inherit; min-height: 44px; min-width: 44px; padding: 0.4rem 0.8rem; border: 2px solid #0040a0; border-radius: 6px; background: #fff; color: #0040a0; cursor: pointer; }
+button[aria-pressed="true"] { background: #0040a0; color: #fff; }
+button[aria-pressed="true"]::before { content: "✓ "; }
+.bar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+.player { position: sticky; top: 0; background: #fff; padding: 0.5rem 0; border-bottom: 2px solid #000; z-index: 1; }
+audio, video { width: 100%; }
+.note { border-left: 6px solid #8a5a00; background: #fff8e1; padding: 0.5rem 0.75rem; }
+.note p { margin: 0.2rem 0; }
+.transcript p { margin: 0 0 0.75rem; }
+.cue { display: inline; min-height: 0; min-width: 0; padding: 0.1rem 0.15rem; margin: 0; border: 0; border-radius: 3px; background: none; color: inherit; text-align: start; line-height: inherit; }
+.cue:hover { text-decoration: underline; }
+.cue.now { background: #000; color: #fff; }
+.desc { display: block; border-left: 4px solid #555; padding-left: 0.5rem; margin: 0.25rem 0 0.75rem; font-style: italic; }
+.desc .label { font-weight: 700; font-style: normal; }
+.check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
+.check input { width: 1.4rem; height: 1.4rem; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>{{TITLE}}</h1>
+  <div class="bar" role="group" aria-label="Language / ቋንቋ">
+    <button type="button" data-lang="en" lang="en">English</button>
+    <button type="button" data-lang="am" lang="am">አማርኛ</button>
+    <button type="button" id="large" aria-pressed="false"><span lang="en">Large text</span> / <span lang="am">ትልቅ ፊደል</span></button>
+  </div>
+  <div class="player">
+    {{MEDIA}}
+    <div class="check">
+      <input type="checkbox" id="follow" checked>
+      <label for="follow" id="follow-label"></label>
+    </div>
+  </div>
+  <div id="notice" role="status"></div>
+  <section aria-labelledby="transcript-heading">
+    <h2 id="transcript-heading"></h2>
+    <p id="how"></p>
+    <div id="transcript" class="transcript"></div>
+  </section>
+</main>
+<script type="application/json" id="lesson-data">{{DATA}}</script>
+<script>
+(function () {
+  "use strict";
+  var data = JSON.parse(document.getElementById("lesson-data").textContent);
+  var media = document.getElementById("media");
+  var box = document.getElementById("transcript");
+  var follow = document.getElementById("follow");
+  var TEXT = {
+    en: { transcript: "Transcript", follow: "Follow along (highlight and scroll with the audio)",
+          how: "Select any sentence to play the lesson from there.", desc: "Description:",
+          draft: "These Amharic captions are machine-generated and not yet reviewed." },
+    am: { transcript: "ግልባጭ", follow: "ከድምፁ ጋር አብሮ መሄድ (ማድመቅ እና ማሸብለል)",
+          how: "ትምህርቱን ከዚያ ለማጫወት ማንኛውንም ዓረፍተ ነገር ይምረጡ።", desc: "መግለጫ፦",
+          draft: "እነዚህ የአማርኛ የግርጌ ጽሑፎች በማሽን የተዘጋጁ ሲሆኑ ገና በሰው አልተገመገሙም።" }
+  };
+  function store(key, value) { try { localStorage.setItem("fidel-pack-" + key, value); } catch (e) {} }
+  function read(key) { try { return localStorage.getItem("fidel-pack-" + key); } catch (e) { return null; } }
+
+  var cues = [];
+  function el(tag, attrs, text) {
+    var e = document.createElement(tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text) e.textContent = text;
+    return e;
+  }
+
+  function render(lang) {
+    if (!data.captions[lang]) lang = data.captions.en ? "en" : Object.keys(data.captions)[0];
+    var t = TEXT[lang] || TEXT.en;
+    document.documentElement.lang = lang;
+    document.getElementById("transcript-heading").textContent = t.transcript;
+    document.getElementById("how").textContent = t.how;
+    document.getElementById("follow-label").textContent = t.follow;
+    var notice = document.getElementById("notice");
+    notice.textContent = "";
+    if (lang === "am" && data.status.am === "draft") {
+      var n = el("div", { "class": "note" });
+      n.appendChild(el("p", { lang: "am" }, TEXT.am.draft));
+      n.appendChild(el("p", { lang: "en" }, TEXT.en.draft));
+      notice.appendChild(n);
+    }
+    var buttons = document.querySelectorAll("[data-lang]");
+    for (var i = 0; i < buttons.length; i++) buttons[i].setAttribute("aria-pressed", String(buttons[i].getAttribute("data-lang") === lang));
+
+    // Merge chapters, captions and descriptions in time order.
+    var chapterLang = data.chapters[lang] ? lang : "en";
+    var items = [];
+    (data.chapters[chapterLang] || []).forEach(function (c) { items.push({ kind: "chapter", start: c.start, text: c.text, lang: chapterLang }); });
+    (data.captions[lang] || []).forEach(function (c) { items.push({ kind: "cue", start: c.start, end: c.end, text: c.text, lang: lang }); });
+    (data.descriptions[lang] || []).forEach(function (c) { items.push({ kind: "desc", start: c.start, text: c.text, lang: lang }); });
+    items.sort(function (a, b) { return a.start - b.start || (a.kind === "chapter" ? -1 : 1); });
+
+    box.textContent = "";
+    cues = [];
+    var para = null;
+    items.forEach(function (item) {
+      if (item.kind === "chapter") {
+        box.appendChild(el("h2", { lang: item.lang }, item.text));
+        para = null;
+      } else if (item.kind === "desc") {
+        var d = el("p", { "class": "desc", lang: item.lang });
+        d.appendChild(el("span", { "class": "label" }, (TEXT[item.lang] || TEXT.en).desc + " "));
+        d.appendChild(document.createTextNode(item.text));
+        box.appendChild(d);
+        para = null;
+      } else {
+        if (!para) { para = el("p", { lang: item.lang }); box.appendChild(para); }
+        var b = el("button", { type: "button", "class": "cue" }, item.text.replace(/\n/g, " "));
+        b.addEventListener("click", function () { media.currentTime = item.start; media.play(); });
+        para.appendChild(b);
+        para.appendChild(document.createTextNode(" "));
+        cues.push({ start: item.start, end: item.end, el: b });
+      }
+    });
+    store("lang", lang);
+  }
+
+  // Read-along: highlight the sentence being spoken.
+  var current = null;
+  media.addEventListener("timeupdate", function () {
+    var t = media.currentTime, found = null;
+    for (var i = 0; i < cues.length; i++) if (t >= cues[i].start && t < cues[i].end) { found = cues[i]; break; }
+    if (found === current) return;
+    if (current) current.el.classList.remove("now");
+    current = found;
+    if (current) {
+      current.el.classList.add("now");
+      if (follow.checked) current.el.scrollIntoView({ block: "center" });
+    }
+  });
+  // Scrolling with the audio fights a screen reader user who is reading:
+  // stop it when focus moves into the text.
+  box.addEventListener("focusin", function () { follow.checked = false; });
+
+  document.querySelectorAll("[data-lang]").forEach(function (b) {
+    b.addEventListener("click", function () { render(b.getAttribute("data-lang")); });
+  });
+  var large = document.getElementById("large");
+  function setLarge(on) {
+    document.documentElement.classList.toggle("large", on);
+    large.setAttribute("aria-pressed", String(on));
+    store("large", on ? "1" : "0");
+  }
+  large.addEventListener("click", function () { setLarge(large.getAttribute("aria-pressed") !== "true"); });
+  setLarge(read("large") === "1");
+  render(read("lang") || data.defaultLang);
+})();
+</script>
+</body>
+</html>

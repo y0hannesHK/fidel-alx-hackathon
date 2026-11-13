@@ -70,3 +70,8 @@ def make_sign_video(source: Path, out: Path) -> None:
     ffmpeg("-i", str(source), "-vf", "scale='min(480,iw)':'min(360,ih)':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2",
            "-c:v", "libvpx-vp9", "-b:v", "250k", "-deadline", "realtime", "-cpu-used", "8", "-row-mt", "1",
            "-an", str(out))
+
+
+def make_description_audio(source: Path, out: Path) -> None:
+    """A recorded audio description: mono Opus, small, loudness-normalised."""
+    ffmpeg("-i", str(source), "-vn", "-ac", "1", "-af", "loudnorm", "-c:a", "libopus", "-b:a", "32k", str(out))

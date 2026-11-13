@@ -78,4 +78,55 @@ proto.injectSignPlayerCode = function () {
   }
 };
 
+// 5. Recorded audio descriptions. Most phones have no Amharic voice, so
+//    reading Amharic description text aloud does not work. When a description
+//    has a recording (player.fidelRecordings = { am: [{ start, url }] }), we
+//    play the recording instead of synthetic speech. While it plays, the
+//    lesson is paused (if the learner chose "pause during description") or
+//    made quieter, then restored.
+const flatten = (component) =>
+  component.type === 'string' ? component.value : (component.children || []).map(flatten).join('');
+
+function playRecording(player, url, text) {
+  player.fidelDescAudio?.pause();
+  const media = player.media;
+  if (player.prefDescVisible && player.$descDiv) player.$descDiv.text(text);
+  let restoreVolume = null;
+  if (player.prefDescPause) {
+    player.pauseMedia();
+    player.pausedForDescription = true;
+  } else {
+    restoreVolume = media.volume;
+    media.volume = restoreVolume * 0.3; // "ducking": keep the lesson audible but quiet
+  }
+  const audio = new Audio(url);
+  player.fidelDescAudio = audio;
+  const finish = () => {
+    if (player.fidelDescAudio !== audio) return; // a newer description took over
+    player.fidelDescAudio = null;
+    if (restoreVolume !== null) media.volume = restoreVolume;
+    if (player.pausedForDescription) {
+      player.pausedForDescription = false;
+      player.playMedia();
+    }
+  };
+  audio.addEventListener('ended', finish);
+  audio.addEventListener('error', finish);
+  audio.play().catch(finish);
+}
+
+const originalShowDescription = proto.showDescription;
+proto.showDescription = function (now) {
+  const lang = this.selectedDescriptions?.language;
+  const recordings = this.fidelRecordings?.[lang];
+  if (!recordings?.length || !this.playing || !this.descOn) return originalShowDescription.call(this, now);
+  const cues = this.selectedDescriptions.cues || [];
+  const index = cues.findIndex((cue) => cue.start <= now && cue.end > now);
+  const recording = index >= 0 && recordings.find((r) => Math.abs(r.start - cues[index].start) < 0.05);
+  if (!recording) return originalShowDescription.call(this, now);
+  if (this.currentDescription === index) return;
+  this.currentDescription = index;
+  playRecording(this, recording.url, flatten(cues[index].components));
+};
+
 export default AblePlayer;
