@@ -5,8 +5,12 @@ services:
       dockerfile: server/Dockerfile
     ports:
       - "8000:8000"
+    # Optional settings file. Copy .env.example to .env to set the staff token.
+    env_file:
+      - path: .env
+        required: false
     volumes:
-      # Runtime files (uploaded lessons, demo media) live on the host, git-ignored.
+      # Runtime files (lessons, models, demo media) live on the host, git-ignored.
       - ./data:/app/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]

@@ -5,7 +5,7 @@ Ethiopian learner. It is an open, embeddable accessible media module for learnin
 platforms such as ALX Savanna, built for Deaf, blind, low-vision and low-bandwidth
 learners, and for learners who read Amharic better than English.
 
-> Status: **Phase 2 (core player)**. Built for the Digital Bridge Accessibility
+> Status: **Phase 3 (pipeline)**. Built for the Digital Bridge Accessibility
 > Hackathon 2026, Track 2. This README grows with each phase.
 
 ## Quick start
@@ -23,6 +23,30 @@ Then open:
 | http://localhost:8000/ | Mock Savanna lesson page with the Fidel player |
 | http://localhost:8000/api/docs | API documentation |
 | http://localhost:8000/health | Health check |
+
+### Process your own lessons (staff)
+
+1. Set a staff token: copy `.env.example` to `.env` and set `FIDEL_STAFF_TOKEN`
+   to a long random value. Restart with `docker compose up -d`.
+2. Download the AI models once (needs internet, about 3.5 GB; after this Fidel
+   runs fully offline):
+
+   ```sh
+   docker compose run --rm server python -m app.download_models
+   ```
+
+3. Upload a video (see the Level 2 examples below). Fidel then, in the
+   background:
+   - extracts the audio,
+   - makes web versions: 720p MP4 and WebM, a 360p low-data MP4, and a 24 kbps
+     audio-only file,
+   - writes English captions with Whisper (speech-to-text),
+   - writes an Amharic **draft** with MADLAD-400 (machine translation). Machine
+     Amharic is never final: it is marked `draft` until a person reviews it.
+4. Watch it at `http://localhost:8000/demo/savanna-mock/lesson.html?id=LESSON_ID`.
+
+If a model is missing, that step fails with a message saying how to download
+it; the video itself still plays.
 
 ### Demo video
 
@@ -83,6 +107,50 @@ to a server.
 | `chapters` | Chapter list (WebVTT). |
 | `descriptions` | Audio description text (WebVTT). |
 | `lang` | Default interface language: `en` or `am`. |
+| `lesson` | Instead of the above: the URL of a lesson on a Fidel server. |
+
+## REST API (Level 2)
+
+Interactive docs: `http://localhost:8000/api/docs`. Read endpoints are public;
+write endpoints need `Authorization: Bearer <FIDEL_STAFF_TOKEN>`.
+
+```sh
+# Upload a lesson (starts processing in the background)
+curl -H "Authorization: Bearer $FIDEL_STAFF_TOKEN"      -F "video=@lesson.mp4" -F "title=Intro to HTML" -F "spoken_language=en"      http://localhost:8000/api/v1/lessons
+
+# Follow progress of each step
+curl http://localhost:8000/api/v1/lessons/LESSON_ID/status
+
+# Lesson manifest: all file URLs and caption statuses (what the player reads)
+curl http://localhost:8000/api/v1/lessons/LESSON_ID
+
+# Captions as WebVTT
+curl http://localhost:8000/api/v1/lessons/LESSON_ID/captions/am
+
+# Run steps again, e.g. after downloading a model
+curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json"      -d '{"steps": ["transcribe", "translate"]}'      http://localhost:8000/api/v1/lessons/LESSON_ID/rebuild
+```
+
+Embed a processed lesson with just its address:
+
+```html
+<fidel-player lesson="https://YOUR-FIDEL-HOST/api/v1/lessons/LESSON_ID"></fidel-player>
+```
+
+## AI engines and offline use
+
+All engines run on the Fidel server. No lesson or learner data is sent to any
+other service. Choose engines in `.env`:
+
+| Setting | Values | Default |
+|---|---|---|
+| `FIDEL_STT_PROVIDER` | `local_whisper`, `none` | `local_whisper` |
+| `FIDEL_WHISPER_MODEL` | `tiny`, `base`, `small`, `medium` | `small` |
+| `FIDEL_TRANSLATOR` | `local_madlad`, `none` | `local_madlad` |
+
+`none` switches a step off (it shows as "skipped"). Lessons spoken in Amharic
+cannot be transcribed yet (the Amharic speech model is not installed).
+CPU only is fine; it is just slower.
 
 ## Development
 

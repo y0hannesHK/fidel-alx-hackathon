@@ -8,6 +8,8 @@
 //   .fidel-transcript searchable interactive transcript
 //
 // Attributes:
+//   lesson                           URL of a lesson on a Fidel server
+//                                    (/api/v1/lessons/ID); fills in the rest
 //   src, src-webm, poster            video files
 //   captions-en, captions-am         WebVTT captions
 //   captions-am-status               "draft" (machine-made) or "reviewed"
@@ -80,13 +82,18 @@ export class FidelPlayer extends HTMLElement {
   // Building
 
   async build({ startTime = 0, focus = null } = {}) {
+    this.building = true;
+    if (this.getAttribute('lesson') && !this.manifestLoaded) {
+      const problem = await this.loadManifest(this.getAttribute('lesson'));
+      if (problem) {
+        this.showError(problem);
+        return;
+      }
+    }
     if (!this.getAttribute('src')) {
-      this.replaceChildren(
-        h('p', { class: 'fidel-error', role: 'alert' }, 'No video given. Add a src="..." attribute to <fidel-player>.')
-      );
+      this.showError('No video given. Add a src="..." or lesson="..." attribute to <fidel-player>.');
       return;
     }
-    this.building = true;
     const lang = this.uiLang;
 
     this.signDock = h('div', { class: 'fidel-sign-dock' });
@@ -126,11 +133,53 @@ export class FidelPlayer extends HTMLElement {
     this.building = false;
   }
 
+  showError(message) {
+    this.building = false;
+    this.replaceChildren(h('p', { class: 'fidel-error', role: 'alert' }, message));
+  }
+
+  /**
+   * lesson="https://HOST/api/v1/lessons/ID": read the lesson manifest from the
+   * Fidel server and turn it into the same attributes a page could write by
+   * hand. Attributes already on the element win. Returns an error message,
+   * or null when all is well.
+   */
+  async loadManifest(url) {
+    let manifest;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return `This lesson could not be loaded (error ${response.status}).`;
+      manifest = await response.json();
+    } catch {
+      return 'This lesson could not be loaded. Check your internet connection and try again.';
+    }
+    if (!manifest.video?.mp4 && !manifest.video?.webm) {
+      return 'This lesson video is still being prepared. Please try again in a few minutes.';
+    }
+    const fromManifest = {
+      src: manifest.video.mp4 || manifest.video.webm,
+      'src-webm': manifest.video.webm,
+    };
+    for (const track of manifest.captions || []) {
+      fromManifest[`captions-${track.lang}`] = track.url;
+      fromManifest[`captions-${track.lang}-status`] = track.status;
+    }
+    for (const [name, value] of Object.entries(fromManifest)) {
+      if (value && !this.hasAttribute(name)) this.setAttribute(name, value);
+    }
+    // Files come from the Fidel server, which may be on another address than
+    // this page: ask for them with CORS so caption tracks are allowed to load.
+    this.crossOrigin = true;
+    this.manifestLoaded = true;
+    return null;
+  }
+
   buildVideo(lang, transcriptDivId) {
     const video = h('video', {
       id: `${this.idPrefix}-video`,
       preload: 'metadata',
       playsinline: true,
+      crossorigin: this.crossOrigin ? 'anonymous' : null,
       poster: this.getAttribute('poster'),
       'data-lang': lang,
       'data-transcript-div': transcriptDivId,

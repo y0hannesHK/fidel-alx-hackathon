@@ -18,6 +18,11 @@ non-commercial (NC) licence as a default.
 |---|---|---|---|
 | [FastAPI](https://fastapi.tiangolo.com/) | 0.162.7 | MIT | Web API |
 | [Uvicorn](https://www.uvicorn.org/) | 0.54.0 | BSD-3-Clause | Web server |
+| [python-multipart](https://github.com/Kludex/python-multipart) | 0.0.33 | Apache-2.0 | File uploads |
+| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | 1.2.1 | MIT | English speech-to-text |
+| [CTranslate2](https://github.com/OpenNMT/CTranslate2) | 4.9.0 | MIT | Runs Whisper and MADLAD on CPU |
+| [SentencePiece](https://github.com/google/sentencepiece) | 0.2.3 | Apache-2.0 | Tokenizer for MADLAD |
+| [huggingface_hub](https://github.com/huggingface/huggingface_hub) | 2.4.0 | Apache-2.0 | Model download command only |
 | [FFmpeg](https://ffmpeg.org/) (Debian package) | distro | LGPL-2.1+ / GPL-2+ (Debian build) | Media processing, run as a separate program |
 
 ## Build and test tools (not shipped)
@@ -30,10 +35,9 @@ non-commercial (NC) licence as a default.
 | [pytest](https://pytest.org/) | MIT |
 | [HTTPX](https://www.python-httpx.org/) | BSD-3-Clause |
 
-## Models (being evaluated, not yet used by the server)
+## Models (downloaded once by `python -m app.download_models`)
 
 | Name | Licence | Use |
 |---|---|---|
-| [MADLAD-400 3B MT](https://huggingface.co/google/madlad400-3b-mt), CTranslate2 int8 conversion by [Nextcloud-AI](https://huggingface.co/Nextcloud-AI/madlad400-3b-mt-ct2-int8) | Apache-2.0 | English → Amharic draft translation (test in `tools/translation-eval/`) |
-| [CTranslate2](https://github.com/OpenNMT/CTranslate2) | MIT | Runs the translation model on CPU |
-| [SentencePiece](https://github.com/google/sentencepiece) | Apache-2.0 | Tokenizer for the translation model |
+| [Whisper](https://github.com/openai/whisper) via [Systran/faster-whisper-small](https://huggingface.co/Systran/faster-whisper-small) | MIT | English speech-to-text |
+| [MADLAD-400 3B MT](https://huggingface.co/google/madlad400-3b-mt), CTranslate2 int8 conversion by [Nextcloud-AI](https://huggingface.co/Nextcloud-AI/madlad400-3b-mt-ct2-int8) | Apache-2.0 | English → Amharic draft translation |

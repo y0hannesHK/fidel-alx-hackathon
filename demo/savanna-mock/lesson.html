@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson – Savanna (mock)</title>
+
+  <!-- Fidel install: these two lines plus the <fidel-player> tag below. -->
+  <link rel="stylesheet" href="/embed/fidel.css">
+  <script src="/embed/fidel.js" defer></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; color: #1a1a1a; background: #f5f6f8; }
+    a { color: #0b4f9c; }
+    :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+    header { background: #0a1f44; color: #fff; padding: 0.75rem 1rem; }
+    header a { color: #fff; font-weight: 700; font-size: 1.25rem; text-decoration: none; }
+    main { max-width: 960px; margin: 0 auto; padding: 1rem; }
+    h1 { font-size: 1.75rem; line-height: 1.25; }
+    .card { background: #fff; border: 1px solid #d0d4da; border-radius: 8px; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <header><a href="/demo/savanna-mock/">Savanna <span>(mock)</span></a></header>
+  <main id="main">
+    <h1 id="lesson-title">Lesson</h1>
+    <section class="card" aria-labelledby="video-heading">
+      <h2 id="video-heading">Lesson video</h2>
+      <div id="player-slot"></div>
+    </section>
+  </main>
+
+  <!-- Mock-page glue only: picks the lesson from the address, e.g.
+       lesson.html?id=0123456789ab. A real platform would write the tag
+       <fidel-player lesson="https://FIDEL-HOST/api/v1/lessons/ID"> directly. -->
+  <script>
+    const id = new URLSearchParams(location.search).get('id') || '';
+    const slot = document.getElementById('player-slot');
+    if (/^[a-f0-9]{12}$/.test(id)) {
+      const player = document.createElement('fidel-player');
+      player.id = 'lesson-player';
+      player.setAttribute('lesson', '/api/v1/lessons/' + id);
+      slot.append(player);
+      fetch('/api/v1/lessons/' + id).then((r) => r.ok && r.json()).then((lesson) => {
+        if (lesson) {
+          document.getElementById('lesson-title').textContent = lesson.title;
+          document.title = lesson.title + ' – Savanna (mock)';
+        }
+      });
+    } else {
+      slot.textContent = 'No lesson chosen. Add ?id=LESSON_ID to the address.';
+    }
+  </script>
+</body>
+</html>

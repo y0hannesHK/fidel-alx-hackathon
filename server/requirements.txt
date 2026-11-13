@@ -1,6 +1,13 @@
-# Runtime
+# Web server
 fastapi==0.162.7
 uvicorn[standard]==0.54.0
+python-multipart==0.0.33     # file uploads
+
+# AI engines (all run locally; models are downloaded once, see README)
+faster-whisper==1.2.1        # English speech-to-text
+ctranslate2==4.9.0           # runs the MADLAD translation model
+sentencepiece==0.2.3         # tokenizer for MADLAD
+huggingface_hub==2.4.0       # model download command only
 
 # Tests (small; kept in the image so `docker compose run server pytest` works)
 pytest==9.2.0
