@@ -1,16 +1,276 @@
-/* Fidel's own styles. Loaded after Able Player's CSS so these win. */
+/* Fidel's own styles. Loaded after Able Player's CSS so these win.
+   Colours: every text/background pair here is at least 4.5:1, and every
+   control border or focus ring at least 3:1 (WCAG 1.4.3 / 1.4.11). */
 
 fidel-player {
   display: block;
   max-width: 100%;
+  --fidel-ink: #1a1a1a;
+  --fidel-paper: #ffffff;
+  --fidel-accent: #0b4f9c;   /* 8.3:1 on white */
+  --fidel-border: #5c5c5c;   /* 6.7:1 on white */
+  --fidel-focus: #ffbf47;
+  color: var(--fidel-ink);
 }
 
-/* Clear, high-contrast focus outline on every control (WCAG 2.4.7 / 1.4.11).
-   Two colours (dark ring + light ring) so it is visible on any background. */
+.fidel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Clear focus outline on every control (WCAG 2.4.7). Two rings (dark + light)
+   so it is visible on any background. */
 fidel-player :focus-visible {
-  outline: 3px solid #ffbf47;
+  outline: 3px solid var(--fidel-focus);
   outline-offset: 2px;
-  box-shadow: 0 0 0 5px #1a1a1a;
+  box-shadow: 0 0 0 5px var(--fidel-ink);
+}
+
+/* ---------- Amharic text (WCAG 3.1.2: lang is set on every Amharic part) --- */
+fidel-player :lang(am) {
+  font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", "Abyssinica SIL", sans-serif;
+  line-height: 1.6;
+}
+
+/* ---------- Video + sign language dock -------------------------------------- */
+.fidel-stage {
+  display: flex;
+  flex-wrap: wrap;          /* on narrow screens the signer moves below the video */
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.fidel-player-slot {
+  flex: 1 1 18rem;
+  min-width: 0;             /* lets the video shrink instead of overflowing */
+}
+.fidel-sign-dock {
+  flex: 0 1 var(--fidel-sign-width, 240px);
+  max-width: 100%;
+}
+fidel-player:not([data-sign-visible="true"]) .fidel-sign-dock,
+fidel-player[data-sign-layout="floating"] .fidel-sign-dock {
+  display: none;
+}
+/* Docked: the window is a normal block in the layout, not a popup. */
+.fidel-sign-dock .able-sign-window {
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+  top: auto !important;
+  left: auto !important;
+}
+/* Able Player's move/resize menu makes no sense when docked; our panel has
+   the Show / Size controls instead. */
+.fidel-sign-dock .able-window-toolbar {
+  display: none;
+}
+/* Floating: never wider than half the video. */
+.fidel-player-slot .able-sign-window {
+  max-width: 50%;
+}
+
+/* ---------- Captions (values set by the settings panel) --------------------- */
+fidel-player .able-captions {
+  font-size: var(--fidel-caption-size, 150%) !important;
+  color: var(--fidel-caption-color, #fff) !important;
+  background-color: var(--fidel-caption-bg, #000) !important;
+  opacity: 1 !important;    /* Able Player fades the text too; we only fade the background */
+}
+fidel-player .able-captions-below {
+  background-color: #000 !important;
+}
+fidel-player[data-caption-position="over-top"] .able-captions-overlay {
+  top: 12px;
+  bottom: auto !important;
+}
+
+/* ---------- Status: machine-generated caption notice ----------------------- */
+.fidel-status:empty {
+  display: none;
+}
+.fidel-draft-notice {
+  border-left: 6px solid #8a5a00;
+  background: #fff8e1;
+  padding: 0.5rem 0.75rem;
+}
+.fidel-draft-notice p {
+  margin: 0.25rem 0;
+}
+
+/* ---------- Settings panel ------------------------------------------------- */
+.fidel-panel,
+.fidel-transcript {
+  border: 1px solid var(--fidel-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: var(--fidel-paper);
+}
+.fidel-heading {
+  font-size: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+.fidel-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.fidel-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.fidel-ui-lang {
+  margin-bottom: 0.75rem;
+}
+
+.fidel-button {
+  min-height: 44px;         /* touch target (WCAG 2.5.8; 44px for TalkBack users) */
+  min-width: 44px;
+  padding: 0.5rem 0.875rem;
+  font: inherit;
+  color: var(--fidel-accent);
+  background: var(--fidel-paper);
+  border: 2px solid var(--fidel-accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.fidel-button:hover {
+  background: #e8f0fa;
+}
+.fidel-button[aria-pressed="true"] {
+  color: var(--fidel-paper);
+  background: var(--fidel-accent);
+}
+.fidel-button[aria-pressed="true"]::before {
+  content: "✓ ";            /* state is not shown by colour alone (WCAG 1.4.1) */
+}
+.fidel-button:disabled {
+  color: #595959;
+  border-color: #767676;
+  background: #f2f2f2;
+  cursor: not-allowed;
+}
+
+.fidel-group {
+  border-top: 1px solid var(--fidel-border);
+  padding: 0.5rem 0;
+}
+.fidel-group > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+.fidel-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.fidel-radios {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.fidel-radios legend,
+.fidel-corners legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 0.25rem;
+}
+.fidel-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+.fidel-radio {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.fidel-radio input {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 0.5rem 0 0;
+  accent-color: var(--fidel-accent);
+  flex: none;
+}
+.fidel-radio label {
+  cursor: pointer;
+}
+.fidel-size-value {
+  min-width: 4ch;
+  text-align: center;
+  font-weight: 700;
+}
+.fidel-corners {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+/* ---------- Transcript ------------------------------------------------------ */
+.fidel-search label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.fidel-search input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.5rem;
+  font: inherit;
+  border: 2px solid var(--fidel-border);
+  border-radius: 6px;
+}
+.fidel-search-status:empty {
+  display: none;
+}
+.fidel-search-results {
+  list-style: none;
+  margin: 0.5rem 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.fidel-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem;
+  text-align: start;
+  font: inherit;
+  color: var(--fidel-ink);
+  background: var(--fidel-paper);
+  border: 1px solid var(--fidel-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.fidel-result-time {
+  font-weight: 700;
+  color: var(--fidel-accent);
+}
+.fidel-result mark {
+  background: #fff176;
+  color: #000;
+}
+.fidel-transcript-body .able-transcript-area {
+  border: none;
+}
+.fidel-transcript-body .able-transcript {
+  max-height: 20rem;
+  overflow-y: auto;
 }
 
 .fidel-error {
@@ -24,5 +284,6 @@ fidel-player :focus-visible {
   fidel-player * {
     transition: none !important;
     animation: none !important;
+    scroll-behavior: auto !important;
   }
 }
