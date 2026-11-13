@@ -191,3 +191,17 @@ test.describe('reflow (WCAG 1.4.10)', () => {
     await context.close();
   });
 });
+
+test('on a touch phone, every player control is at least 44 by 44 pixels', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 360, height: 800 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  await openLesson(page);
+  const sizes = await page.locator('fidel-player .able-control-row [role=button], fidel-player .fidel-button')
+    .evaluateAll((els) => els.filter((e) => e.offsetParent).map((e) => ({ name: e.getAttribute('aria-label') || e.textContent.trim(), w: e.offsetWidth, h: e.offsetHeight })));
+  for (const size of sizes) {
+    expect(size.w, size.name).toBeGreaterThanOrEqual(44);
+    expect(size.h, size.name).toBeGreaterThanOrEqual(44);
+  }
+  await expectNoHorizontalScroll(page);
+  await context.close();
+});

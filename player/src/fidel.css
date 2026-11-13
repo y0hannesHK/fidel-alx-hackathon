@@ -354,3 +354,23 @@ fidel-job-card :focus-visible {
 .fidel-job .fidel-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
 .fidel-job-status:empty { display: none; }
 .fidel-job-note { font-style: italic; color: #444; }
+
+/* ---------- Bigger Able Player controls ---------------------------------------
+   Able Player sizes its buttons from one variable (24px by default). The brief
+   asks for 44x44px touch targets for TalkBack users; mouse users get 32px. */
+fidel-player .able-wrapper {
+  --able-base-control-size: 32px;
+}
+@media (pointer: coarse) {
+  fidel-player .able-wrapper {
+    --able-base-control-size: 44px;
+  }
+  fidel-player .able-control-row [role="button"] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+fidel-player .able-control-row {
+  flex-wrap: wrap;          /* many buttons on a narrow phone: wrap, never overflow */
+  row-gap: 0.25rem;
+}

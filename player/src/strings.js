@@ -55,7 +55,8 @@ export const STRINGS = {
 
     draftNotice: 'These Amharic captions are machine-generated and not yet reviewed.',
 
-    videoError: 'The video could not be loaded. Check your connection, or try "Use less data".',
+    videoError: 'The video could not be loaded. Check your connection and try again.',
+    videoErrorLowData: 'Or try "Use less data" below.',
     offline: 'Offline and data',
     lowData: 'Use less data (smaller video)',
     downloadPage: 'Download lesson for offline use (sound and text)',
@@ -119,7 +120,8 @@ export const STRINGS = {
 
     draftNotice: 'እነዚህ የአማርኛ የግርጌ ጽሑፎች በማሽን የተዘጋጁ ሲሆኑ ገና በሰው አልተገመገሙም።',
 
-    videoError: 'ቪዲዮው ሊጫን አልቻለም። ግንኙነትዎን ያረጋግጡ፣ ወይም "አነስተኛ ዳታ ተጠቀም" ይሞክሩ።',
+    videoError: 'ቪዲዮው ሊጫን አልቻለም። ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ።',
+    videoErrorLowData: 'ወይም ከታች "አነስተኛ ዳታ ተጠቀም" ይሞክሩ።',
     offline: 'ከመስመር ውጭ እና ዳታ',
     lowData: 'አነስተኛ ዳታ ተጠቀም (ትንሽ ቪዲዮ)',
     downloadPage: 'ትምህርቱን ከመስመር ውጭ ለመጠቀም ያውርዱ (ድምፅ እና ጽሑፍ)',

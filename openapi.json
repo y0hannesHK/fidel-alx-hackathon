@@ -1,0 +1,2755 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Fidel API",
+    "description": "Accessible learning media for Ethiopian learning platforms. Read endpoints are public. Write endpoints need the staff token: `Authorization: Bearer <FIDEL_STAFF_TOKEN>`.",
+    "version": "0.8.0"
+  },
+  "paths": {
+    "/api/v1/lessons": {
+      "post": {
+        "tags": [
+          "lessons"
+        ],
+        "summary": "Upload Lesson",
+        "description": "Upload a lesson video. Processing starts in the background; follow it at status_url.",
+        "operationId": "upload_lesson_api_v1_lessons_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_lesson_api_v1_lessons_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Created"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "lessons"
+        ],
+        "summary": "List Lessons",
+        "description": "Published lessons. Staff (with the token) also see unpublished ones.",
+        "operationId": "list_lessons_api_v1_lessons_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LessonSummary"
+                  },
+                  "title": "Response List Lessons Api V1 Lessons Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}": {
+      "get": {
+        "tags": [
+          "lessons"
+        ],
+        "summary": "Get Manifest",
+        "description": "Everything a player needs: file URLs and caption statuses.\nUnpublished lessons are only shown to staff.",
+        "operationId": "get_manifest_api_v1_lessons__lesson_id__get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Manifest"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Delete Lesson",
+        "description": "Delete a lesson and all its files. This cannot be undone.",
+        "operationId": "delete_lesson_api_v1_lessons__lesson_id__delete",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/status": {
+      "get": {
+        "tags": [
+          "lessons"
+        ],
+        "summary": "Get Status",
+        "description": "Progress of each pipeline step.",
+        "operationId": "get_status_api_v1_lessons__lesson_id__status_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/StepStatus"
+                  },
+                  "title": "Response Get Status Api V1 Lessons  Lesson Id  Status Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/captions/{lang}": {
+      "get": {
+        "tags": [
+          "lessons"
+        ],
+        "summary": "Get Captions",
+        "description": "Captions as a WebVTT file.",
+        "operationId": "get_captions_api_v1_lessons__lesson_id__captions__lang__get",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/vtt": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Save Captions",
+        "description": "Save corrected captions. The file becomes 'reviewed' only when every\ncue is marked reviewed; otherwise it stays 'draft'.",
+        "operationId": "save_captions_api_v1_lessons__lesson_id__captions__lang__put",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptionsEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptionsWithReviews"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/rebuild": {
+      "post": {
+        "tags": [
+          "lessons"
+        ],
+        "summary": "Rebuild",
+        "description": "Run some pipeline steps again (e.g. after downloading a model).",
+        "operationId": "rebuild_api_v1_lessons__lesson_id__rebuild_post",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RebuildRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/StepStatus"
+                  },
+                  "title": "Response Rebuild Api V1 Lessons  Lesson Id  Rebuild Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/captions/{lang}/cues": {
+      "get": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Get Caption Cues",
+        "description": "Caption cues with their review state, for the Studio editor.",
+        "operationId": "get_caption_cues_api_v1_lessons__lesson_id__captions__lang__cues_get",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptionsWithReviews"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/chapters": {
+      "get": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Get Chapters",
+        "operationId": "get_chapters_api_v1_lessons__lesson_id__chapters_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChaptersEdit"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Save Chapters",
+        "description": "Save chapters. The Amharic chapter file is written only when every\nchapter has an Amharic title (no half-English 'Amharic' file).",
+        "operationId": "save_chapters_api_v1_lessons__lesson_id__chapters_put",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChaptersEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChaptersEdit"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/descriptions/{lang}": {
+      "get": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Get Descriptions",
+        "operationId": "get_descriptions_api_v1_lessons__lesson_id__descriptions__lang__get",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DescriptionsEdit"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Save Descriptions",
+        "description": "Save audio description text: what is shown on screen and not said aloud.",
+        "operationId": "save_descriptions_api_v1_lessons__lesson_id__descriptions__lang__put",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescriptionsEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DescriptionsEdit"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/descriptions/{lang}/recording": {
+      "post": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Upload Description Recording",
+        "description": "Attach a recording to one description. Needed for Amharic: most phones\nhave no Amharic voice to read description text aloud.",
+        "operationId": "upload_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_post",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Start time of the description (seconds)",
+              "title": "Start"
+            },
+            "description": "Start time of the description (seconds)"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DescriptionsEdit"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Delete Description Recording",
+        "operationId": "delete_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_delete",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "title": "Start"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DescriptionsEdit"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/sign": {
+      "post": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Upload Sign Video",
+        "description": "Upload the Ethiopian Sign Language video. It must start at the same\nmoment as the lesson video. It is resized for the sign window in the background.",
+        "operationId": "upload_sign_video_api_v1_lessons__lesson_id__sign_post",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_sign_video_api_v1_lessons__lesson_id__sign_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/publish": {
+      "post": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Publish",
+        "description": "Make the lesson visible to learners (or hide it again).",
+        "operationId": "publish_api_v1_lessons__lesson_id__publish_post",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Manifest"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/staff/check": {
+      "get": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Check Token",
+        "description": "Returns ok if the staff token is right (401 if not).",
+        "operationId": "check_token_api_v1_staff_check_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Check Token Api V1 Staff Check Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/offline.html": {
+      "get": {
+        "tags": [
+          "offline"
+        ],
+        "summary": "Offline Page",
+        "description": "The whole lesson in ONE web page (audio, transcripts, font inside).\nSave it on a phone and open it with no internet.",
+        "operationId": "offline_page_api_v1_lessons__lesson_id__offline_html_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "video",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Include the small video (bigger download)",
+              "default": false,
+              "title": "Video"
+            },
+            "description": "Include the small video (bigger download)"
+          },
+          {
+            "name": "inline",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Show in the browser instead of downloading",
+              "default": false,
+              "title": "Inline"
+            },
+            "description": "Show in the browser instead of downloading"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/pack": {
+      "get": {
+        "tags": [
+          "offline"
+        ],
+        "summary": "Offline Pack",
+        "description": "Offline pack (.zip): the one-page lesson plus caption, description and\nplain-text transcript files.",
+        "operationId": "offline_pack_api_v1_lessons__lesson_id__pack_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Create Job",
+        "description": "Add a job. Returns it as schema.org/JobPosting JSON-LD.",
+        "operationId": "create_job_api_v1_jobs_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/ld+json": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "List Jobs",
+        "description": "Open jobs (closing date today or later), newest first.",
+        "operationId": "list_jobs_api_v1_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Jobs Api V1 Jobs Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Get Job",
+        "description": "The job as schema.org/JobPosting JSON-LD.",
+        "operationId": "get_job_api_v1_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/ld+json": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Update Job",
+        "operationId": "update_job_api_v1_jobs__job_id__put",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/ld+json": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Delete Job",
+        "operationId": "delete_job_api_v1_jobs__job_id__delete",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{job_id}/summary-recording/{lang}": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Upload Summary Recording",
+        "description": "A recording of the summary being read aloud (needed for Amharic:\nmost phones have no Amharic voice).",
+        "operationId": "upload_summary_recording_api_v1_jobs__job_id__summary_recording__lang__post",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_summary_recording_api_v1_jobs__job_id__summary_recording__lang__post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/ld+json": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Delete Summary Recording",
+        "operationId": "delete_summary_recording_api_v1_jobs__job_id__summary_recording__lang__delete",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/ld+json": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/certificates": {
+      "post": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Issue",
+        "description": "Issue a certificate. Share its verify_url with the learner.",
+        "operationId": "issue_api_v1_certificates_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CertificateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "List Certificates",
+        "operationId": "list_certificates_api_v1_certificates_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Certificate"
+                  },
+                  "title": "Response List Certificates Api V1 Certificates Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/certificates/{cert_id}": {
+      "get": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Get Certificate",
+        "description": "Public: the certificate as JSON.",
+        "operationId": "get_certificate_api_v1_certificates__cert_id__get",
+        "parameters": [
+          {
+            "name": "cert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,64}$",
+              "title": "Cert Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/certificates/{cert_id}/revoke": {
+      "post": {
+        "tags": [
+          "certificates"
+        ],
+        "summary": "Revoke",
+        "operationId": "revoke_api_v1_certificates__cert_id__revoke_post",
+        "parameters": [
+          {
+            "name": "cert_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,64}$",
+              "title": "Cert Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Certificate"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Health",
+        "description": "Simple liveness check used by Docker and by tests.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_upload_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_post": {
+        "properties": {
+          "audio": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Audio",
+            "description": "Recording of the description being read aloud"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio"
+        ],
+        "title": "Body_upload_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_post"
+      },
+      "Body_upload_lesson_api_v1_lessons_post": {
+        "properties": {
+          "video": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Video",
+            "description": "Lesson video (mp4, mov, mkv, webm)"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "spoken_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "am"
+            ],
+            "title": "Spoken Language",
+            "description": "Language spoken in the video",
+            "default": "en"
+          }
+        },
+        "type": "object",
+        "required": [
+          "video",
+          "title"
+        ],
+        "title": "Body_upload_lesson_api_v1_lessons_post"
+      },
+      "Body_upload_sign_video_api_v1_lessons__lesson_id__sign_post": {
+        "properties": {
+          "video": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Video"
+          }
+        },
+        "type": "object",
+        "required": [
+          "video"
+        ],
+        "title": "Body_upload_sign_video_api_v1_lessons__lesson_id__sign_post"
+      },
+      "Body_upload_summary_recording_api_v1_jobs__job_id__summary_recording__lang__post": {
+        "properties": {
+          "audio": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Audio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio"
+        ],
+        "title": "Body_upload_summary_recording_api_v1_jobs__job_id__summary_recording__lang__post"
+      },
+      "CaptionTrack": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "am"
+            ],
+            "title": "Lang"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "reviewed"
+            ],
+            "title": "Status",
+            "description": "draft = machine-made, not yet checked by a person"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "status",
+          "url"
+        ],
+        "title": "CaptionTrack"
+      },
+      "CaptionsEdit": {
+        "properties": {
+          "cues": {
+            "items": {
+              "$ref": "#/components/schemas/EditCue"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "Cues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cues"
+        ],
+        "title": "CaptionsEdit"
+      },
+      "CaptionsWithReviews": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "am"
+            ],
+            "title": "Lang"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "cues": {
+            "items": {
+              "$ref": "#/components/schemas/EditCue"
+            },
+            "type": "array",
+            "title": "Cues"
+          },
+          "drafts_left": {
+            "type": "integer",
+            "title": "Drafts Left",
+            "description": "Cues not yet reviewed by a person"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "status",
+          "cues",
+          "drafts_left"
+        ],
+        "title": "CaptionsWithReviews"
+      },
+      "Certificate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "learner_name": {
+            "type": "string",
+            "title": "Learner Name"
+          },
+          "course": {
+            "type": "string",
+            "title": "Course"
+          },
+          "issued_on": {
+            "type": "string",
+            "title": "Issued On"
+          },
+          "issued_on_ethiopian": {
+            "type": "string",
+            "title": "Issued On Ethiopian"
+          },
+          "issuer": {
+            "type": "string",
+            "title": "Issuer"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "valid or revoked"
+          },
+          "verify_url": {
+            "type": "string",
+            "title": "Verify Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "learner_name",
+          "course",
+          "issued_on",
+          "issued_on_ethiopian",
+          "issuer",
+          "status",
+          "verify_url"
+        ],
+        "title": "Certificate"
+      },
+      "CertificateIn": {
+        "properties": {
+          "learner_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Learner Name",
+            "description": "Written as the learner chooses"
+          },
+          "course": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Course"
+          },
+          "issued_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Issued On"
+          },
+          "issuer": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Issuer",
+            "default": "ALX Digital Bridge"
+          }
+        },
+        "type": "object",
+        "required": [
+          "learner_name",
+          "course"
+        ],
+        "title": "CertificateIn"
+      },
+      "Chapter": {
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "title_en": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title En"
+          },
+          "title_am": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title Am"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "title_en"
+        ],
+        "title": "Chapter"
+      },
+      "ChaptersEdit": {
+        "properties": {
+          "chapters": {
+            "items": {
+              "$ref": "#/components/schemas/Chapter"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Chapters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chapters"
+        ],
+        "title": "ChaptersEdit"
+      },
+      "Created": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "manifest_url": {
+            "type": "string",
+            "title": "Manifest Url"
+          },
+          "status_url": {
+            "type": "string",
+            "title": "Status Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "manifest_url",
+          "status_url"
+        ],
+        "title": "Created"
+      },
+      "DescriptionCue": {
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "End"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Text"
+          },
+          "has_recording": {
+            "type": "boolean",
+            "title": "Has Recording",
+            "description": "A recording of it being read aloud exists (read-only)",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "text"
+        ],
+        "title": "DescriptionCue"
+      },
+      "DescriptionsEdit": {
+        "properties": {
+          "cues": {
+            "items": {
+              "$ref": "#/components/schemas/DescriptionCue"
+            },
+            "type": "array",
+            "maxItems": 2000,
+            "title": "Cues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cues"
+        ],
+        "title": "DescriptionsEdit"
+      },
+      "EditCue": {
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Start",
+            "description": "Seconds"
+          },
+          "end": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "End",
+            "description": "Seconds"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Text"
+          },
+          "reviewed": {
+            "type": "boolean",
+            "title": "Reviewed",
+            "description": "Checked by a person",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "text"
+        ],
+        "title": "EditCue"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JobIn": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "organization": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Organization"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Description"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Town or city, e.g. Addis Ababa"
+          },
+          "remote": {
+            "type": "boolean",
+            "title": "Remote",
+            "default": false
+          },
+          "employment_type": {
+            "type": "string",
+            "enum": [
+              "FULL_TIME",
+              "PART_TIME",
+              "CONTRACTOR",
+              "TEMPORARY",
+              "INTERN",
+              "VOLUNTEER"
+            ],
+            "title": "Employment Type",
+            "default": "FULL_TIME"
+          },
+          "date_posted": {
+            "type": "string",
+            "format": "date",
+            "title": "Date Posted"
+          },
+          "closing_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Closing Date"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "apply_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Email"
+          },
+          "how_to_apply": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "How To Apply",
+            "description": "Plain words: how to apply"
+          },
+          "accommodations": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "sign_language_interpreter",
+                "screen_reader_tools",
+                "flexible_hours",
+                "step_free_access",
+                "remote_work",
+                "captioned_meetings"
+              ]
+            },
+            "type": "array",
+            "title": "Accommodations"
+          },
+          "other_accommodations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Other Accommodations"
+          },
+          "summary_en": {
+            "type": "string",
+            "maxLength": 600,
+            "minLength": 1,
+            "title": "Summary En",
+            "description": "Short summary to read or listen to"
+          },
+          "summary_am": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 600
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary Am"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "organization",
+          "description",
+          "closing_date",
+          "how_to_apply",
+          "summary_en"
+        ],
+        "title": "JobIn"
+      },
+      "LessonSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "spoken_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "am"
+            ],
+            "title": "Spoken Language"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "published": {
+            "type": "boolean",
+            "title": "Published"
+          },
+          "manifest_url": {
+            "type": "string",
+            "title": "Manifest Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "spoken_language",
+          "created_at",
+          "published",
+          "manifest_url"
+        ],
+        "title": "LessonSummary"
+      },
+      "Manifest": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "spoken_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "am"
+            ],
+            "title": "Spoken Language"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "video": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Video",
+            "description": "Video files: mp4, webm, small_mp4 (low-data)"
+          },
+          "audio": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Audio",
+            "description": "Audio-only files: opus"
+          },
+          "captions": {
+            "items": {
+              "$ref": "#/components/schemas/CaptionTrack"
+            },
+            "type": "array",
+            "title": "Captions"
+          },
+          "chapters": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Chapters",
+            "description": "Chapter lists (WebVTT) by language"
+          },
+          "descriptions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Descriptions",
+            "description": "Audio description text (WebVTT) by language"
+          },
+          "description_recordings": {
+            "additionalProperties": {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Description Recordings",
+            "description": "Recorded audio descriptions by language: [{start, url}]"
+          },
+          "sign": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sign",
+            "description": "Sign-language video (WebM)"
+          },
+          "offline": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Offline",
+            "description": "Offline downloads: page (one HTML file), page_with_video, pack (.zip)"
+          },
+          "published": {
+            "type": "boolean",
+            "title": "Published"
+          },
+          "steps": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/StepStatus"
+            },
+            "type": "object",
+            "title": "Steps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "spoken_language",
+          "created_at",
+          "video",
+          "audio",
+          "captions",
+          "chapters",
+          "descriptions",
+          "description_recordings",
+          "sign",
+          "offline",
+          "published",
+          "steps"
+        ],
+        "title": "Manifest"
+      },
+      "PublishEdit": {
+        "properties": {
+          "published": {
+            "type": "boolean",
+            "title": "Published"
+          }
+        },
+        "type": "object",
+        "required": [
+          "published"
+        ],
+        "title": "PublishEdit"
+      },
+      "RebuildRequest": {
+        "properties": {
+          "steps": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "extract_audio",
+                "renditions",
+                "transcribe",
+                "translate",
+                "sign_video"
+              ]
+            },
+            "type": "array",
+            "title": "Steps",
+            "description": "Steps to run again"
+          }
+        },
+        "type": "object",
+        "title": "RebuildRequest"
+      },
+      "StepStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "done",
+              "failed",
+              "skipped"
+            ],
+            "title": "Status"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "updated_at"
+        ],
+        "title": "StepStatus"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

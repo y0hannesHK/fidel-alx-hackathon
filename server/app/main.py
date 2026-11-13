@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Fidel API",
-    version="0.3.0",
+    version="0.8.0",
     description=(
         "Accessible learning media for Ethiopian learning platforms. "
         "Read endpoints are public. Write endpoints need the staff token: "

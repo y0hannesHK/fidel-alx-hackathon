@@ -14,6 +14,12 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 ## Before the demo
 
+- **Manual tests with NVDA, TalkBack and the co-designer** (twice before the
+  pitch): checklists in docs/manual-testing.md; add results to CONFORMANCE.md.
+- **Team names** in README Credits; co-designer only with consent.
+- **Merge** the phase branches into `main` (they are stacked:
+  phase-8-submission contains everything).
+
 - **Test the offline page on a real Android phone in airplane mode** (automated
   tests block the network in desktop Chrome; a phone check is still needed).
 
@@ -21,7 +27,14 @@ Known issues and agreed follow-ups, with the phase they are planned for.
   recording.
 - Speaker's name tile is visible in the demo clip: confirm consent or choose
   another section.
-- Manual NVDA and TalkBack test (Able Player controls are `div role="button"`).
+
+## Phase 7 (bonus, not started: needs new dependencies, ask first)
+
+- Accessible HTML + **tagged PDF** of each lesson (WeasyPrint, BSD licence) with
+  slide images and staff-written alt text.
+- **Braille** export `.brf` (liblouis, LGPL).
+- **Recorded live-session viewer** with captions and a timestamped chat log
+  (needs the Zoom chat export).
 
 ## Later / reminders
 

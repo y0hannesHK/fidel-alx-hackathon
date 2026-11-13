@@ -109,3 +109,9 @@ summary { min-height: 44px; display: flex; align-items: center; cursor: pointer;
 h2.inline { display: inline; margin: 0; }
 .table-wrap { overflow-x: auto; }
 td .button { margin: 0.25rem 0.25rem 0.25rem 0; }
+
+/* WCAG 2.4.11: the sticky caption toolbar must not cover the field that has
+   focus. Scrolling to a focused field leaves room for the toolbar. */
+@media (min-width: 40rem) {
+  html { scroll-padding-top: 11rem; }
+}

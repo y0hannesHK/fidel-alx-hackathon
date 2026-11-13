@@ -1,192 +1,144 @@
 # Fidel (ፊደል)
 
 Fidel makes every lesson readable, watchable, hearable and downloadable for every
-Ethiopian learner. It is an open, embeddable accessible media module for learning
-platforms such as ALX Savanna, built for Deaf, blind, low-vision and low-bandwidth
-learners, and for learners who read Amharic better than English.
+Ethiopian learner. It is an open, embeddable accessible media module for
+learning platforms such as ALX Savanna: a video player with English and Amharic
+captions, a sign-language window, audio description, a searchable transcript and
+offline lessons for 3G phones, plus a staff studio and an accessible job card
+with verifiable certificates. It is built for Deaf and hard-of-hearing, blind and
+low-vision learners, learners on cheap phones with slow connections, and learners
+who read Amharic better than English. It runs free and offline by default, and a
+human always checks the Amharic.
 
-> Status: **Phase 6 (career gateway)**. Built for the Digital Bridge Accessibility
-> Hackathon 2026, Track 2. This README grows with each phase.
+Built for the Digital Bridge Accessibility Hackathon 2026 (Track 2: accessible
+learning media).
+
+**Documents:** [WCAG 2.2 AA conformance report](CONFORMANCE.md) ·
+[manual test checklists](docs/manual-testing.md) · [API (OpenAPI)](openapi.json) ·
+[known issues and next steps](BACKLOG.md) · [licences](LICENSES.md)
 
 ## Quick start
 
 Needs: [Docker](https://docs.docker.com/get-docker/) with Docker Compose.
 
 ```sh
-docker compose up --build
+git clone <this repository> fidel && cd fidel
+cp .env.example .env          # then set FIDEL_STAFF_TOKEN in .env (any long random text)
+docker compose up --build -d
 ```
 
 Then open:
 
-| URL | What |
+| Address | What |
 |---|---|
 | http://localhost:8000/ | Mock Savanna lesson page with the Fidel player |
-| http://localhost:8000/api/docs | API documentation |
-| http://localhost:8000/health | Health check |
+| http://localhost:8000/demo/savanna-mock/jobs.html | Jobs page with Fidel job cards |
+| http://localhost:8000/studio/ | Fidel Studio (staff), sign in with `FIDEL_STAFF_TOKEN` |
+| http://localhost:8000/api/docs | Interactive API documentation |
 
-### Process your own lessons (staff)
+The demo video is not in git (it is cut from a large recording), so on a fresh
+install the mock page's player says the video could not be loaded. Upload any
+lesson video in Studio instead (next section).
 
-1. Set a staff token: copy `.env.example` to `.env` and set `FIDEL_STAFF_TOKEN`
-   to a long random value. Restart with `docker compose up -d`.
-2. Download the AI models once (needs internet, about 3.5 GB; after this Fidel
-   runs fully offline):
+### Install in one hour: what takes time
+
+| Step | Time |
+|---|---|
+| `docker compose up --build` (first time; downloads Python, Node, ffmpeg and libraries) | about 5–15 minutes, depending on the connection |
+| Upload a video in Studio: web versions, low-data version and audio-only file | about 30 seconds for a 2.5-minute video |
+| Optional: download the AI models for automatic captions (about 3.5 GB) | depends on your connection: 10 minutes on fast internet, much longer on slow |
+
+Without the AI models everything works except automatic captions: those steps
+show "model not downloaded" with the command to fix it. For a quick install,
+use the small Whisper model and skip translation (see "Hardware and models").
+
+## Process your own lessons (staff)
+
+1. **Download the AI models once** (needs internet; after this Fidel runs fully offline):
 
    ```sh
    docker compose run --rm server python -m app.download_models
    ```
 
-3. Open **Fidel Studio** at `http://localhost:8000/studio/`, sign in with the
-   staff token, and upload a video (or use the API, below). Fidel then, in the
-   background:
-   - extracts the audio,
-   - makes web versions: 720p MP4 and WebM, a 360p low-data MP4, and a 24 kbps
-     audio-only file,
-   - writes English captions with Whisper (speech-to-text),
-   - writes an Amharic **draft** with MADLAD-400 (machine translation). Machine
-     Amharic is never final: it is marked `draft` until a person reviews it.
-4. In Studio, open the lesson and:
+2. **Upload** a video in Studio (or with the API below). In the background Fidel:
+   - makes web versions (720p MP4 and WebM), a 360p **low-data** version and a
+     24 kbps **audio-only** file,
+   - writes **English captions** with Whisper (speech-to-text),
+   - writes an **Amharic draft** with MADLAD-400 (machine translation). Machine
+     Amharic is never final: it stays `draft` until a person checks it.
+3. In Studio, open the lesson and:
    - **check the Amharic captions** next to the video: fix the text, tick
      "Amharic checked" (or press Ctrl+Enter for "Checked, go to next"), save.
      When every caption is checked, learners no longer see the "not yet
-     reviewed" notice;
-   - add **chapters** (English and Amharic titles), **audio description** text,
-     and the **sign-language video**;
-   - **publish**. Unpublished lessons are only visible to staff.
-5. Learners see it at `http://localhost:8000/demo/savanna-mock/lesson.html?id=LESSON_ID`.
+     reviewed" notice. Checked captions are never overwritten by the machine;
+   - add **chapters** (English and Amharic titles), **audio description** text
+     (with optional recordings, needed for Amharic), and the **sign-language video**;
+   - **publish**. Unpublished lessons are visible to staff only.
+4. Learners open it at `/demo/savanna-mock/lesson.html?id=LESSON_ID`, or on any
+   site with `<fidel-player lesson="…">` (below).
 
-Captions a person has checked are never overwritten when steps are run again.
-
-If a model is missing, that step fails with a message saying how to download
-it; the video itself still plays.
-
-### Demo video
-
-The demo video is not in git (it is cut from a large recording). With the
-recording in `assets/`, run:
-
-```sh
-sh scripts/make-demo-clip.sh
-```
-
-This writes `data/demo/lesson.webm` and `data/demo/lesson.mp4`. The captions
-and chapters for the clip are in git, in `demo/media/`.
-
-It also writes `data/demo/sign.webm`, a **colour-bar test pattern**, not real
-signing. It only lets us build and test the sign-language window until a real
-Ethiopian Sign Language recording is available. Replace it before any demo.
-
-## Embed the player (Level 1)
-
-Add two tags and one element to any web page:
+## Level 1: add Fidel to any page with a script tag
 
 ```html
 <link rel="stylesheet" href="https://YOUR-FIDEL-HOST/embed/fidel.css">
 <script src="https://YOUR-FIDEL-HOST/embed/fidel.js" defer></script>
 
-<fidel-player
-  src="lesson.mp4"
-  src-webm="lesson.webm"
-  captions-en="en.vtt"
-  captions-am="am.vtt"
-  captions-am-status="draft"
-  chapters="chapters.vtt"
-  sign="sign.webm"
-  lang="en">
-</fidel-player>
-```
+<!-- A lesson processed by Fidel: everything is filled in from the server -->
+<fidel-player lesson="https://YOUR-FIDEL-HOST/api/v1/lessons/LESSON_ID"></fidel-player>
 
-The player then shows, under the video:
+<!-- Or your own files, no Fidel server needed -->
+<fidel-player src="lesson.mp4" captions-en="en.vtt" captions-am="am.vtt"
+              captions-am-status="draft" chapters="chapters.vtt" sign="sign.webm"
+              lang="en"></fidel-player>
 
-- **Accessibility settings**: interface language (English / አማርኛ); caption
-  language, size (100–250%), colours, background and position; sign-language
-  window on/off, beside or over the video, size, and corner.
-- **Transcript**: search box with "Play from" results, and the interactive
-  transcript (highlights the current line; "Follow along" scrolls with the video
-  and switches off when you move into the text with the keyboard).
-
-- **Offline and data**: "Use less data" (switches to the 360p video), and
-  downloads for use with no internet (see below).
-
-Settings are saved in the learner's browser only (localStorage). Nothing is sent
-to a server.
-
-### Offline lessons (3G phones)
-
-Every processed lesson can be downloaded for use with **no internet**:
-
-| Download | What is inside | Size (measured) |
-|---|---|---|
-| One-page lesson (`offline.html`) | Audio (Opus 24 kbps), English + Amharic transcript with read-along highlighting (tap a sentence to play from there), chapters, descriptions, large-text option, Ethiopic font. **One file** so it opens from a phone's Downloads. | 778 KB for 2 min 39 s, about **3.9 MB per 15 minutes** |
-| Same, with the small video (`offline.html?video=true`) | As above plus the 360p video | 1.7 MB for 2 min 39 s |
-| Offline pack (`pack`, .zip) | The one-page lesson plus caption (.vtt), description (.vtt) and plain-text transcript files | 588 KB for 2 min 39 s, about 3.3 MB per 15 minutes |
-
-The page makes no network requests (tested with the network switched off).
-On pages served by the Fidel server itself, the player also offers **"Save for
-offline in this browser"** (a service worker keeps the lesson page). Browsers
-only allow this on the service worker's own site, so on other platforms the
-download links are offered instead.
-
-### Audio description
-
-Write descriptions in Studio (what is on screen but not said). Learners turn
-them on with the player's Descriptions button. English descriptions can be read
-by the browser's voice or the screen reader. **Most phones have no Amharic
-voice**, so staff can attach a **recording** to each description (any phone
-recording works); the player plays it at the right time and pauses the lesson
-(or lowers its volume) while it plays.
-
-| Attribute | Meaning |
-|---|---|
-| `src` | Video file (MP4). Required. |
-| `src-webm` | Optional WebM version, used first when the browser supports it. |
-| `poster` | Optional image shown before playing. |
-| `captions-en`, `captions-am` | English / Amharic captions (WebVTT). |
-| `chapters-en` (or `chapters`), `chapters-am` | Chapter titles (WebVTT). |
-| `descriptions-en` (or `descriptions`), `descriptions-am` | Audio description text (WebVTT). |
-| `captions-am-status` | `draft` (machine-made: shows a "not yet reviewed" notice) or `reviewed`. |
-| `sign` | Sign-language video (WebM or MP4), shown in its own window. |
-| `lang` | Default interface language: `en` or `am`. |
-| `src-small` | Small video for "Use less data". |
-| `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
-| `description-recordings` | JSON list of recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
-| `lesson` | Instead of the above: the URL of a lesson on a Fidel server (fills in everything). |
-
-## Career gateway
-
-### Job card
-
-```html
-<link rel="stylesheet" href="https://YOUR-FIDEL-HOST/embed/fidel.css">
-<script src="https://YOUR-FIDEL-HOST/embed/fidel.js" defer></script>
-
+<!-- A job card -->
 <fidel-job-card job="https://YOUR-FIDEL-HOST/api/v1/jobs/JOB_ID" lang="en"></fidel-job-card>
 ```
 
-Shows the title, employer, place, closing date in **both calendars**
-(e.g. `30 Nov 2026 / ህዳር 21 2019`), how to apply, **workplace
-accommodations**, and a short summary that learners can read or **listen to**.
-Staff can attach a recording of each summary in Studio. Without one, English uses
-the browser's voice, and Amharic shows text only (most phones have no Amharic
-voice, so there is no Amharic button in that case). The card adds the job's
-schema.org/JobPosting JSON-LD to the page. Use `lang="am"` for an Amharic card and
-`heading-level` to fit the page's headings.
+**What learners get**
 
-The Ethiopian calendar conversion is our own code (`server/app/ethiopian_calendar.py`
-and `player/src/ethiopian-calendar.js`), tested against the official dates, the
-New Year on 11 or 12 September, Pagume, and every day for 12 years.
+- **Player** (built on [Able Player](https://github.com/ableplayer/ableplayer)):
+  keyboard and screen-reader controls; interface in English or **አማርኛ**;
+  captions in English or Amharic, 100–250% size, four colour presets, background,
+  position; a notice when Amharic captions are machine-made and not yet checked.
+- **Sign-language window**: beside the video (the signer never covers the
+  slides) or over it, three sizes, corner buttons: no dragging needed.
+- **Transcript**: searchable in both languages ("Play from 1:33"), highlights the
+  current line; "Follow along" scrolling switches off when a keyboard user enters it.
+- **Audio description**: read by the browser or screen reader, or recordings made
+  by staff (most phones have no Amharic voice).
+- **Offline and data**: "Use less data" (360p video); download the lesson as one
+  web page that works with **no internet** (audio, both transcripts with
+  read-along, chapters, descriptions); a .zip pack; "Save for offline" on pages
+  served by Fidel itself.
+- **Job card**: employer, place, closing date in **both calendars**
+  (`30 Nov 2026 / ህዳር 21 2019`), how to apply, **workplace accommodations**, a
+  summary to read or **listen to**; adds schema.org/JobPosting to the page.
+- **Certificates**: a public check page (`/verify/ID`) in English and Amharic:
+  "Verified by ALX Digital Bridge", or revoked, or not found; copy link; JSON.
+- Settings are remembered in the learner's own browser only.
 
-### Certificates
+**All `<fidel-player>` attributes**
 
-Staff issue certificates in Studio (Certificates) or with the API. Each has a
-random, unguessable link like `https://YOUR-FIDEL-HOST/verify/ID` that an
-employer can open: an accessible page in English and Amharic saying
-"Verified by ALX Digital Bridge" (or that it was revoked, or not found), with
-a Copy link button. The same data is at `/api/v1/certificates/ID` (JSON).
-Pages are marked `noindex` so names do not appear in search engines.
+| Attribute | Meaning |
+|---|---|
+| `lesson` | URL of a lesson on a Fidel server; fills in all the others. |
+| `src`, `src-webm`, `src-small` | Video (MP4), optional WebM, optional small video for "Use less data". |
+| `poster` | Image shown before playing. |
+| `captions-en`, `captions-am`, `captions-am-status` | Captions (WebVTT); status `draft` shows the "not yet reviewed" notice. |
+| `chapters-en` (or `chapters`), `chapters-am` | Chapter titles (WebVTT). |
+| `descriptions-en` (or `descriptions`), `descriptions-am` | Audio description text (WebVTT). |
+| `description-recordings` | JSON: recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
+| `sign` | Sign-language video (WebM or MP4). |
+| `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
+| `lang` | Default interface language: `en` or `am`. |
 
-## REST API (Level 2)
+`<fidel-job-card>` attributes: `job` (URL), `lang` (`en`/`am`), `heading-level` (2–6).
 
-Interactive docs: `http://localhost:8000/api/docs`. Read endpoints are public;
+## Level 2: REST API
+
+Interactive docs at `/api/docs`; the spec is in [openapi.json](openapi.json)
+(regenerate with `sh scripts/export-openapi.sh`). Read endpoints are public;
 write endpoints need `Authorization: Bearer <FIDEL_STAFF_TOKEN>`.
 
 ```sh
@@ -237,7 +189,7 @@ curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: app
 ## Level 3: schema.org/JobPosting
 
 `GET /api/v1/jobs/JOB_ID` returns standard JSON-LD that job boards and search
-engines read, for example:
+engines read (and `<fidel-job-card>` adds it to the page), for example:
 
 ```json
 {
@@ -259,18 +211,13 @@ engines read, for example:
 }
 ```
 
-`<fidel-job-card>` puts this JSON-LD on the page it is embedded in.
+schema.org has no property for workplace accommodations, so they are written in
+`jobBenefits` and, as keys, in the small `fidel:` extension.
 
-Embed a processed lesson with just its address:
+## AI engines and running fully offline
 
-```html
-<fidel-player lesson="https://YOUR-FIDEL-HOST/api/v1/lessons/LESSON_ID"></fidel-player>
-```
-
-## AI engines and offline use
-
-All engines run on the Fidel server. No lesson or learner data is sent to any
-other service. Choose engines in `.env`:
+All AI runs **on the Fidel server**. No lesson, learner or staff data is sent to
+any other service. Engines are chosen in `.env`, never by changing code:
 
 | Setting | Values | Default |
 |---|---|---|
@@ -278,36 +225,88 @@ other service. Choose engines in `.env`:
 | `FIDEL_WHISPER_MODEL` | `tiny`, `base`, `small`, `medium` | `small` |
 | `FIDEL_TRANSLATOR` | `local_madlad`, `none` | `local_madlad` |
 
-`none` switches a step off (it shows as "skipped"). Lessons spoken in Amharic
-cannot be transcribed yet (the Amharic speech model is not installed).
-CPU only is fine; it is just slower.
+`none` switches a step off (shown as "skipped" in Studio). After
+`python -m app.download_models`, Fidel needs no internet at all: fonts, player
+and models are all served from the Fidel server.
 
-## Development
+Not available yet: a cloud translation option (Addis AI) and speech-to-text for
+lessons **spoken** in Amharic (see [BACKLOG.md](BACKLOG.md)).
 
-| Folder | What | Commands |
-|---|---|---|
-| `player/` | `<fidel-player>` (Able Player + our code), built with Vite | `npm install`, `npm run build`, `npm test` (unit tests) |
-| `server/` | FastAPI server | `docker compose run --rm server pytest` |
-| `e2e/` | Browser tests: Playwright + axe-core | `npm install`, `npx playwright install chromium`, `npm test` |
-| `studio/` | Fidel Studio (staff page): plain HTML + JS, no build step | |
-| `demo/` | Mock Savanna page and demo captions | |
-| `scripts/` | Helper scripts (demo clip, caption cutting) | |
-| `tools/translation-eval/` | One-off test of English → Amharic machine translation | `sh tools/translation-eval/run.sh` |
+## Hardware and models
 
-The e2e tests use a running server at `http://localhost:8000` (or start one with
-Docker). Use `FIDEL_BASE_URL` to test another server.
+- **CPU only works.** Measured on a laptop (Intel i5-12500H, 16 GB RAM): about
+  30 seconds of processing per minute of video with Whisper `small` + MADLAD.
+- **Memory**: MADLAD needs about 4 GB of RAM while translating; give Docker at
+  least 8 GB. **Disk**: about 4 GB for models, plus lesson files.
+- **Quick or small setups**: `FIDEL_WHISPER_MODEL=base` (145 MB download) and
+  `FIDEL_TRANSLATOR=none` (staff write or paste the Amharic in Studio).
+
+| Model | Licence | Size | Used for |
+|---|---|---|---|
+| Whisper small (`Systran/faster-whisper-small`) | MIT | ~0.5 GB | English captions |
+| MADLAD-400 3B, int8 (`Nextcloud-AI/madlad400-3b-mt-ct2-int8`) | Apache-2.0 | ~3 GB | Amharic caption draft |
+
+Machine Amharic is a draft: in our test (`tools/translation-eval/`) MADLAD often
+got key words wrong (for example "disability"), so every Amharic caption is
+reviewed by a person before it counts as final.
 
 ## Measured numbers
 
 | What | Value |
 |---|---|
-| Player bundle `fidel.js` (Able Player + jQuery + DOMPurify + Fidel), gzipped | 153 KB (Fidel's own code: about 10 KB) |
-| Player styles `fidel.css`, gzipped | 6 KB |
-| Ethiopic font (2 weights, downloaded only when Amharic text is shown) | 2 × 75 KB |
-| Demo clip, 2 min 39 s, 720p: WebM / MP4 | 1.5 MB / 2.2 MB |
-| Audio-only (Opus 24 kbps) | 187 KB per minute (about 2.8 MB for 15 minutes) |
-| Processing time, CPU only (laptop, Intel i5-12500H), Whisper small + MADLAD | about 30 s per minute of video, plus about 30 s to make the web videos for a 2.5-minute clip |
+| `fidel.js` (Able Player + jQuery + DOMPurify + Fidel), gzipped | 158 KB (Fidel's own code: about 17 KB) |
+| `fidel.css`, gzipped | 6.5 KB |
+| Ethiopic font (2 weights, loaded only when Amharic text is shown) | 2 × 75 KB |
+| Audio-only lesson (Opus 24 kbps) | 187 KB per minute (2.8 MB per 15 minutes) |
+| Offline one-page lesson (audio + text + font) | 778 KB for 2 min 39 s, about **3.9 MB per 15 minutes** |
+| Offline .zip pack | about 3.3 MB per 15 minutes |
+| Processing, CPU only, Whisper small + MADLAD | about 30 s per minute of video |
+
+## Privacy
+
+- **Stored**: lesson videos and their files; caption, chapter and description
+  text; jobs; certificates (the name as the learner wants it written, course,
+  date, issuer). In SQLite and files under `data/` on your server.
+- **Never stored**: anything about learners' disabilities, learner accounts,
+  tracking or analytics. The player keeps settings (caption size, language…) only
+  in the learner's own browser.
+- **Nothing leaves your server**: all AI runs locally; fonts and scripts are
+  self-hosted; no third-party requests. The only outgoing traffic is the
+  one-time model download, run by staff.
+- Certificate pages are marked `noindex`; certificate links are random and
+  cannot be guessed. Staff actions need the staff token.
+
+## Development
+
+| Folder | What | Commands |
+|---|---|---|
+| `player/` | `<fidel-player>`, `<fidel-job-card>` (Able Player + our code), Vite build | `npm install`, `npm run build`, `npm test` |
+| `server/` | FastAPI server, pipeline, AI providers | `docker compose run --rm server pytest` |
+| `studio/` | Fidel Studio (staff page): plain HTML + JS, no build step | |
+| `e2e/` | Browser tests: Playwright + axe-core | `npm install`, `npx playwright install chromium`, `npm test` |
+| `demo/` | Mock Savanna pages and demo captions | |
+| `scripts/` | Demo clip, caption cutting, OpenAPI export | |
+| `tools/translation-eval/` | One-off test of English → Amharic machine translation | `sh tools/translation-eval/run.sh` |
+
+The e2e tests use a running server at `http://localhost:8000` (set
+`FIDEL_BASE_URL` for another) and the staff token from `.env`. Change the port
+with `FIDEL_PORT` in `.env`.
+
+Demo media: with the original recording in `assets/`, `sh scripts/make-demo-clip.sh`
+makes `data/demo/lesson.*`. It also makes `data/demo/sign.webm`, a
+**colour-bar test pattern, not real signing**, used only to build and test the
+sign-language window.
+
+## Credits
+
+- [Able Player](https://github.com/ableplayer/ableplayer) (MIT), the accessible
+  media player Fidel is built on, and every library and model in
+  [LICENSES.md](LICENSES.md).
+- Built by our team for the Digital Bridge Accessibility Hackathon 2026
+  (ALX Ethiopia, with AAAPD and Tomorrow is Better, under the LIWAY programme
+  with SNV and Mercy Corps). Team: *(names to be added)*.
+- Our co-designer: credited here only with their consent.
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE). Third-party licences: [LICENSES.md](LICENSES.md).
+MIT. See [LICENSE](LICENSE).
