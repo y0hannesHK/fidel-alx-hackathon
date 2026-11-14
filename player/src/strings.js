@@ -8,6 +8,13 @@ export const STRINGS = {
   en: {
     settings: 'Accessibility settings',
     interfaceLanguage: 'Interface language',
+    keyboardHelp: 'Keyboard help',
+    keysTitle: 'Keyboard keys for the player',
+    keysIntro: 'These work when the player has focus (for example, after pressing a player button). Buttons also work with Enter or Space.',
+    keyPlay: 'Play or pause', keyBack: 'Back 5 seconds', keyForward: 'Forward 5 seconds',
+    keyTab: 'Move between buttons', keyEscape: 'Close a menu or this window',
+    keyShortcuts: 'More shortcuts (captions, mute, preferences): Alt + Ctrl with a letter. Change them in Preferences.',
+    close: 'Close',
 
     captions: 'Captions',
     captionLanguage: 'Caption language',
@@ -77,6 +84,13 @@ export const STRINGS = {
   am: {
     settings: 'የተደራሽነት ቅንብሮች',
     interfaceLanguage: 'የማሳያ ቋንቋ',
+    keyboardHelp: 'የቁልፍ ሰሌዳ እገዛ',
+    keysTitle: 'የማጫወቻው የቁልፍ ሰሌዳ ቁልፎች',
+    keysIntro: 'እነዚህ የሚሠሩት ማጫወቻው ትኩረት ሲኖረው ነው (ለምሳሌ የማጫወቻ አዝራር ከተጫኑ በኋላ)። አዝራሮች በ Enter ወይም Space ይሠራሉ።',
+    keyPlay: 'አጫውት ወይም ለአፍታ አቁም', keyBack: 'ወደኋላ 5 ሰከንድ', keyForward: 'ወደፊት 5 ሰከንድ',
+    keyTab: 'በአዝራሮች መካከል መንቀሳቀስ', keyEscape: 'ምናሌን ወይም ይህን መስኮት ዝጋ',
+    keyShortcuts: 'ሌሎች አቋራጮች (የግርጌ ጽሑፍ፣ ድምፅ፣ ምርጫዎች)፦ Alt + Ctrl ከአንድ ፊደል ጋር። በምርጫዎች ውስጥ ይቀይሯቸው።',
+    close: 'ዝጋ',
 
     captions: 'የግርጌ ጽሑፍ',
     captionLanguage: 'የግርጌ ጽሑፍ ቋንቋ',

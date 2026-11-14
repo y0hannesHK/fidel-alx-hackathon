@@ -6,6 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { defineConfig } from 'vite';
+import { ableRealButtons } from './patches/able-real-buttons.js';
 
 const require = createRequire(import.meta.url);
 
@@ -35,7 +36,7 @@ function copyEthiopicFonts() {
 }
 
 export default defineConfig({
-  plugins: [copyEthiopicFonts()],
+  plugins: [ableRealButtons(), copyEthiopicFonts()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,

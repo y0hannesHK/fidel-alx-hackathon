@@ -196,7 +196,7 @@ test('on a touch phone, every player control is at least 44 by 44 pixels', async
   const context = await browser.newContext({ viewport: { width: 360, height: 800 }, hasTouch: true, isMobile: true });
   const page = await context.newPage();
   await openLesson(page);
-  const sizes = await page.locator('fidel-player .able-control-row [role=button], fidel-player .fidel-button')
+  const sizes = await page.locator('fidel-player .able-control-row button, fidel-player .fidel-button')
     .evaluateAll((els) => els.filter((e) => e.offsetParent).map((e) => ({ name: e.getAttribute('aria-label') || e.textContent.trim(), w: e.offsetWidth, h: e.offsetHeight })));
   for (const size of sizes) {
     expect(size.w, size.name).toBeGreaterThanOrEqual(44);
@@ -227,4 +227,52 @@ test('components send events to the page, and load from the versioned address', 
   const events = await page.evaluate(() => window.fidelEvents);
   expect(events.find((e) => e.name === 'fidel-ready').detail.captionLanguages).toEqual(['en', 'am']);
   expect(events.find((e) => e.name === 'fidel-captions-change').detail.lang).toBe('am');
+});
+
+test('player controls are real <button> elements with names', async ({ page }) => {
+  await openLesson(page);
+  expect(await page.locator('fidel-player div[role="button"]').count()).toBe(0);
+  const controls = page.locator('fidel-player .able-control-row button');
+  expect(await controls.count()).toBeGreaterThan(8);
+  for (const name of ['Play', 'Back 10 seconds', 'Forward 10 seconds', 'Faster', 'Slower', 'Preferences', 'Enter full screen']) {
+    await expect(page.locator('fidel-player .able-control-row').getByRole('button', { name, exact: true })).toBeVisible();
+  }
+  // Buttons work with Enter (native), once per press.
+  const back = page.locator('fidel-player .able-control-row').getByRole('button', { name: 'Forward 10 seconds' });
+  const video = page.locator('fidel-player .able-media-container video');
+  await back.focus();
+  await page.keyboard.press('Enter');
+  await expect.poll(() => video.evaluate((v) => Math.round(v.currentTime))).toBe(10);
+});
+
+test('player keys: K plays and pauses, arrows move 5 seconds, only when focus is in the player', async ({ page }) => {
+  await openLesson(page);
+  const video = page.locator('fidel-player .able-media-container video');
+  await page.locator('fidel-player .able-control-row').getByRole('button', { name: 'Restart' }).focus();
+  await page.keyboard.press('k');
+  await expect.poll(() => video.evaluate((v) => !v.paused)).toBe(true);
+  await page.keyboard.press('k');
+  await expect.poll(() => video.evaluate((v) => v.paused)).toBe(true);
+  const before = await video.evaluate((v) => v.currentTime);
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(() => video.evaluate((v) => v.currentTime)).toBeGreaterThanOrEqual(before + 4.5);
+
+  // Typing "k" in the transcript search box does not play the video.
+  await page.getByRole('searchbox', { name: 'Search the transcript' }).fill('k');
+  expect(await video.evaluate((v) => v.paused)).toBe(true);
+});
+
+test('"Keyboard help" opens a dialog; Escape closes it and focus returns', async ({ page }) => {
+  await openLesson(page);
+  const open = page.locator('.fidel-panel').getByRole('button', { name: 'Keyboard help' });
+  await open.click();
+  const dialog = page.getByRole('dialog', { name: 'Keyboard keys for the player' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('Play or pause');
+  await expect(dialog.getByRole('button', { name: 'Close' })).toBeFocused();
+  const results = await new AxeBuilder({ page }).include('.fidel-keys-dialog').withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+  expect(results.violations.filter((v) => ['critical', 'serious'].includes(v.impact)).map((v) => v.id)).toEqual([]);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(open).toBeFocused();
 });

@@ -40,6 +40,7 @@ import { buildPanel } from './panel.js';
 import { buildTranscript } from './transcript.js';
 import { parseVtt } from './vtt.js';
 import { emit } from './events.js';
+import { setUpPlayerKeys } from './keyboard.js';
 
 let instanceCount = 0;
 
@@ -221,6 +222,7 @@ export class FidelPlayer extends HTMLElement {
       poster: this.getAttribute('poster'),
       'data-lang': lang,
       'data-transcript-div': transcriptDivId,
+      'data-seek-interval': '10', // Back / Forward buttons move 10 seconds
     });
     const sign = this.getAttribute('sign');
     const addSource = (url, type) => {
@@ -345,6 +347,7 @@ export class FidelPlayer extends HTMLElement {
     this.signDock.addEventListener('click', resync);
 
     this.setUpFollowAlong();
+    setUpPlayerKeys(player);
 
     // Able Player redraws the transcript and chapter menu when the language
     // changes; re-mark chapter languages each time (attribute changes do not

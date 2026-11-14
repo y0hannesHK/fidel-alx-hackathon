@@ -9,6 +9,12 @@ import amharic from '../i18n/am.json';
 // Text that Fidel wants to say differently in English.
 const ENGLISH_OVERRIDES = {
   autoScroll: 'Follow along',
+  rewind: 'Back 10 seconds',
+  forward: 'Forward 10 seconds',
+};
+const AMHARIC_OVERRIDES = {
+  rewind: 'ወደኋላ 10 ሰከንድ',
+  forward: 'ወደፊት 10 ሰከንድ',
 };
 
 const proto = AblePlayer.prototype;
@@ -43,7 +49,7 @@ const originalGetTranslationText = proto.getTranslationText;
 proto.getTranslationText = function () {
   originalGetTranslationText.call(this);
   if (this.lang === 'am') {
-    this.tt = { ...amharic };
+    this.tt = { ...amharic, ...AMHARIC_OVERRIDES };
     this.translationFiles = true;
   } else if (this.lang === 'en') {
     this.tt = { ...this.tt, ...ENGLISH_OVERRIDES };

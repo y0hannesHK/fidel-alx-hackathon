@@ -11,6 +11,7 @@ import { CAPTION_SIZE } from './prefs.js';
 import { SIGN_CORNERS } from './sign-window.js';
 import { canSaveOffline, isSaved, saveOffline, savedPageUrl } from './save-offline.js';
 import { emit } from './events.js';
+import { openKeyboardHelp } from './keyboard.js';
 
 const LANGUAGE_NAMES = { en: 'English', am: 'አማርኛ', om: 'Afaan Oromoo' };
 
@@ -223,6 +224,11 @@ export function buildPanel(options) {
       h('span', { id: `${idPrefix}-ui-lang-label`, class: 'fidel-label' }, tr('interfaceLanguage')),
       h('div', { class: 'fidel-row' }, languageButtons)
     ),
+    h('p', {},
+      h('button', {
+        type: 'button', class: 'fidel-button', 'aria-haspopup': 'dialog',
+        onclick: (e) => openKeyboardHelp(lang, e.currentTarget),
+      }, tr('keyboardHelp'))),
     captions,
     sign,
     offlineGroup

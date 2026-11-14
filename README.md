@@ -106,7 +106,10 @@ use the small Whisper model and skip translation (see "Hardware and models").
 **What learners get**
 
 - **Player** (built on [Able Player](https://github.com/ableplayer/ableplayer)):
-  keyboard and screen-reader controls; interface in English or **አማርኛ**;
+  every control a real `<button>` with a name (Play, Back 10 seconds, Captions,
+  Sign language, Transcript, Full screen…); keys while the player has focus
+  (K or Space to play/pause, ← → to move 5 seconds) and a **Keyboard help**
+  button that lists them; interface in English or **አማርኛ**;
   captions in English or Amharic, 100–250% size, four colour presets, background,
   position; a notice when Amharic captions are machine-made and not yet checked.
 - **Sign-language window**: beside the video (the signer never covers the

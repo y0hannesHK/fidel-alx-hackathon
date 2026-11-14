@@ -365,7 +365,7 @@ fidel-player .able-wrapper {
   fidel-player .able-wrapper {
     --able-base-control-size: 44px;
   }
-  fidel-player .able-control-row [role="button"] {
+  fidel-player .able-control-row button.able-ctl {
     min-width: 44px;
     min-height: 44px;
   }
@@ -435,3 +435,33 @@ fidel-certificate :focus-visible { outline: 3px solid #ffbf47; outline-offset: 2
 .fidel-cert-facts dd { margin: 0; }
 @media (max-width: 24rem) { .fidel-cert-facts { grid-template-columns: 1fr; } }
 .fidel-cert a { color: #0b4f9c; font-weight: 600; }
+
+/* ---------- Able Player controls as real <button> elements (patches/able-real-buttons.js) */
+fidel-player button.able-ctl {
+  appearance: none;
+  font: inherit;
+  line-height: 1;
+  margin: 0;
+  cursor: pointer;
+  color: var(--able-control-color);
+}
+/* Windows high contrast / forced colours: keep a visible button outline. */
+@media (forced-colors: active) {
+  fidel-player button.able-ctl { border: 1px solid ButtonText; }
+  fidel-player button.able-ctl svg { fill: ButtonText; }
+}
+
+/* ---------- Keyboard help dialog ------------------------------------------------ */
+.fidel-keys-dialog {
+  max-width: min(36rem, 92vw);
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  color: #1a1a1a;
+  background: #fff;
+}
+.fidel-keys-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+.fidel-keys-dialog h2 { font-size: 1.25rem; margin: 0 0 0.75rem; }
+.fidel-keys-dialog table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; }
+.fidel-keys-dialog th, .fidel-keys-dialog td { text-align: start; padding: 0.4rem 0.5rem; border-bottom: 1px solid #c4c8cf; vertical-align: top; }
+.fidel-keys-dialog kbd { font: inherit; font-weight: 700; border: 1px solid #5c5c5c; border-radius: 4px; padding: 0 0.3rem; }
