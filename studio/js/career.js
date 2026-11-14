@@ -173,6 +173,8 @@ export async function certificatesPage(main) {
     h('td', {}, `${cert.issued_on} / `, h('span', { lang: 'am' }, cert.issued_on_ethiopian)),
     h('td', {}, cert.status === 'valid' ? 'Valid' : 'Revoked'),
     h('td', {}, h('a', { href: cert.verify_url }, 'Check page'),
+      h('label', { class: 'embed-label' }, `Embed code for ${cert.learner_name}`,
+        h('input', { readonly: true, value: `<fidel-certificate certificate="${cert.verify_url.replace('/verify/', '/api/v1/certificates/')}"></fidel-certificate>` })),
       cert.status === 'valid' && h('button', {
         type: 'button', class: 'button secondary small',
         onclick: async () => {

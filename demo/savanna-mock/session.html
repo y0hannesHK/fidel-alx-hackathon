@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recorded session – Savanna (mock)</title>
+
+  <!-- Fidel install: same two lines as for the player. -->
+  <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <script src="/embed/v1/fidel.js" defer></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; color: #1a1a1a; background: #f5f6f8; }
+    a { color: #0b4f9c; }
+    :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+    .skip-link { position: absolute; left: 0.5rem; top: -4rem; padding: 0.75rem 1rem; background: #fff; z-index: 10; }
+    .skip-link:focus { top: 0.5rem; }
+    header { background: #0a1f44; color: #fff; padding: 0.75rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; }
+    header .brand { font-weight: 700; font-size: 1.25rem; color: #fff; text-decoration: none; }
+    header nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+    header nav a { color: #fff; display: inline-block; padding: 0.5rem 0; }
+    main { max-width: 960px; margin: 0 auto; padding: 1rem; }
+    h1 { font-size: 1.75rem; line-height: 1.25; }
+    main { max-width: 1200px; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the session</a>
+  <header>
+    <a class="brand" href="/demo/savanna-mock/">Savanna <span>(mock)</span></a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="/demo/savanna-mock/">Lesson</a></li>
+        <li><a href="/demo/savanna-mock/jobs.html">Jobs</a></li>
+        <li><a href="/demo/savanna-mock/session.html" aria-current="page">Recorded session</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main id="main" tabindex="-1">
+    <h1>Recorded session: Building drop-in web components and APIs</h1>
+    <p>Digital Bridge training, 11 November 2026. Captions, transcript and the
+    session chat are shown together. Select a chat message to play the recording
+    from that moment. Participants' names are hidden.</p>
+    <fidel-session-viewer
+      id="session"
+      src="/media/session/session.mp4"
+      src-webm="/media/session/session.webm"
+      captions-en="/media/session/captions-en.vtt"
+      chat="/media/session/chat.txt"
+      anonymize
+      heading-level="2"
+      lang="en">
+    </fidel-session-viewer>
+  </main>
+</body>
+</html>

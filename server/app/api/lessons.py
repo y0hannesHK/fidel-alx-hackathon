@@ -12,6 +12,7 @@ from ..config import settings
 from ..db import Database
 from ..pipeline import media
 from ..pipeline.runner import queue_steps, run_steps
+from .. import braille
 from ..pipeline.steps import STEPS, lesson_folder
 from .auth import is_staff, require_staff
 
@@ -53,6 +54,7 @@ class Manifest(BaseModel):
         description="Recorded audio descriptions by language: [{start, url}]")
     sign: str | None = Field(description="Sign-language video (WebM)")
     offline: dict[str, str] = Field(description="Offline downloads: page (one HTML file), page_with_video, pack (.zip)")
+    documents: dict[str, str] = Field(description="Accessible lesson documents: html_en, pdf_en, brf_en (Braille), html_am, pdf_am, brf_am")
     published: bool
     steps: dict[str, StepStatus]
 
@@ -133,6 +135,12 @@ def build_manifest(lesson: dict, request: Request) -> Manifest:
             "page_with_video": f"{api}/offline.html?video=true",
             "pack": f"{api}/pack",
         } if (folder / "audio.opus").is_file() else {},
+        documents={
+            **{f"{kind}_{lang}": f"{api}/document.{kind}?lang={lang}"
+               for lang in ("en", "am") if (folder / f"captions-{lang}.vtt").is_file() for kind in ("html", "pdf")},
+            **{f"brf_{lang}": f"{api}/braille.brf?lang={lang}"
+               for lang in braille.available_languages() if (folder / f"captions-{lang}.vtt").is_file()},
+        },
         published=bool(lesson["published"]),
         steps=db.get_steps(lesson["id"]),
     )

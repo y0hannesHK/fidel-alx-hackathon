@@ -205,3 +205,26 @@ test('on a touch phone, every player control is at least 44 by 44 pixels', async
   await expectNoHorizontalScroll(page);
   await context.close();
 });
+
+test('components send events to the page, and load from the versioned address', async ({ page }) => {
+  // Record Fidel events before the page loads.
+  await page.addInitScript(() => {
+    window.fidelEvents = [];
+    for (const name of ['fidel-ready', 'fidel-captions-change', 'fidel-language-change', 'fidel-ended']) {
+      document.addEventListener(name, (e) => window.fidelEvents.push({ name, detail: e.detail }));
+    }
+  });
+  await openLesson(page);
+  expect(await page.evaluate(() => [...document.scripts].some((s) => s.src.includes('/embed/v1/fidel.js')))).toBe(true);
+  expect(await page.evaluate(() => window.Fidel.version)).toBe('1.0.0');
+
+  await page.locator('.fidel-panel').getByRole('radio', { name: 'አማርኛ' }).check();
+  const video = page.locator('fidel-player .able-media-container video');
+  await video.evaluate((v) => { v.currentTime = v.duration - 0.5; return v.play(); });
+
+  await expect.poll(() => page.evaluate(() => window.fidelEvents.map((e) => e.name)), { timeout: 10_000 })
+    .toEqual(expect.arrayContaining(['fidel-ready', 'fidel-captions-change', 'fidel-ended']));
+  const events = await page.evaluate(() => window.fidelEvents);
+  expect(events.find((e) => e.name === 'fidel-ready').detail.captionLanguages).toEqual(['en', 'am']);
+  expect(events.find((e) => e.name === 'fidel-captions-change').detail.lang).toBe('am');
+});

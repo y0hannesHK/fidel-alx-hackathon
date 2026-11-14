@@ -23,6 +23,10 @@ non-commercial (NC) licence as a default.
 | [CTranslate2](https://github.com/OpenNMT/CTranslate2) | 4.9.0 | MIT | Runs Whisper and MADLAD on CPU |
 | [SentencePiece](https://github.com/google/sentencepiece) | 0.2.3 | Apache-2.0 | Tokenizer for MADLAD |
 | [huggingface_hub](https://github.com/huggingface/huggingface_hub) | 2.4.0 | Apache-2.0 | Model download command only |
+| [WeasyPrint](https://weasyprint.org/) | 70.0 | BSD-3-Clause | Tagged PDF (PDF/UA) lesson documents |
+| [Brotli](https://github.com/google/brotli) | 1.2.1 | MIT | Lets WeasyPrint read the WOFF2 Ethiopic font |
+| [liblouis](https://liblouis.io/) (Debian package) | distro | LGPL-2.1+ (tables: various free licences) | Braille (.brf) export, run as a separate program |
+| [Pango](https://pango.gnome.org/), [HarfBuzz](https://harfbuzz.github.io/) (Debian packages) | distro | LGPL-2.0+ / MIT | Text layout for WeasyPrint |
 | [FFmpeg](https://ffmpeg.org/) (Debian package) | distro | LGPL-2.1+ / GPL-2+ (Debian build) | Media processing, run as a separate program |
 
 ## Build and test tools (not shipped)

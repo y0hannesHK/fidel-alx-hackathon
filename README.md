@@ -80,8 +80,8 @@ use the small Whisper model and skip translation (see "Hardware and models").
 ## Level 1: add Fidel to any page with a script tag
 
 ```html
-<link rel="stylesheet" href="https://YOUR-FIDEL-HOST/embed/fidel.css">
-<script src="https://YOUR-FIDEL-HOST/embed/fidel.js" defer></script>
+<link rel="stylesheet" href="https://YOUR-FIDEL-HOST/embed/v1/fidel.css">
+<script src="https://YOUR-FIDEL-HOST/embed/v1/fidel.js" defer></script>
 
 <!-- A lesson processed by Fidel: everything is filled in from the server -->
 <fidel-player lesson="https://YOUR-FIDEL-HOST/api/v1/lessons/LESSON_ID"></fidel-player>
@@ -93,6 +93,13 @@ use the small Whisper model and skip translation (see "Hardware and models").
 
 <!-- A job card -->
 <fidel-job-card job="https://YOUR-FIDEL-HOST/api/v1/jobs/JOB_ID" lang="en"></fidel-job-card>
+
+<!-- A verified certificate (for a learner profile, job platform or employer site) -->
+<fidel-certificate certificate="https://YOUR-FIDEL-HOST/api/v1/certificates/CERT_ID"></fidel-certificate>
+
+<!-- A recorded live session with captions and its chat log side by side -->
+<fidel-session-viewer src="session.mp4" captions-en="session.vtt"
+                      chat="zoom-chat.txt" anonymize></fidel-session-viewer>
 ```
 
 **What learners get**
@@ -116,6 +123,18 @@ use the small Whisper model and skip translation (see "Hardware and models").
   summary to read or **listen to**; adds schema.org/JobPosting to the page.
 - **Certificates**: a public check page (`/verify/ID`) in English and Amharic:
   "Verified by ALX Digital Bridge", or revoked, or not found; copy link; JSON.
+- **Lesson document**: the lesson to read, as an accessible web page and a
+  **tagged PDF** (PDF/UA) with chapters as headings, the transcript, audio
+  descriptions, and slide images described by staff (an image is included only
+  once a person has described it). Also in **Braille** (`.brf`, Unified English
+  Braille grade 2, 40 × 25) for embossers and Braille displays.
+- **Recorded live sessions** (`<fidel-session-viewer>`): the recording with
+  captions and transcript, and the **Zoom chat** beside it (one column on
+  phones). Select a message to jump there; new messages are read aloud while it
+  plays (never while jumping around); `anonymize` hides participants' names.
+- **Certificate card** (`<fidel-certificate>`): shows "✓ Verified certificate"
+  (or revoked) with name, course, date in both calendars, and a link to the
+  official check page.
 - Settings are remembered in the learner's own browser only.
 
 **All `<fidel-player>` attributes**
@@ -133,7 +152,38 @@ use the small Whisper model and skip translation (see "Hardware and models").
 | `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
 | `lang` | Default interface language: `en` or `am`. |
 
-`<fidel-job-card>` attributes: `job` (URL), `lang` (`en`/`am`), `heading-level` (2–6).
+`<fidel-job-card>`: `job` (URL), `lang` (`en`/`am`), `heading-level` (2–6).
+`<fidel-certificate>`: `certificate` (URL), `lang`, `heading-level`.
+`<fidel-session-viewer>`: the player's attributes plus `chat` (Zoom chat .txt),
+`anonymize`, `heading-level`.
+
+**Events (settings in, events out).** Components tell the host page what
+happens, so it can, for example, mark a lesson as done. Events bubble, carry no
+personal data, and are listened to like any DOM event:
+
+```js
+document.addEventListener('fidel-ended', (e) => markLessonDone(e.target.id));
+```
+
+| Event | Sent by | `event.detail` |
+|---|---|---|
+| `fidel-ready` | player | `lang`, `captionLanguages`, `hasSignLanguage` |
+| `fidel-ended` | player | `duration`: the lesson was watched to the end |
+| `fidel-captions-change` | player | `lang` (`en`, `am` or `off`) |
+| `fidel-language-change` | player | `lang`: interface language |
+| `fidel-low-data-change` | player | `lowData` (true/false) |
+| `fidel-offline-saved` | player | `url` of the saved lesson |
+| `fidel-error` | player | `message` |
+| `fidel-job-ready` | job card | `id`, `title` |
+| `fidel-summary-play` | job card | `lang` |
+| `fidel-certificate-ready` | certificate card | `status` (`valid`, `revoked`, `missing`) |
+| `fidel-session-ready` | session viewer | `messages`: number of chat messages |
+
+**Versions (we never break your page).** Load Fidel from `/embed/v1/`. Changes
+to `v1` keep every attribute and event working; anything that would break a
+page goes to a new `/embed/v2/`, and `v1` stays available. `/embed/` (no
+version) always serves the latest, for testing only. `window.Fidel.version`
+says which version a page has loaded.
 
 ## Level 2: REST API
 
@@ -160,6 +210,11 @@ curl http://localhost:8000/api/v1/lessons/LESSON_ID/captions/am
 # Publish (learners can only see published lessons)
 curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json" \
      -d '{"published": true}' http://localhost:8000/api/v1/lessons/LESSON_ID/publish
+
+# Lesson document: accessible web page, tagged PDF, Braille (published lessons)
+curl http://localhost:8000/api/v1/lessons/LESSON_ID/document.html?lang=am
+curl -OJ "http://localhost:8000/api/v1/lessons/LESSON_ID/document.pdf?lang=en"
+curl -OJ "http://localhost:8000/api/v1/lessons/LESSON_ID/braille.brf?lang=en"
 
 # Offline: one-page lesson, or the .zip pack (published lessons)
 curl -OJ http://localhost:8000/api/v1/lessons/LESSON_ID/offline.html
@@ -292,8 +347,9 @@ The e2e tests use a running server at `http://localhost:8000` (set
 `FIDEL_BASE_URL` for another) and the staff token from `.env`. Change the port
 with `FIDEL_PORT` in `.env`.
 
-Demo media: with the original recording in `assets/`, `sh scripts/make-demo-clip.sh`
-makes `data/demo/lesson.*`. It also makes `data/demo/sign.webm`, a
+Demo media: with the original recordings in `assets/`, `sh scripts/make-demo-clip.sh`
+makes `data/demo/lesson.*`, and `sh scripts/make-demo-session.sh` makes the
+recorded session for `/demo/savanna-mock/session.html`. It also makes `data/demo/sign.webm`, a
 **colour-bar test pattern, not real signing**, used only to build and test the
 sign-language window.
 

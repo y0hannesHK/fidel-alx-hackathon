@@ -205,18 +205,32 @@ async function chaptersSection(lessonId, videoTime, onSaved) {
       { key: 'start', label: 'Start', kind: 'time' },
       { key: 'title_en', label: 'English title', kind: 'text', lang: 'en' },
       { key: 'title_am', label: 'Amharic title', kind: 'text', lang: 'am', optional: true },
+      { key: 'image_alt_en', label: 'Slide image description (English)', kind: 'text', lang: 'en', long: true, optional: true },
+      { key: 'image_alt_am', label: 'Slide image description (Amharic)', kind: 'text', lang: 'am', long: true, optional: true },
     ],
     rows: chapters,
-    newRow: (time) => ({ start: time, title_en: '', title_am: '' }),
+    newRow: (time) => ({ start: time, title_en: '', title_am: '', image_alt_en: '', image_alt_am: '' }),
+    // Show the slide image so staff can describe it.
+    extra: (row) => row.image_url
+      ? h('figure', { class: 'keyframe' },
+        h('img', { src: row.image_url, alt: '', width: 320 }),
+        h('figcaption', {}, 'Slide image for this chapter (from the video). Describe it in the fields above; it is shown in the lesson document only when described.'))
+      : h('p', { class: 'hint' }, 'Save to see the slide image for this chapter.'),
     getVideoTime: videoTime,
     save: async (rows) => {
-      const body = rows.map((r) => ({ start: r.start, title_en: r.title_en.trim(), title_am: r.title_am?.trim() || null }));
-      await api(`/api/v1/lessons/${lessonId}/chapters`, { method: 'PUT', json: { chapters: body } });
+      const body = rows.map((r) => ({
+        start: r.start, title_en: r.title_en.trim(), title_am: r.title_am?.trim() || null,
+        image_alt_en: r.image_alt_en?.trim() || null, image_alt_am: r.image_alt_am?.trim() || null,
+      }));
+      const saved = await api(`/api/v1/lessons/${lessonId}/chapters`, { method: 'PUT', json: { chapters: body } });
       onSaved();
       const missing = body.filter((c) => !c.title_am).length;
-      return missing
-        ? `Saved. ${missing} chapter(s) have no Amharic title, so learners see English chapter titles.`
-        : 'Saved in English and Amharic.';
+      return {
+        rows: saved.chapters,
+        message: missing
+          ? `Saved. ${missing} chapter(s) have no Amharic title, so learners see English chapter titles.`
+          : 'Saved in English and Amharic.',
+      };
     },
   });
 }

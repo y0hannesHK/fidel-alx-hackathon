@@ -374,3 +374,64 @@ fidel-player .able-control-row {
   flex-wrap: wrap;          /* many buttons on a narrow phone: wrap, never overflow */
   row-gap: 0.25rem;
 }
+
+/* ---------- Recorded session viewer --------------------------------------------- */
+fidel-session-viewer { display: block; }
+.fidel-session {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 60rem) {
+  .fidel-session { grid-template-columns: minmax(0, 1fr); }   /* one column on small screens / 200% zoom */
+}
+.fidel-chat {
+  border: 1px solid #5c5c5c;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #fff;
+  color: #1a1a1a;
+}
+.fidel-chat :focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; box-shadow: 0 0 0 5px #1a1a1a; }
+.fidel-chat-count { margin: 0 0 0.5rem; color: #444; }
+.fidel-check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; margin-bottom: 0.5rem; }
+.fidel-check input { width: 1.5rem; height: 1.5rem; flex: none; accent-color: #0b4f9c; }
+.fidel-chat-list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 32rem; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 0.25rem;
+}
+.fidel-chat-message {
+  display: block; width: 100%; min-height: 44px; padding: 0.5rem;
+  text-align: start; font: inherit; line-height: 1.45; white-space: pre-line;
+  color: #1a1a1a; background: #fff; border: 1px solid #c4c8cf; border-radius: 6px; cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.fidel-chat-message:hover { background: #e8f0fa; }
+.fidel-chat-time { font-weight: 700; color: #0b4f9c; }
+.fidel-chat-name { font-weight: 700; }
+.fidel-chat-past .fidel-chat-message { border-left: 5px solid #0b4f9c; }  /* already said at this point */
+.fidel-sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Certificate card --------------------------------------------------- */
+fidel-certificate { display: block; max-width: 36rem; }
+fidel-certificate :lang(am) { font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif; line-height: 1.6; }
+fidel-certificate :focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; box-shadow: 0 0 0 5px #1a1a1a; }
+.fidel-cert {
+  border: 3px solid #5c5c5c; border-radius: 8px; padding: 1rem;
+  background: #fff; color: #1a1a1a; overflow-wrap: anywhere;
+}
+.fidel-cert-valid { border-color: #1e7b34; }
+.fidel-cert-revoked, .fidel-cert-missing { border-color: #a00020; }
+.fidel-cert-status { margin: 0 0 0.75rem; font-size: 1.2rem; }
+.fidel-cert-valid .fidel-cert-status { color: #0f4d1f; }
+.fidel-cert-revoked .fidel-cert-status, .fidel-cert-missing .fidel-cert-status { color: #6e0016; }
+.fidel-cert-facts { display: grid; grid-template-columns: minmax(6rem, max-content) 1fr; gap: 0.35rem 1rem; margin: 0 0 0.75rem; }
+.fidel-cert-facts dt { font-weight: 700; }
+.fidel-cert-facts dd { margin: 0; }
+@media (max-width: 24rem) { .fidel-cert-facts { grid-template-columns: 1fr; } }
+.fidel-cert a { color: #0b4f9c; font-weight: 600; }

@@ -3,6 +3,7 @@
 // An accessible job card read from schema.org/JobPosting JSON-LD:
 // title, employer, place, closing date in both calendars, how to apply,
 // workplace accommodations, and a short summary to read or LISTEN to.
+// Events: fidel-job-ready, fidel-summary-play.
 // It also puts the JSON-LD on the page, so search engines and job boards
 // can read the job (schema.org/JobPosting, Level 3 integration).
 //
@@ -11,6 +12,7 @@
 // (most phones have no Amharic voice), so there is no Amharic button then.
 import { h } from './dom.js';
 import { formatBoth } from './ethiopian-calendar.js';
+import { emit } from './events.js';
 
 const STRINGS = {
   en: {
@@ -65,6 +67,7 @@ export class FidelJobCard extends HTMLElement {
       return;
     }
     this.render(job, lang, t, `fidel-job-${cardCount}`);
+    emit(this, 'fidel-job-ready', { id: job.identifier?.value, title: job.title });
   }
 
   disconnectedCallback() {
@@ -149,6 +152,7 @@ export class FidelJobCard extends HTMLElement {
     button.setAttribute('aria-pressed', 'true');
     button.firstChild.textContent = t.stop;
     status.textContent = t.playing;
+    emit(this, 'fidel-summary-play', { lang });
     if (url) {
       const player = new Audio(url);
       player.addEventListener('ended', done);

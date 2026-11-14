@@ -115,3 +115,8 @@ td .button { margin: 0.25rem 0.25rem 0.25rem 0; }
 @media (min-width: 40rem) {
   html { scroll-padding-top: 11rem; }
 }
+
+.keyframe { margin: 0.5rem 0; }
+.keyframe img { max-width: 100%; height: auto; border: 1px solid #5c5c5c; display: block; }
+.keyframe figcaption { color: #333; font-size: 0.95rem; max-width: 40rem; }
+.embed-label { display: block; font-weight: 600; margin: 0.25rem 0; } .embed-label input { display: block; width: 100%; min-width: 14rem; }

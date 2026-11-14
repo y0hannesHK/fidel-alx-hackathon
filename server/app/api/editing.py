@@ -8,6 +8,7 @@ import shutil
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Request, UploadFile, status
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from .. import document
 from ..captions import Cue, read_vtt, write_vtt
 from ..pipeline import media
 from ..pipeline.runner import queue_steps, run_steps
@@ -58,6 +59,10 @@ class Chapter(BaseModel):
     start: float = Field(ge=0)
     title_en: str = Field(min_length=1, max_length=120)
     title_am: str | None = Field(default=None, max_length=120)
+    image_alt_en: str | None = Field(default=None, max_length=600,
+                                     description="Description of the chapter's slide image (for the lesson document)")
+    image_alt_am: str | None = Field(default=None, max_length=600)
+    image_url: str | None = Field(default=None, description="The slide image (read-only)")
 
 
 class ChaptersEdit(BaseModel):
@@ -129,8 +134,14 @@ def get_chapters(lesson_id: str = LessonId):
     folder = lesson_folder(lesson_id)
     english = read_vtt(folder / "chapters-en.vtt") if (folder / "chapters-en.vtt").is_file() else []
     amharic = read_vtt(folder / "chapters-am.vtt") if (folder / "chapters-am.vtt").is_file() else []
+    texts = document.image_texts(lesson_id)
+    files = f"/files/lessons/{lesson_id}"
     return ChaptersEdit(chapters=[
-        Chapter(start=c.start, title_en=c.text, title_am=amharic[i].text if i < len(amharic) else None)
+        Chapter(start=c.start, title_en=c.text, title_am=amharic[i].text if i < len(amharic) else None,
+                image_alt_en=texts.get(str(round(c.start * 1000)), {}).get("en"),
+                image_alt_am=texts.get(str(round(c.start * 1000)), {}).get("am"),
+                image_url=f"{files}/{document.keyframe_name(c.start)}"
+                if (folder / document.keyframe_name(c.start)).is_file() else None)
         for i, c in enumerate(english)
     ])
 
@@ -154,7 +165,15 @@ def save_chapters(body: ChaptersEdit, lesson_id: str = LessonId):
         amharic_file.unlink(missing_ok=True)
     if not chapters:
         (folder / "chapters-en.vtt").unlink(missing_ok=True)
-    return ChaptersEdit(chapters=chapters)
+    # Slide image for each chapter, and the descriptions staff wrote for them.
+    texts = {}
+    for c in chapters:
+        document.ensure_keyframe(lesson, c.start)
+        alt = {lang: text.strip() for lang, text in (("en", c.image_alt_en), ("am", c.image_alt_am)) if text and text.strip()}
+        if alt:
+            texts[str(round(c.start * 1000))] = alt
+    document.save_image_texts(lesson_id, texts)
+    return get_chapters(lesson_id)
 
 
 # --- Audio description text ----------------------------------------------------------------

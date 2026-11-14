@@ -10,6 +10,7 @@ import { COLOUR_PRESETS, BACKGROUND_OPACITIES, CAPTION_POSITIONS } from './capti
 import { CAPTION_SIZE } from './prefs.js';
 import { SIGN_CORNERS } from './sign-window.js';
 import { canSaveOffline, isSaved, saveOffline, savedPageUrl } from './save-offline.js';
+import { emit } from './events.js';
 
 const LANGUAGE_NAMES = { en: 'English', am: 'አማርኛ' };
 
@@ -180,11 +181,13 @@ export function buildPanel(options) {
   // --- Offline and data ----------------------------------------------------
   const offline = options.offline || {};
   let offlineGroup = null;
-  if (offline.page || offline.pack || options.hasSmallVideo) {
+  if (offline.page || offline.pack || offline.documentHtml || options.hasSmallVideo) {
     const links = [
       [offline.page, 'downloadPage'],
       [offline.pageVideo, 'downloadPageVideo'],
       [offline.pack, 'downloadPack'],
+      [offline.documentPdf, 'downloadPdf'],
+      [offline.documentBrf, 'downloadBrf'],
     ].filter(([url]) => url);
     offlineGroup = h(
       'details',
@@ -204,6 +207,7 @@ export function buildPanel(options) {
         links.length > 0 && h('ul', { class: 'fidel-downloads' },
           links.map(([url, key]) => h('li', {}, h('a', { href: url, download: '' }, tr(key))))),
         links.length > 0 && h('p', {}, tr('offlineHelp')),
+        offline.documentHtml && h('p', {}, h('a', { href: offline.documentHtml }, tr('readDocument'))),
         saveOfflineControls(offline.page, tr)
       )
     );
@@ -259,7 +263,10 @@ function saveOfflineControls(offlinePage, tr) {
         ok = false;
       }
       button.disabled = false;
-      if (ok) showSaved();
+      if (ok) {
+        showSaved();
+        emit(button, 'fidel-offline-saved', { url: savedPageUrl(offlinePage) }); // bubbles to the page
+      }
       else status.textContent = tr('saveFailed');
     },
   }, tr('saveOffline'));

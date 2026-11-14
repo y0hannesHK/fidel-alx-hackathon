@@ -9,6 +9,10 @@ ctranslate2==4.9.0           # runs the MADLAD translation model
 sentencepiece==0.2.3         # tokenizer for MADLAD
 huggingface_hub==2.4.0       # model download command only
 
+# Accessible lesson documents
+weasyprint==70.0             # tagged PDF (PDF/UA), BSD licence
+brotli==1.2.1                # lets WeasyPrint read the WOFF2 Ethiopic font
+
 # Tests (small; kept in the image so `docker compose run server pytest` works)
 pytest==9.2.0
 httpx==0.28.1

@@ -19,9 +19,13 @@
 //   src-small                        small video for low-data mode
 //   offline-page, offline-page-video one-page offline lesson (audio + text / + video)
 //   offline-pack                     offline pack (.zip)
+//   document-html-en/-am, document-pdf-en/-am, document-brf-en/-am   lesson document, Braille
 //   description-recordings           JSON: recorded descriptions, e.g.
 //                                    {"am":[{"start":12.5,"url":"d1.opus"}]}
 //   lang                             default interface language ("en" or "am")
+//
+// Events sent to the page: fidel-ready, fidel-ended, fidel-captions-change,
+// fidel-language-change, fidel-low-data-change, fidel-offline-saved, fidel-error.
 //
 // We use the light DOM (no shadow root) because Able Player is built on
 // jQuery and looks up its elements in the normal document.
@@ -35,6 +39,7 @@ import { SignWindow } from './sign-window.js';
 import { buildPanel } from './panel.js';
 import { buildTranscript } from './transcript.js';
 import { parseVtt } from './vtt.js';
+import { emit } from './events.js';
 
 let instanceCount = 0;
 
@@ -122,6 +127,7 @@ export class FidelPlayer extends HTMLElement {
         if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE && !this.querySelector('.fidel-video-error')) {
           const lowDataHint = this.getAttribute('src-small') && !this.prefs.lowData ? ` ${t(lang, 'videoErrorLowData')}` : '';
           this.statusArea.prepend(h('p', { class: 'fidel-error fidel-video-error' }, t(lang, 'videoError') + lowDataHint));
+          emit(this, 'fidel-error', { message: 'video could not be loaded' });
         }
       }, 100);
     });
@@ -152,6 +158,7 @@ export class FidelPlayer extends HTMLElement {
 
   showError(message) {
     this.building = false;
+    emit(this, 'fidel-error', { message });
     this.replaceChildren(h('p', { class: 'fidel-error', role: 'alert' }, message));
   }
 
@@ -188,6 +195,10 @@ export class FidelPlayer extends HTMLElement {
     for (const [lang, url] of Object.entries(manifest.chapters || {})) fromManifest[`chapters-${lang}`] = url;
     for (const [lang, url] of Object.entries(manifest.descriptions || {})) fromManifest[`descriptions-${lang}`] = url;
     fromManifest.sign = manifest.sign;
+    for (const [key, url] of Object.entries(manifest.documents || {})) {
+      const [kind, docLang] = key.split('_'); // e.g. html_am
+      fromManifest[`document-${kind}-${docLang}`] = url;
+    }
     if (Object.keys(manifest.description_recordings || {}).length) {
       fromManifest['description-recordings'] = JSON.stringify(manifest.description_recordings);
     }
@@ -316,6 +327,10 @@ export class FidelPlayer extends HTMLElement {
         page: this.getAttribute('offline-page'),
         pageVideo: this.getAttribute('offline-page-video'),
         pack: this.getAttribute('offline-pack'),
+        // The lesson document in the interface language, else English.
+        documentHtml: this.getAttribute(`document-html-${lang}`) || this.getAttribute('document-html-en'),
+        documentPdf: this.getAttribute(`document-pdf-${lang}`) || this.getAttribute('document-pdf-en'),
+        documentBrf: this.getAttribute(`document-brf-${lang}`) || this.getAttribute('document-brf-en'),
       },
       on: this.panelHandlers(),
     });
@@ -339,17 +354,27 @@ export class FidelPlayer extends HTMLElement {
     this.chapterObserver.observe(this, { childList: true, subtree: true });
 
     if (focus) this.querySelector(focus)?.focus();
+
+    // Events for the host page (see events.js).
+    video.addEventListener('ended', () => emit(this, 'fidel-ended', { duration: video.duration }));
+    emit(this, 'fidel-ready', {
+      lang,
+      captionLanguages: captionLangs,
+      hasSignLanguage: this.sign.available,
+    });
   }
 
   panelHandlers() {
     return {
       uiLang: (lang) => this.switchInterfaceLanguage(lang),
       lowData: (lowData) => {
+        emit(this, 'fidel-low-data-change', { lowData });
         this.savePrefs({ lowData });
         this.rebuild('[data-fidel-low-data]');
       },
       captionLang: (lang) => {
         selectCaptions(this.ablePlayer, lang);
+        emit(this, 'fidel-captions-change', { lang });
         this.savePrefs({ captionLang: lang });
         this.updateDraftNotice();
       },
@@ -398,13 +423,17 @@ export class FidelPlayer extends HTMLElement {
     this.panel.setSignVisible(this.sign.visible);
     this.sign.refresh();
     markCaptionLanguage(this.ablePlayer);
-    if (lang !== this.prefs.captionLang) this.savePrefs({ captionLang: lang });
+    if (lang !== this.prefs.captionLang) {
+      this.savePrefs({ captionLang: lang });
+      emit(this, 'fidel-captions-change', { lang });
+    }
     this.updateDraftNotice();
   }
 
   /** Rebuild the player in another interface language, keeping the position. */
   switchInterfaceLanguage(lang) {
     this.savePrefs({ uiLang: lang });
+    emit(this, 'fidel-language-change', { lang });
     this.rebuild(`[data-fidel-ui-lang="${lang}"]`);
   }
 

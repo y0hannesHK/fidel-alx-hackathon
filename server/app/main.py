@@ -4,7 +4,8 @@
   /api/v1/jobs...     jobs as schema.org/JobPosting JSON-LD
   /api/v1/certificates, /verify/ID   certificates and their public check page
   /files/lessons/     processed lesson files (video, audio)
-  /embed/             the built player (fidel.js, fidel.css, fonts)
+  /embed/v1/          the built player (fidel.js, fidel.css, fonts); stable for partners
+  /embed/             same, latest (for testing)
   /studio/            Fidel Studio, the staff page
   /demo/              demo pages, e.g. the mock Savanna lesson page
   /media/             demo media from data/demo (git-ignored)
@@ -94,6 +95,9 @@ for folder in (settings.data_dir / "demo", settings.data_dir / "lessons", settin
     folder.mkdir(parents=True, exist_ok=True)
 mount_if_present("/files/lessons", settings.data_dir / "lessons", "lesson-files")
 mount_if_present("/files/jobs", settings.data_dir / "jobs", "job-files")
+# Versioned address for partners: /embed/v1/ never gets breaking changes
+# (those would go to /embed/v2/). /embed/ is the latest, for testing.
+mount_if_present("/embed/v1", settings.embed_dir, "embed-v1")
 mount_if_present("/embed", settings.embed_dir, "embed")
 mount_if_present("/studio", settings.studio_dir, "studio")
 mount_if_present("/demo", settings.demo_dir, "demo")

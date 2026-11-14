@@ -11,9 +11,16 @@ RUN npm run build
 
 # ---- Stage 2: the Python server ----
 FROM python:3.11-slim
-# ffmpeg: used for media processing (pipeline, demo clip script)
+# ffmpeg: media processing (pipeline, demo clip script)
+# pango, harfbuzz-subset, fonts-dejavu-core: WeasyPrint, for tagged PDF lesson documents
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg \
+       libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+# liblouis: Braille (.brf) export. A separate step so changing it does not
+# re-download ffmpeg.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends liblouis-bin liblouis-data \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
