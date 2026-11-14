@@ -54,6 +54,7 @@ export const STRINGS = {
     playFrom: 'Play from {time}',
 
     draftNotice: 'These Amharic captions are machine-generated and not yet reviewed.',
+    draftNoticeOm: 'These Afaan Oromo captions are machine-generated and not yet reviewed.',
 
     videoError: 'The video could not be loaded. Check your connection and try again.',
     videoErrorLowData: 'Or try "Use less data" below.',
@@ -122,6 +123,7 @@ export const STRINGS = {
     playFrom: 'ከ{time} ጀምሮ አጫውት',
 
     draftNotice: 'እነዚህ የአማርኛ የግርጌ ጽሑፎች በማሽን የተዘጋጁ ሲሆኑ ገና በሰው አልተገመገሙም።',
+    draftNoticeOm: 'እነዚህ የአፋን ኦሮሞ የግርጌ ጽሑፎች በማሽን የተዘጋጁ ሲሆኑ ገና በሰው አልተገመገሙም።',
 
     videoError: 'ቪዲዮው ሊጫን አልቻለም። ግንኙነትዎን አረጋግጠው እንደገና ይሞክሩ።',
     videoErrorLowData: 'ወይም ከታች "አነስተኛ ዳታ ተጠቀም" ይሞክሩ።',

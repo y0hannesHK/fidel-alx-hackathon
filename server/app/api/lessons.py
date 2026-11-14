@@ -21,7 +21,7 @@ db = Database(settings.data_dir / "fidel.db")
 
 VIDEO_EXTENSIONS = {".mp4", ".m4v", ".mov", ".mkv", ".webm"}
 LessonId = PathParam(pattern=r"^[a-f0-9]{12}$", description="Lesson id")
-Language = Literal["en", "am"]
+Language = Literal["en", "am", "om"]  # English, Amharic, Afaan Oromo
 StepName = Literal[tuple(STEPS)]  # type: ignore[valid-type]
 
 

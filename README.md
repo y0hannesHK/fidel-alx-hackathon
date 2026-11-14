@@ -64,8 +64,9 @@ use the small Whisper model and skip translation (see "Hardware and models").
    - makes web versions (720p MP4 and WebM), a 360p **low-data** version and a
      24 kbps **audio-only** file,
    - writes **English captions** with Whisper (speech-to-text),
-   - writes an **Amharic draft** with MADLAD-400 (machine translation). Machine
-     Amharic is never final: it stays `draft` until a person checks it.
+   - writes **Amharic and Afaan Oromo drafts** with MADLAD-400 (machine
+     translation). Machine translation is never final: it stays `draft` until a
+     person checks it.
 3. In Studio, open the lesson and:
    - **check the Amharic captions** next to the video: fix the text, tick
      "Amharic checked" (or press Ctrl+Enter for "Checked, go to next"), save.
@@ -145,7 +146,7 @@ use the small Whisper model and skip translation (see "Hardware and models").
 | `lesson` | URL of a lesson on a Fidel server; fills in all the others. |
 | `src`, `src-webm`, `src-small` | Video (MP4), optional WebM, optional small video for "Use less data". |
 | `poster` | Image shown before playing. |
-| `captions-en`, `captions-am`, `captions-am-status` | Captions (WebVTT); status `draft` shows the "not yet reviewed" notice. |
+| `captions-en`, `captions-am`, `captions-om`, `captions-am-status`, `captions-om-status` | Captions in English, Amharic, Afaan Oromo (WebVTT); status `draft` shows the "not yet reviewed" notice. |
 | `chapters-en` (or `chapters`), `chapters-am` | Chapter titles (WebVTT). |
 | `descriptions-en` (or `descriptions`), `descriptions-am` | Audio description text (WebVTT). |
 | `description-recordings` | JSON: recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
@@ -281,6 +282,7 @@ any other service. Engines are chosen in `.env`, never by changing code:
 | `FIDEL_STT_PROVIDER` | `local_whisper`, `none` | `local_whisper` |
 | `FIDEL_WHISPER_MODEL` | `tiny`, `base`, `small`, `medium` | `small` |
 | `FIDEL_TRANSLATOR` | `local_madlad`, `none` | `local_madlad` |
+| `FIDEL_TRANSLATE_TO` | caption languages to translate into: `am` (Amharic), `om` (Afaan Oromo) | `am,om` |
 
 `none` switches a step off (shown as "skipped" in Studio). After
 `python -m app.download_models`, Fidel needs no internet at all: fonts, player
@@ -303,9 +305,10 @@ lessons **spoken** in Amharic (see [BACKLOG.md](BACKLOG.md)).
 | Whisper small (`Systran/faster-whisper-small`) | MIT | ~0.5 GB | English captions |
 | MADLAD-400 3B, int8 (`Nextcloud-AI/madlad400-3b-mt-ct2-int8`) | Apache-2.0 | ~3 GB | Amharic caption draft |
 
-Machine Amharic is a draft: in our test (`tools/translation-eval/`) MADLAD often
-got key words wrong (for example "disability"), so every Amharic caption is
-reviewed by a person before it counts as final.
+Machine translation is a draft: in our tests MADLAD often got key words wrong
+in both Amharic and Afaan Oromo (for example "disability" became "street people"
+in Amharic and "people with a disease" in Afaan Oromo), so every translated
+caption is reviewed by a person before it counts as final.
 
 ## Measured numbers
 

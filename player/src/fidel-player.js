@@ -11,8 +11,8 @@
 //   lesson                           URL of a lesson on a Fidel server
 //                                    (/api/v1/lessons/ID); fills in the rest
 //   src, src-webm, poster            video files
-//   captions-en, captions-am         WebVTT captions
-//   captions-am-status               "draft" (machine-made) or "reviewed"
+//   captions-en, captions-am, captions-om   WebVTT captions (English, Amharic, Afaan Oromo)
+//   captions-am-status, captions-om-status  "draft" (machine-made) or "reviewed"
 //   chapters-en, chapters-am         WebVTT chapter titles ("chapters" = English)
 //   descriptions-en, descriptions-am audio description text ("descriptions" = English)
 //   sign                             sign-language video (WebM or MP4)
@@ -239,6 +239,7 @@ export class FidelPlayer extends HTMLElement {
     };
     addTrack('captions', this.getAttribute('captions-en'), 'en', 'English');
     addTrack('captions', this.getAttribute('captions-am'), 'am', 'አማርኛ');
+    addTrack('captions', this.getAttribute('captions-om'), 'om', 'Afaan Oromoo');
     // "chapters" / "descriptions" are short for the English ones.
     const en = (kind) => this.getAttribute(`${kind}-en`) || this.getAttribute(kind);
     addTrack('chapters', en('chapters'), 'en', 'Chapters');
@@ -455,23 +456,22 @@ export class FidelPlayer extends HTMLElement {
     }
   }
 
-  /** Show the "machine-generated" notice while unreviewed Amharic captions are on. */
+  /** Show the "machine-generated" notice while unreviewed translated captions
+   *  (Amharic, Afaan Oromo) are on. Removes only itself from the status area. */
   updateDraftNotice() {
-    const draft = this.getAttribute('captions-am-status') === 'draft';
-    const showing = this.ablePlayer && currentCaptionLang(this.ablePlayer) === 'am';
-    const hasNotice = this.statusArea.childElementCount > 0;
-    if (draft && showing && !hasNotice) {
-      this.statusArea.replaceChildren(
-        h(
-          'div',
-          { class: 'fidel-draft-notice' },
-          h('p', { lang: 'am' }, t('am', 'draftNotice')),
-          h('p', { lang: 'en' }, t('en', 'draftNotice'))
-        )
-      );
-    } else if (!(draft && showing) && hasNotice) {
-      this.statusArea.replaceChildren();
-    }
+    const lang = this.ablePlayer ? currentCaptionLang(this.ablePlayer) : 'off';
+    const draft = lang !== 'off' && lang !== 'en' && this.getAttribute(`captions-${lang}-status`) === 'draft';
+    const existing = this.statusArea.querySelector('.fidel-draft-notice');
+    if (existing && existing.dataset.lang === lang && draft) return;
+    existing?.remove();
+    if (!draft) return;
+    // Amharic: the notice in Amharic and English. Afaan Oromo: English (and
+    // Amharic if that is the interface language) until a speaker writes it in Oromo.
+    const key = lang === 'om' ? 'draftNoticeOm' : 'draftNotice';
+    const lines = lang === 'am' || this.uiLang === 'am' ? [['am', t('am', key)], ['en', t('en', key)]] : [['en', t('en', key)]];
+    this.statusArea.append(
+      h('div', { class: 'fidel-draft-notice', 'data-lang': lang }, lines.map(([l, text]) => h('p', { lang: l }, text)))
+    );
   }
 
   /** Caption text for transcript search (fetched once, then cached). */
@@ -480,6 +480,7 @@ export class FidelPlayer extends HTMLElement {
       const sources = [
         ['en', this.getAttribute('captions-en')],
         ['am', this.getAttribute('captions-am')],
+        ['om', this.getAttribute('captions-om')],
       ].filter(([, url]) => url);
       this.captionText = Promise.all(
         sources.map(async ([lang, url]) => {

@@ -12,7 +12,7 @@ import { SIGN_CORNERS } from './sign-window.js';
 import { canSaveOffline, isSaved, saveOffline, savedPageUrl } from './save-offline.js';
 import { emit } from './events.js';
 
-const LANGUAGE_NAMES = { en: 'English', am: 'አማርኛ' };
+const LANGUAGE_NAMES = { en: 'English', am: 'አማርኛ', om: 'Afaan Oromoo' };
 
 /**
  * options: {

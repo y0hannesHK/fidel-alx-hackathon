@@ -42,7 +42,10 @@ def test_amharic_review_flow(lesson):
     # Running the translation again must not overwrite the reviewed work.
     client.post(f"/api/v1/lessons/{lesson_id}/rebuild", headers=STAFF, json={"steps": ["translate"]})
     result = wait_for_steps(client, lesson_id)["translate"]
-    assert result["status"] == "skipped" and "reviewed by a person" in result["message"]
+    # The checked Amharic is kept; the other languages (Afaan Oromo) are still translated.
+    assert result["status"] == "done", result
+    assert "am captions have been reviewed by a person" in result["message"]
+    assert "Afaan Oromo:" in result["message"]
     assert "ሰላም ተማሪዎች።" in client.get(url).text
 
 

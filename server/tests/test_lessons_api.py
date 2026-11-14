@@ -16,7 +16,7 @@ class FakeSpeechToText:
 
 class FakeTranslator:
     def translate(self, cues, source, target):
-        return [Cue(c.start, c.end, f"[am] {c.text}") for c in cues]
+        return [Cue(c.start, c.end, f"[{target}] {c.text}") for c in cues]
 
 
 @pytest.fixture
@@ -66,7 +66,7 @@ def test_upload_runs_the_whole_pipeline(client, tiny_video):
     assert manifest["title"] == "Test lesson"
     assert set(manifest["video"]) == {"mp4", "webm", "small_mp4"}
     assert "opus" in manifest["audio"]
-    assert {c["lang"]: c["status"] for c in manifest["captions"]} == {"en": "draft", "am": "draft"}
+    assert {c["lang"]: c["status"] for c in manifest["captions"]} == {"en": "draft", "am": "draft", "om": "draft"}
 
     english = client.get(f"/api/v1/lessons/{lesson_id}/captions/en")
     assert english.headers["content-type"].startswith("text/vtt")
@@ -74,6 +74,8 @@ def test_upload_runs_the_whole_pipeline(client, tiny_video):
     amharic = client.get(f"/api/v1/lessons/{lesson_id}/captions/am").text
     assert "[am] Hello learners." in amharic
     assert "00:00:00.000 --> 00:00:01.500" in amharic  # same timings as English
+    oromo = client.get(f"/api/v1/lessons/{lesson_id}/captions/om").text
+    assert "[om] Hello learners." in oromo
 
     # Files listed in the manifest can be downloaded.
     video_path = manifest["video"]["mp4"].split("testserver", 1)[1]

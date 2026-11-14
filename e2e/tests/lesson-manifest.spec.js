@@ -45,3 +45,26 @@ test('an unknown lesson shows an error instead of a broken player', async ({ pag
   await page.goto(`/demo/savanna-mock/lesson.html?id=${ID}`);
   await expect(page.getByRole('alert')).toHaveText(/could not be loaded \(error 404\)/);
 });
+
+test('Afaan Oromo captions: a caption choice, marked lang="om", with the draft notice', async ({ page }) => {
+  // Test-only caption file (the words are placeholders, not a translation).
+  await page.route('**/test-om.vtt', (route) => route.fulfill({
+    contentType: 'text/vtt',
+    body: 'WEBVTT\n\n00:00:00.000 --> 00:02:39.000\nQormaata jecha Afaan Oromoo\n',
+  }));
+  const withOromo = manifest();
+  withOromo.captions.push({ lang: 'om', status: 'draft', url: '/test-om.vtt' });
+  await page.route(`**/api/v1/lessons/${ID}`, (route) => route.fulfill({ json: withOromo }));
+  await page.goto(`/demo/savanna-mock/lesson.html?id=${ID}`);
+
+  const panel = page.locator('fidel-player .fidel-panel');
+  await expect(panel).toBeVisible({ timeout: 15_000 });
+  await panel.getByRole('radio', { name: 'Afaan Oromoo' }).check();
+  await expect(page.locator('fidel-player .able-captions-wrapper')).toHaveAttribute('lang', 'om');
+  await expect(page.locator('.fidel-draft-notice')).toContainText('These Afaan Oromo captions are machine-generated');
+
+  // Search finds Oromo words too.
+  await page.getByRole('searchbox', { name: 'Search the transcript' }).fill('Oromoo');
+  await page.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(page.locator('.fidel-result-text[lang="om"]')).toContainText('Oromoo');
+});

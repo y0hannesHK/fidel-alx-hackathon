@@ -84,7 +84,7 @@ test('staff fix and check the Amharic captions; the draft notice disappears', as
   await first.press('Control+Enter'); // "Checked, go to next"
   const second = editor.getByRole('group', { name: /Caption 2/ }).getByRole('textbox', { name: /Amharic/ });
   await expect(second).toBeFocused();
-  await editor.getByRole('group', { name: /Caption 2/ }).getByRole('button', { name: 'Checked, go to next' }).click();
+  await editor.getByRole('group', { name: /Caption 2/ }).getByRole('button', { name: 'Amharic checked, go to next' }).click();
   await expect(editor.locator('.counter')).toContainText('All Amharic captions are checked.');
 
   await editor.getByRole('button', { name: 'Save captions' }).click();

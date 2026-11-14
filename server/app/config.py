@@ -38,6 +38,7 @@ class Settings:
     stt_provider: str  # local_whisper | none
     whisper_model: str  # tiny | base | small | medium
     translator: str  # local_madlad | none
+    translate_to: list[str]  # caption languages to machine-translate into, e.g. ['am', 'om']
 
 
 def load_settings() -> Settings:
@@ -55,6 +56,7 @@ def load_settings() -> Settings:
         stt_provider=os.environ.get("FIDEL_STT_PROVIDER", "local_whisper"),
         whisper_model=os.environ.get("FIDEL_WHISPER_MODEL", "small"),
         translator=os.environ.get("FIDEL_TRANSLATOR", "local_madlad"),
+        translate_to=[c.strip() for c in os.environ.get("FIDEL_TRANSLATE_TO", "am,om").split(",") if c.strip()],
     )
 
 

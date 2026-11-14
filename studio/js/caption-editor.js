@@ -1,14 +1,21 @@
 // Caption editor: the video on one side, the list of captions on the other.
 //
-// Each caption shows its time, the English text and the Amharic text, both
-// editable, a "Play this caption" button and an "Amharic checked" box.
-// Machine Amharic stays a draft until a person ticks "checked" for every
-// caption; only then does the player stop showing the draft notice.
+// Each caption shows its time, the English text and each translation
+// (Amharic, Afaan Oromo), all editable, a "Play this caption" button and a
+// "checked" box per translation. Machine translations stay drafts until a
+// person ticks "checked" for every caption; only then does the player stop
+// showing the draft notice for that language.
 //
-// Shortcut (with a visible button for each): in an Amharic box,
-// Ctrl+Enter = "Checked, go to next".
+// Shortcut (with a visible button for each): in a translation box,
+// Ctrl+Enter = "Checked, go to next" for that language.
 import { api } from './api.js';
 import { formatTime, h, say, uid } from './util.js';
+
+// Translated caption languages, in the order they are shown.
+const TRANSLATIONS = [
+  { code: 'am', name: 'Amharic', native: 'አማርኛ' },
+  { code: 'om', name: 'Afaan Oromo', native: 'Afaan Oromoo' },
+];
 
 export async function captionEditor(lessonId, manifest) {
   const languages = manifest.captions.map((c) => c.lang);
@@ -19,22 +26,25 @@ export async function captionEditor(lessonId, manifest) {
     return section;
   }
 
-  // Load both languages. They share timings (the Amharic is translated cue by cue).
+  // Load every language. They share timings (translations are made cue by cue).
   const load = async (lang) => (languages.includes(lang) ? api(`/api/v1/lessons/${lessonId}/captions/${lang}/cues`) : null);
-  const [english, amharic, glossary] = await Promise.all([
-    load('en'), load('am'), api('/api/v1/glossary').catch(() => ({ terms: [] })),
+  const [english, glossary, ...translated] = await Promise.all([
+    load('en'), api('/api/v1/glossary').catch(() => ({ terms: [] })), ...TRANSLATIONS.map((t) => load(t.code)),
   ]);
+  const loaded = Object.fromEntries(TRANSLATIONS.map((t, i) => [t.code, translated[i]]));
+  const targets = TRANSLATIONS.filter((t) => loaded[t.code]);
+
   // Glossary words in a caption's English text (word match; also plurals and -ed/-ing).
   const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const patterns = glossary.terms.map((term) => ({ term, re: new RegExp(`\\b${escape(term.en)}(s|es|d|ed|ing)?\\b`, 'i') }));
   const glossaryWords = (text) => patterns.filter(({ re }) => re.test(text || '')).map(({ term }) => term);
-  const base = english || amharic;
-  const rows = base.cues.map((cue, i) => ({
-    start: cue.start,
-    end: cue.end,
-    en: english?.cues[i] ? { ...english.cues[i] } : null,
-    am: amharic?.cues[i] ? { ...amharic.cues[i] } : null,
-  }));
+
+  const base = english || loaded[targets[0]?.code];
+  const rows = base.cues.map((cue, i) => {
+    const row = { start: cue.start, end: cue.end, en: english?.cues[i] ? { ...english.cues[i] } : null, checks: {} };
+    for (const t of targets) row[t.code] = loaded[t.code].cues[i] ? { ...loaded[t.code].cues[i] } : null;
+    return row;
+  });
 
   const status = h('p', { class: 'status', role: 'status' });
   const counter = h('p', { class: 'counter' });
@@ -47,16 +57,16 @@ export async function captionEditor(lessonId, manifest) {
     if (dirty) event.preventDefault(); // browser asks "leave with unsaved changes?"
   });
 
-  function draftsLeft() {
-    return rows.filter((r) => r.am && !r.am.reviewed).length;
+  function draftsLeft(code) {
+    return rows.filter((r) => r[code] && !r[code].reviewed).length;
   }
   function updateCounter() {
-    const left = draftsLeft();
-    counter.textContent = amharic
-      ? left === 0
-        ? 'All Amharic captions are checked.'
-        : `${left} of ${rows.length} Amharic captions still to check.`
-      : 'No Amharic captions yet.';
+    counter.textContent = targets.length
+      ? targets.map((t) => {
+        const left = draftsLeft(t.code);
+        return left === 0 ? `All ${t.name} captions are checked.` : `${left} of ${rows.length} ${t.name} captions still to check.`;
+      }).join(' ')
+      : 'No translated captions yet.';
     if (dirty) counter.textContent += ' You have unsaved changes.';
   }
 
@@ -78,7 +88,7 @@ export async function captionEditor(lessonId, manifest) {
   }
 
   // --- Caption list on the right -------------------------------------------
-  const amharicBoxes = [];
+  const boxes = Object.fromEntries(targets.map((t) => [t.code, []]));
   const list = h('ol', { class: 'cue-list' },
     rows.map((row, i) => {
       const legendId = uid('cue');
@@ -95,32 +105,35 @@ export async function captionEditor(lessonId, manifest) {
           })
         );
       }
-      let checkbox = null;
-      if (row.am) {
-        const id = uid('am');
+      const nextButtons = [];
+      for (const t of targets) {
+        if (!row[t.code]) continue;
+        const id = uid(t.code);
         const box = h('textarea', {
-          id, lang: 'am', rows: 2, value: row.am.text,
+          id, lang: t.code, rows: 2, value: row[t.code].text,
           'aria-describedby': legendId,
-          oninput: (e) => { row.am.text = e.target.value; markDirty(); },
+          oninput: (e) => { row[t.code].text = e.target.value; markDirty(); },
           onkeydown: (e) => {
             if (e.key === 'Enter' && e.ctrlKey) {
               e.preventDefault();
-              checkAndNext(i);
+              checkAndNext(i, t);
             }
           },
         });
-        amharicBoxes[i] = box;
+        boxes[t.code][i] = box;
         const checkId = uid('check');
-        checkbox = h('input', {
-          type: 'checkbox', id: checkId, checked: row.am.reviewed,
-          onchange: (e) => { row.am.reviewed = e.target.checked; markDirty(); },
+        const checkbox = h('input', {
+          type: 'checkbox', id: checkId, checked: row[t.code].reviewed,
+          onchange: (e) => { row[t.code].reviewed = e.target.checked; markDirty(); },
         });
-        row.checkbox = checkbox;
+        row.checks[t.code] = checkbox;
         fields.push(
-          h('label', { for: id }, 'Amharic ', h('span', { lang: 'am' }, '(አማርኛ)')),
+          h('label', { for: id }, `${t.name} `, h('span', { lang: t.code }, `(${t.native})`)),
           box,
-          h('div', { class: 'check' }, checkbox, h('label', { for: checkId }, 'Amharic checked'))
+          h('div', { class: 'check' }, checkbox, h('label', { for: checkId }, `${t.name} checked`))
         );
+        nextButtons.push(h('button', { type: 'button', class: 'button secondary', onclick: () => checkAndNext(i, t) },
+          `${t.name} checked, go to next`));
       }
       const words = glossaryWords(row.en?.text);
       row.hasGlossaryWord = words.length > 0;
@@ -133,26 +146,25 @@ export async function captionEditor(lessonId, manifest) {
               term.am ? [' = ', h('span', { lang: 'am' }, term.am)] : ' (no agreed Amharic yet)'])),
           h('div', { class: 'row' },
             h('button', { type: 'button', class: 'button secondary', onclick: () => playRow(row) }, 'Play this caption'),
-            row.am && h('button', { type: 'button', class: 'button secondary', onclick: () => checkAndNext(i) }, 'Checked, go to next')
-          ),
+            nextButtons),
           fields
         )
       );
     })
   );
 
-  function checkAndNext(i) {
+  function checkAndNext(i, t) {
     const row = rows[i];
-    if (!row.am) return;
-    row.am.reviewed = true;
-    row.checkbox.checked = true;
+    if (!row[t.code]) return;
+    row[t.code].reviewed = true;
+    row.checks[t.code].checked = true;
     markDirty();
-    const next = amharicBoxes.findIndex((box, j) => j > i && box && !rows[j].am.reviewed);
+    const next = boxes[t.code].findIndex((box, j) => j > i && box && !rows[j][t.code].reviewed);
     if (next !== -1) {
-      amharicBoxes[next].focus();
-      amharicBoxes[next].scrollIntoView({ block: 'center' });
+      boxes[t.code][next].focus();
+      boxes[t.code][next].scrollIntoView({ block: 'center' });
     } else {
-      say(status, 'That was the last Amharic caption to check. Remember to save.');
+      say(status, `That was the last ${t.name} caption to check. Remember to save.`);
     }
   }
 
@@ -161,33 +173,36 @@ export async function captionEditor(lessonId, manifest) {
     say(status, 'Saving…');
     try {
       const results = [];
-      for (const lang of ['en', 'am']) {
+      for (const lang of ['en', ...targets.map((t) => t.code)]) {
         const cues = rows.filter((r) => r[lang]).map((r) => ({ start: r.start, end: r.end, ...r[lang] }));
         if (!cues.length) continue;
         results.push(await api(`/api/v1/lessons/${lessonId}/captions/${lang}`, { method: 'PUT', json: { cues } }));
       }
       dirty = false;
       updateCounter();
-      const am = results.find((r) => r.lang === 'am');
-      say(status, am
-        ? `Saved. Amharic captions are ${am.status === 'reviewed' ? 'fully checked: learners no longer see the draft notice' : `still a draft (${am.drafts_left} to check)`}.`
-        : 'Saved.');
+      const parts = targets.map((t) => {
+        const result = results.find((r) => r.lang === t.code);
+        return result.status === 'reviewed'
+          ? `${t.name} captions are fully checked: learners no longer see the draft notice.`
+          : `${t.name} captions are still a draft (${result.drafts_left} to check).`;
+      });
+      say(status, ['Saved.', ...parts].join(' '));
       section.dispatchEvent(new CustomEvent('captions-saved', { bubbles: true }));
     } catch (error) {
       say(status, `Not saved: ${error.message}`);
     }
   }
 
-  function markAll() {
-    if (!window.confirm('Mark every Amharic caption as checked? Only do this after reading them all.')) return;
+  function markAll(t) {
+    if (!window.confirm(`Mark every ${t.name} caption as checked? Only do this after reading them all.`)) return;
     for (const row of rows) {
-      if (row.am) {
-        row.am.reviewed = true;
-        row.checkbox.checked = true;
+      if (row[t.code]) {
+        row[t.code].reviewed = true;
+        row.checks[t.code].checked = true;
       }
     }
     markDirty();
-    say(status, 'All Amharic captions marked as checked. Remember to save.');
+    say(status, `All ${t.name} captions marked as checked. Remember to save.`);
   }
 
   let englishChecked = null;
@@ -214,12 +229,13 @@ export async function captionEditor(lessonId, manifest) {
     }),
     h('label', { for: onlyId }, `Show only captions with glossary words (${glossaryCount})`));
   section.append(
-    h('p', { class: 'hint' }, 'Tip: in an Amharic box, press Ctrl+Enter for "Checked, go to next". Captions with glossary words (words machines often get wrong) are marked: check those first.'),
+    h('p', { class: 'hint' }, 'Tip: in a translation box, press Ctrl+Enter for "Checked, go to next". Captions with glossary words (words machines often get wrong) are marked: check those first.'),
     h('div', { class: 'toolbar' },
       counter,
       h('div', { class: 'row' },
         h('button', { type: 'button', class: 'button', onclick: save }, 'Save captions'),
-        amharic && h('button', { type: 'button', class: 'button secondary', onclick: markAll }, 'Mark all Amharic as checked')
+        targets.map((t) => h('button', { type: 'button', class: 'button secondary', onclick: () => markAll(t) },
+          `Mark all ${t.name} as checked`))
       ),
       englishChecked,
       onlyGlossary,

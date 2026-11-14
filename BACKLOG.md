@@ -38,6 +38,11 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 ## Later / reminders
 
+- **Afaan Oromo, beyond captions.** Captions (draft, reviewed in Studio) are
+  done. Not yet in Afaan Oromo: the player's interface text, the draft notice
+  sentence, the offline lesson, PDF and Braille. These need text written by a
+  fluent Oromo speaker. MADLAD's Oromo output is weak: always review.
+
 - **Offline page has no description recordings.** Descriptions appear as text
   in the one-page lesson; recordings play only in the online player.
 - **Amharic text-to-speech for descriptions** (speecht5_tts_amharic, needs

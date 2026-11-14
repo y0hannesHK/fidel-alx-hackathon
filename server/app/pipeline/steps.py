@@ -13,7 +13,7 @@ from ..db import Database
 from ..providers import get_speech_to_text, get_translator
 from . import media
 
-TARGET_LANGUAGE = "am"
+LANGUAGE_NAMES = {"en": "English", "am": "Amharic", "om": "Afaan Oromo"}
 
 
 class Skip(Exception):
@@ -61,26 +61,36 @@ def transcribe(db: Database, lesson: dict) -> str:
 
 
 def translate(db: Database, lesson: dict) -> str:
+    """Machine-translate the captions into each language in FIDEL_TRANSLATE_TO
+    (default: Amharic and Afaan Oromo). Every result is a DRAFT for a person to check."""
     folder = lesson_folder(lesson["id"])
     source = lesson["spoken_language"]
-    if source == TARGET_LANGUAGE:
-        raise Skip("The lesson is spoken in Amharic: nothing to translate.")
+    targets = [lang for lang in settings.translate_to if lang != source]
+    if not targets:
+        raise Skip("Nothing to translate into (FIDEL_TRANSLATE_TO).")
     engine = get_translator(settings)
     if engine is None:
         raise Skip("Translation is switched off (FIDEL_TRANSLATOR=none).")
     source_file = folder / f"captions-{source}.vtt"
     if not source_file.is_file():
         raise Skip(f"No {source} captions yet: run 'transcribe' first.")
-    protect_human_work(db, lesson["id"], TARGET_LANGUAGE)
-    cues = engine.translate(read_vtt(source_file), source, TARGET_LANGUAGE)
-    write_vtt(
-        folder / f"captions-{TARGET_LANGUAGE}.vtt",
-        cues,
-        note="Machine translation. Status: draft. Must be reviewed by a person.",
-    )
-    # Machine Amharic is never final: always 'draft' until a person reviews it.
-    db.set_caption_status(lesson["id"], TARGET_LANGUAGE, "draft")
-    return f"{len(cues)} captions translated (draft)."
+    source_cues = read_vtt(source_file)
+    notes = []
+    for target in targets:
+        try:
+            protect_human_work(db, lesson["id"], target)
+        except Skip as reason:
+            notes.append(str(reason))
+            continue
+        cues = engine.translate(source_cues, source, target)
+        write_vtt(folder / f"captions-{target}.vtt", cues,
+                  note="Machine translation. Status: draft. Must be reviewed by a person.")
+        # Machine translation is never final: always 'draft' until a person reviews it.
+        db.set_caption_status(lesson["id"], target, "draft")
+        notes.append(f"{LANGUAGE_NAMES.get(target, target)}: {len(cues)} captions (draft).")
+    if all("not replaced" in note for note in notes):
+        raise Skip(" ".join(notes))
+    return " ".join(notes)
 
 
 def sign_video(db: Database, lesson: dict) -> str:
