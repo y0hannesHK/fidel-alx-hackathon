@@ -3,8 +3,8 @@
 English uses Unified English Braille grade 2 (contracted), the standard in
 Ethiopia's English-medium teaching. BRF pages are 40 cells wide and 25 lines
 long, with a form feed between pages, which embossers and refreshable Braille
-displays expect. Amharic is offered only if liblouis has an Ethiopic table
-installed (checked at run time); otherwise only English is available.
+displays expect. Amharic uses liblouis' Ethiopic table (ethio-g1); each
+language is offered only if its tables are installed (checked at run time).
 """
 
 import shutil

@@ -126,8 +126,9 @@ use the small Whisper model and skip translation (see "Hardware and models").
 - **Lesson document**: the lesson to read, as an accessible web page and a
   **tagged PDF** (PDF/UA) with chapters as headings, the transcript, audio
   descriptions, and slide images described by staff (an image is included only
-  once a person has described it). Also in **Braille** (`.brf`, Unified English
-  Braille grade 2, 40 × 25) for embossers and Braille displays.
+  once a person has described it). Also in **Braille** (`.brf`, 40 × 25 cells)
+  for embossers and Braille displays: English in Unified English Braille grade 2,
+  Amharic in Ethiopic Braille (liblouis `ethio-g1` table).
 - **Recorded live sessions** (`<fidel-session-viewer>`): the recording with
   captions and transcript, and the **Zoom chat** beside it (one column on
   phones). Select a message to jump there; new messages are read aloud while it
