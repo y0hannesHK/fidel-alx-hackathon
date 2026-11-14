@@ -1,5 +1,5 @@
 // Studio: jobs (schema.org/JobPosting) and certificates.
-import { api, uploadWithProgress } from './api.js';
+import { api, uploadWithProgress, voiceLanguages } from './api.js';
 import { h, say, uid } from './util.js';
 import { rowsEditor } from './rows-editor.js';
 
@@ -26,11 +26,11 @@ function field(label, control, hint) {
 
 export async function jobsPage(main) {
   document.title = 'Jobs – Fidel Studio';
-  const jobs = await api('/api/v1/jobs');
+  const [jobs, voice] = await Promise.all([api('/api/v1/jobs'), voiceLanguages()]);
   main.replaceChildren(
     h('h1', { tabindex: '-1' }, 'Jobs'),
     jobForm(main),
-    jobList(jobs)
+    jobList(jobs, voice)
   );
   main.querySelector('h1').focus();
 }
@@ -90,7 +90,7 @@ function jobForm(main) {
     h('details', {}, h('summary', {}, h('h2', { id: 'add-job', class: 'inline' }, 'Add a job')), form));
 }
 
-function jobList(jobs) {
+function jobList(jobs, voice) {
   const section = h('section', { class: 'card', 'aria-labelledby': 'open-jobs' }, h('h2', { id: 'open-jobs' }, 'Open jobs'));
   if (!jobs.length) {
     section.append(h('p', {}, 'No open jobs.'));
@@ -105,7 +105,7 @@ function jobList(jobs) {
       h('p', {}, h('a', { href: `/demo/savanna-mock/jobs.html?id=${job.id}` }, 'Preview the job card'),
         ' · ', h('a', { href: job.url }, 'JSON-LD')),
       field('Embed code', h('input', { readonly: true, value: snippet })),
-      ['en', 'am'].map((lang) => recordingUpload(job.id, lang, status)),
+      ['en', 'am'].map((lang) => recordingUpload(job.id, lang, status, voice.has(lang) && (lang === 'en' || job.has_summary_am))),
       h('button', {
         type: 'button', class: 'button secondary small',
         onclick: async (e) => {
@@ -119,7 +119,7 @@ function jobList(jobs) {
   return section;
 }
 
-function recordingUpload(jobId, lang, status) {
+function recordingUpload(jobId, lang, status, canMachineRead) {
   const name = lang === 'en' ? 'English' : 'Amharic';
   const file = h('input', { type: 'file', accept: 'audio/*,video/*' });
   return h('div', { class: 'row' },
@@ -137,7 +137,22 @@ function recordingUpload(jobId, lang, status) {
           say(status, `Not attached: ${error.message}`);
         }
       },
-    }, `Attach ${name} recording`));
+    }, `Attach ${name} recording`),
+    // Optional voice engine (ToucanTTS): only shown when it is running.
+    canMachineRead && h('button', {
+      type: 'button', class: 'button secondary small',
+      onclick: async (e) => {
+        e.target.disabled = true;
+        say(status, `Making a machine-read ${name} recording…`);
+        try {
+          await api(`/api/v1/jobs/${jobId}/summary-recording/${lang}/machine`, { method: 'POST' });
+          say(status, `Machine-read ${name} recording attached. The job card tells learners it is a computer voice.`);
+        } catch (error) {
+          say(status, `No machine-read recording: ${error.message}`);
+        }
+        e.target.disabled = false;
+      },
+    }, `Make machine-read ${name} recording`));
 }
 
 // --- Certificates --------------------------------------------------------------------

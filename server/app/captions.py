@@ -54,12 +54,13 @@ def wrap_two_lines(text: str) -> str:
     return text[:split] + "\n" + text[split + 1 :]
 
 
-def cues_from_words(words: list[Word]) -> list[Cue]:
+def cues_from_words(words: list[Word], pause_break: float | None = None) -> list[Cue]:
     """Group timed words into readable cues.
 
     A cue ends at the end of a sentence, or before it gets longer than
     MAX_CHARS characters or MAX_SECONDS seconds. Timings come from the words,
-    so they match the speech.
+    so they match the speech. pause_break (seconds): also end a cue where the
+    speaker pauses at least this long (for engines that write no punctuation).
     """
     cues: list[Cue] = []
     current: list[Word] = []
@@ -83,7 +84,8 @@ def cues_from_words(words: list[Word]) -> list[Cue]:
         if current:
             text = "".join(w.text for w in current + [word]).strip()
             too_long = len(text) > MAX_CHARS or word.end - current[0].start > MAX_SECONDS
-            if too_long:
+            paused = pause_break is not None and word.start - current[-1].end >= pause_break
+            if too_long or paused:
                 flush()
         current.append(word)
         if word.text.strip().endswith((".", "?", "!", "።", "፧")):

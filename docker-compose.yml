@@ -21,3 +21,30 @@ services:
       timeout: 3s
       retries: 5
     restart: unless-stopped
+
+  # ---- Optional Amharic speech engines (off unless their profile is named) ----
+  # Each runs in its own container, so PyTorch and the GPL parts ToucanTTS
+  # needs stay out of the main image. Only the server can reach them (no ports
+  # are published). See README, "Optional Amharic speech engines".
+
+  # Amharic speech-to-text (Meta Omnilingual ASR). About 3 GB RAM while loaded.
+  #   docker compose --profile amharic-speech up -d   and set FIDEL_OMNIASR_URL=http://omniasr:8001
+  omniasr:
+    profiles: ["amharic-speech"]
+    build:
+      context: .
+      dockerfile: engines/omniasr/Dockerfile
+    volumes:
+      - ./data/models:/models
+    restart: unless-stopped
+
+  # Machine-read Amharic recordings (IMS ToucanTTS). About 1.5 GB RAM while loaded.
+  #   docker compose --profile amharic-voice up -d    and set FIDEL_TTS_URL=http://toucan:8002
+  toucan:
+    profiles: ["amharic-voice"]
+    build:
+      context: .
+      dockerfile: engines/toucan/Dockerfile
+    volumes:
+      - ./data/models:/models
+    restart: unless-stopped

@@ -1070,6 +1070,90 @@
         }
       }
     },
+    "/api/v1/lessons/{lesson_id}/descriptions/{lang}/recording/machine": {
+      "post": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Make Machine Description Recording",
+        "description": "Make a MACHINE-READ recording of one description with the optional\nvoice engine (Amharic only). Use it when no person has recorded it yet;\nStudio marks it as machine-read. 409 if no voice engine is set up.",
+        "operationId": "make_machine_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_machine_post",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am",
+                "om"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Start time of the description (seconds)",
+              "title": "Start"
+            },
+            "description": "Start time of the description (seconds)"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DescriptionsEdit"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/lessons/{lesson_id}/sign": {
       "post": {
         "tags": [
@@ -2027,6 +2111,74 @@
         }
       }
     },
+    "/api/v1/jobs/{job_id}/summary-recording/{lang}/machine": {
+      "post": {
+        "tags": [
+          "jobs"
+        ],
+        "summary": "Make Machine Summary Recording",
+        "description": "Make a MACHINE-READ recording of the summary with the optional voice\nengine (Amharic only), when no person has recorded it. The job card says\nit is machine-read. 409 if no voice engine is set up.",
+        "operationId": "make_machine_summary_recording_api_v1_jobs__job_id__summary_recording__lang__machine_post",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/ld+json": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/certificates": {
       "post": {
         "tags": [
@@ -2478,6 +2630,51 @@
         }
       }
     },
+    "/api/v1/engines": {
+      "get": {
+        "tags": [
+          "engines (staff)"
+        ],
+        "summary": "List Engines",
+        "operationId": "list_engines_api_v1_engines_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Engines"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -2910,6 +3107,12 @@
             "title": "Has Recording",
             "description": "A recording of it being read aloud exists (read-only)",
             "default": false
+          },
+          "machine_read": {
+            "type": "boolean",
+            "title": "Machine Read",
+            "description": "The recording was made by the voice engine, not a person (read-only)",
+            "default": false
           }
         },
         "type": "object",
@@ -2970,6 +3173,79 @@
           "text"
         ],
         "title": "EditCue"
+      },
+      "Engine": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages",
+            "description": "Language codes it handles"
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running",
+            "description": "It answered just now (always true for engines inside this server)"
+          },
+          "model_downloaded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Downloaded",
+            "description": "Optional engines: is its model downloaded?"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "languages",
+          "running"
+        ],
+        "title": "Engine"
+      },
+      "Engines": {
+        "properties": {
+          "speech_to_text": {
+            "items": {
+              "$ref": "#/components/schemas/Engine"
+            },
+            "type": "array",
+            "title": "Speech To Text"
+          },
+          "translation": {
+            "items": {
+              "$ref": "#/components/schemas/Engine"
+            },
+            "type": "array",
+            "title": "Translation"
+          },
+          "text_to_speech": {
+            "items": {
+              "$ref": "#/components/schemas/Engine"
+            },
+            "type": "array",
+            "title": "Text To Speech",
+            "description": "Machine-read recordings (optional engine)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "speech_to_text",
+          "translation",
+          "text_to_speech"
+        ],
+        "title": "Engines"
       },
       "Glossary": {
         "properties": {

@@ -1,6 +1,6 @@
 // One lesson in Studio: progress, publish, preview, captions, chapters,
 // audio description and sign-language video.
-import { api, uploadWithProgress } from './api.js';
+import { api, uploadWithProgress, voiceLanguages } from './api.js';
 import { captionEditor } from './caption-editor.js';
 import { rowsEditor } from './rows-editor.js';
 import { h, say, uid } from './util.js';
@@ -8,7 +8,7 @@ import { h, say, uid } from './util.js';
 const STEP_LABELS = {
   extract_audio: 'Extract audio',
   renditions: 'Make web videos (and low-data and audio-only versions)',
-  transcribe: 'English captions (speech-to-text)',
+  transcribe: 'Captions in the spoken language (speech-to-text)',
   translate: 'Amharic draft captions (machine translation)',
   sign_video: 'Sign-language video',
 };
@@ -240,6 +240,7 @@ async function chaptersSection(lessonId, videoTime, onSaved) {
 async function descriptionsSection(lessonId, videoTime, onSaved) {
   const wrapper = h('div');
   const editors = {};
+  const voice = await voiceLanguages();
   for (const [lang, name] of [['en', 'English'], ['am', 'Amharic']]) {
     const { cues } = await api(`/api/v1/lessons/${lessonId}/descriptions/${lang}`);
     editors[lang] = rowsEditor({
@@ -267,21 +268,23 @@ async function descriptionsSection(lessonId, videoTime, onSaved) {
       },
       // A recording of each description being read aloud. Needed for Amharic:
       // most phones have no Amharic voice to read the text.
-      extra: (row, { status, rerender }) => recordingControls(lessonId, lang, row, status, rerender, onSaved),
+      extra: (row, { status, rerender }) => recordingControls(lessonId, lang, row, status, rerender, onSaved, voice.has(lang)),
     });
     wrapper.append(editors[lang]);
   }
   return wrapper;
 }
 
-function recordingControls(lessonId, lang, row, status, rerender, onSaved) {
+function recordingControls(lessonId, lang, row, status, rerender, onSaved, canMachineRead) {
   const url = (start) => `/api/v1/lessons/${lessonId}/descriptions/${lang}/recording?start=${start}`;
   if (row.has_recording === undefined) {
     return h('p', { class: 'hint' }, 'Save the descriptions first; then you can add a recording of this one.');
   }
   if (row.has_recording) {
     return h('div', { class: 'row' },
-      h('span', {}, '✓ Recording attached.'),
+      h('span', {}, row.machine_read
+        ? '✓ Machine-read recording attached (computer voice). Listen to it; a recording by a person is better.'
+        : '✓ Recording attached.'),
       h('button', {
         type: 'button', class: 'button secondary small',
         onclick: async () => {
@@ -315,7 +318,27 @@ function recordingControls(lessonId, lang, row, status, rerender, onSaved) {
             say(status, `Recording not attached: ${error.message}`);
           }
         },
-      }, 'Attach recording')));
+      }, 'Attach recording'),
+      // Optional voice engine (ToucanTTS): only shown when it is running.
+      canMachineRead && h('button', {
+        type: 'button', class: 'button secondary small',
+        onclick: async (e) => {
+          e.target.disabled = true;
+          say(status, 'Making a machine-read recording… (about 1 second per 10 letters)');
+          try {
+            const saved = await api(`${url(row.start)}`.replace('/recording?', '/recording/machine?'), { method: 'POST' });
+            const match = saved.cues.find((c) => Math.abs(c.start - row.start) < 0.05);
+            row.has_recording = Boolean(match?.has_recording);
+            row.machine_read = Boolean(match?.machine_read);
+            rerender();
+            onSaved();
+            say(status, 'Machine-read recording attached. Listen to it before publishing.');
+          } catch (error) {
+            e.target.disabled = false;
+            say(status, `No machine-read recording: ${error.message}`);
+          }
+        },
+      }, 'Make machine-read recording')));
 }
 
 // --- Sign language video ----------------------------------------------------------------

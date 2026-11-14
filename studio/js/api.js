@@ -69,3 +69,18 @@ export function uploadWithProgress(path, form, onProgress) {
     xhr.send(form);
   });
 }
+
+/**
+ * Languages the optional voice engine can read right now (running, model
+ * downloaded), e.g. Set {'am'}. Empty when there is no voice engine, so Studio
+ * shows no "machine-read" buttons that could not work. Asked once per page.
+ */
+let voice;
+export function voiceLanguages() {
+  voice ??= api('/api/v1/engines')
+    .then((engines) => new Set(engines.text_to_speech
+      .filter((e) => e.running && e.model_downloaded)
+      .flatMap((e) => e.languages)))
+    .catch(() => new Set());
+  return voice;
+}

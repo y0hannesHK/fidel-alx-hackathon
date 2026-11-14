@@ -4,12 +4,15 @@ sign-language video upload, and publishing.
 """
 
 import shutil
+from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from .. import document
 from ..captions import Cue, from_vtt, read_vtt, write_vtt
+from ..config import settings
+from ..providers import ProviderUnavailable, get_text_to_speech
 from ..pipeline import media
 from ..pipeline.runner import queue_steps, run_steps
 from ..pipeline.steps import lesson_folder
@@ -75,6 +78,7 @@ class DescriptionCue(BaseModel):
     end: float = Field(gt=0)
     text: str = Field(min_length=1, max_length=1000)
     has_recording: bool = Field(default=False, description="A recording of it being read aloud exists (read-only)")
+    machine_read: bool = Field(default=False, description="The recording was made by the voice engine, not a person (read-only)")
 
 
 class DescriptionsEdit(BaseModel):
@@ -213,6 +217,12 @@ def recording_name(lang: str, start: float) -> str:
     return f"desc-{lang}-{round(start * 1000)}.opus"
 
 
+def machine_marker(recording: Path) -> Path:
+    # An empty file next to a recording made by the voice engine, so staff can
+    # always tell it from a person's recording.
+    return recording.with_suffix(".machine")
+
+
 @router.get("/{lesson_id}/descriptions/{lang}", response_model=DescriptionsEdit, dependencies=staff)
 def get_descriptions(lang: Language, lesson_id: str = LessonId):
     get_lesson_or_404(lesson_id)
@@ -221,7 +231,8 @@ def get_descriptions(lang: Language, lesson_id: str = LessonId):
     cues = read_vtt(path) if path.is_file() else []
     return DescriptionsEdit(cues=[
         DescriptionCue(start=c.start, end=c.end, text=c.text,
-                       has_recording=(folder / recording_name(lang, c.start)).is_file())
+                       has_recording=(folder / recording_name(lang, c.start)).is_file(),
+                       machine_read=machine_marker(folder / recording_name(lang, c.start)).is_file())
         for c in cues
     ])
 
@@ -244,6 +255,7 @@ def save_descriptions(body: DescriptionsEdit, lang: Language, lesson_id: str = L
     for recording in lesson_folder(lesson_id).glob(f"desc-{lang}-*.opus"):
         if recording.name not in keep:
             recording.unlink()
+            machine_marker(recording).unlink(missing_ok=True)
     return get_descriptions(lang, lesson_id)
 
 
@@ -270,6 +282,7 @@ async def upload_description_recording(
         if not info["has_audio"]:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "The file has no sound in it.")
         media.make_description_audio(upload, folder / recording_name(lang, match.start))
+        machine_marker(folder / recording_name(lang, match.start)).unlink(missing_ok=True)
     except media.MediaError as problem:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "This file could not be read as audio.") from problem
     finally:
@@ -277,10 +290,52 @@ async def upload_description_recording(
     return get_descriptions(lang, lesson_id)
 
 
+@router.post("/{lesson_id}/descriptions/{lang}/recording/machine", response_model=DescriptionsEdit, dependencies=staff)
+def make_machine_description_recording(
+    lang: Language,
+    start: float = Query(ge=0, description="Start time of the description (seconds)"),
+    lesson_id: str = LessonId,
+):
+    """Make a MACHINE-READ recording of one description with the optional
+    voice engine (Amharic only). Use it when no person has recorded it yet;
+    Studio marks it as machine-read. 409 if no voice engine is set up."""
+    get_lesson_or_404(lesson_id)
+    folder = lesson_folder(lesson_id)
+    path = folder / f"descriptions-{lang}.vtt"
+    cues = read_vtt(path) if path.is_file() else []
+    match = next((c for c in cues if abs(c.start - start) < 0.05), None)
+    if match is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No saved description starts at that time. Save the descriptions first.")
+    machine_read_recording(" ".join(match.text.split()), lang, folder / recording_name(lang, match.start))
+    return get_descriptions(lang, lesson_id)
+
+
+def machine_read_recording(text: str, lang: str, out: Path) -> None:
+    """Voice engine -> WAV -> the same small Opus file a person's recording becomes."""
+    engine = get_text_to_speech(settings)
+    if engine is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "No voice engine is set up (FIDEL_TTS_URL).")
+    if lang not in engine.languages:
+        raise HTTPException(status.HTTP_409_CONFLICT, f"The voice engine cannot read '{lang}'.")
+    wav = out.with_suffix(".machine.wav")
+    try:
+        engine.speak(text, lang, wav)
+        media.make_description_audio(wav, out)
+    except ProviderUnavailable as problem:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(problem)) from problem
+    except media.MediaError as problem:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "The voice engine sent audio that could not be read.") from problem
+    finally:
+        wav.unlink(missing_ok=True)
+    machine_marker(out).touch()
+
+
 @router.delete("/{lesson_id}/descriptions/{lang}/recording", response_model=DescriptionsEdit, dependencies=staff)
 def delete_description_recording(lang: Language, start: float = Query(ge=0), lesson_id: str = LessonId):
     get_lesson_or_404(lesson_id)
-    (lesson_folder(lesson_id) / recording_name(lang, start)).unlink(missing_ok=True)
+    recording = lesson_folder(lesson_id) / recording_name(lang, start)
+    recording.unlink(missing_ok=True)
+    machine_marker(recording).unlink(missing_ok=True)
     return get_descriptions(lang, lesson_id)
 
 

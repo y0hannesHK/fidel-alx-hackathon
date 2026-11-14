@@ -45,3 +45,27 @@ non-commercial (NC) licence as a default.
 |---|---|---|
 | [Whisper](https://github.com/openai/whisper) via [Systran/faster-whisper-small](https://huggingface.co/Systran/faster-whisper-small) | MIT | English speech-to-text |
 | [MADLAD-400 3B MT](https://huggingface.co/google/madlad400-3b-mt), CTranslate2 int8 conversion by [Nextcloud-AI](https://huggingface.co/Nextcloud-AI/madlad400-3b-mt-ct2-int8) | Apache-2.0 | English → Amharic draft translation |
+
+## Optional Amharic speech engines (own containers, off by default)
+
+These run only if staff start them (`docker compose --profile amharic-speech` /
+`--profile amharic-voice`). They are separate programs in separate images; the
+main Fidel image contains none of them.
+
+| Name | Version | Licence | Use |
+|---|---|---|---|
+| [Omnilingual ASR](https://github.com/facebookresearch/omnilingual-asr) code and `omniASR_CTC_300M_v2` model (Meta) | 0.2.0 | Apache-2.0 | Amharic speech-to-text |
+| [fairseq2](https://github.com/facebookresearch/fairseq2) / fairseq2n (CPU build) | 0.6 | MIT | Runs the Omnilingual model |
+| [KenLM](https://github.com/kpu/kenlm) | 0.3.0 | LGPL-2.1 (a few files BSD/other) | Required by Omnilingual ASR's install; not used for our transcription |
+| [PyTorch](https://pytorch.org/) (CPU builds) | 2.8.0 / 2.4.0 | BSD-3-Clause | Runs both engines |
+| [IMS ToucanTTS](https://github.com/DigitalPhonetics/IMS-Toucan) code (MassiveScaleToucan, pinned commit) and [Flux9665/ToucanTTS](https://huggingface.co/Flux9665/ToucanTTS) `ToucanTTS.pt`, `Vocoder.pt` | 3cc2094 | Apache-2.0 | Machine-read Amharic recordings |
+| [eSpeak NG](https://github.com/espeak-ng/espeak-ng) (Debian package) | 1.52 | **GPL-3.0-or-later** | Turns Amharic letters into sounds for ToucanTTS |
+| [phonemizer](https://github.com/bootphon/phonemizer) | 3.2.x | **GPL-3.0** | Calls eSpeak NG |
+| [Parselmouth](https://github.com/YannickJadoul/Parselmouth) (Praat) | 0.4.x | **GPL-3.0** | Imported by ToucanTTS |
+
+**GPL note:** running the voice engine on your own server is fine. If you
+hand the voice engine's Docker image to someone else, the GPL requires offering
+the source of eSpeak NG, phonemizer and Parselmouth (all are public on GitHub).
+Not loaded: Toucan's speaker-matching model (speechbrain, another publisher),
+replaced by a stub because Fidel never copies a voice from a recording.
+

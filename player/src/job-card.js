@@ -22,6 +22,7 @@ const STRINGS = {
     summary: 'Summary', listenEn: 'Listen to summary (English)', listenAm: 'Listen to summary (Amharic)',
     stop: 'Stop', playing: 'Playing the summary.', stopped: 'Stopped.',
     noAmharicAudio: 'An Amharic recording of the summary is not available yet.',
+    machineReadAm: 'The Amharic recording is read by a computer voice, not a person.',
     loadError: 'This job could not be loaded.',
   },
   am: {
@@ -31,6 +32,7 @@ const STRINGS = {
     summary: 'ማጠቃለያ', listenEn: 'ማጠቃለያውን ያዳምጡ (እንግሊዝኛ)', listenAm: 'ማጠቃለያውን ያዳምጡ (አማርኛ)',
     stop: 'አቁም', playing: 'ማጠቃለያው እየተጫወተ ነው።', stopped: 'ቆሟል።',
     noAmharicAudio: 'የማጠቃለያው የአማርኛ ቅጂ ገና አልተዘጋጀም።',
+    machineReadAm: 'የአማርኛው ቅጂ የተነበበው በሰው ሳይሆን በኮምፒውተር ድምፅ ነው።', // TODO: review by an Amharic speaker
     loadError: 'ይህ ሥራ ሊጫን አልቻለም።',
   },
 };
@@ -89,6 +91,7 @@ export class FidelJobCard extends HTMLElement {
 
     const status = h('p', { class: 'fidel-job-status', role: 'status' });
     const audio = job['fidel:summaryAudio'] || {};
+    const machineRead = job['fidel:summaryAudioMachineRead'] || [];
     const summaries = { en: job['fidel:summaryEn'], am: job['fidel:summaryAm'] };
     const listen = [];
     for (const summaryLang of ['en', 'am']) {
@@ -137,7 +140,8 @@ export class FidelJobCard extends HTMLElement {
           // The summary is always shown as text too (a transcript of the audio).
           summaries.en && h('p', { lang: 'en', class: 'fidel-job-summary' }, summaries.en),
           summaries.am && h('p', { lang: 'am', class: 'fidel-job-summary' }, summaries.am),
-          summaries.am && !audio.am && h('p', { class: 'fidel-job-note' }, t.noAmharicAudio)),
+          summaries.am && !audio.am && h('p', { class: 'fidel-job-note' }, t.noAmharicAudio),
+          audio.am && machineRead.includes('am') && h('p', { class: 'fidel-job-note' }, t.machineReadAm)),
         jsonld)
     );
   }

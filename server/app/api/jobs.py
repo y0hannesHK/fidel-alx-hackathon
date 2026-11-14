@@ -99,6 +99,10 @@ def to_jsonld(job_id: str, job: dict, base: str) -> dict:
         "fidel:summaryAudio": {
             lang: f"{files}/summary-{lang}.opus" for lang in ("en", "am") if (folder / f"summary-{lang}.opus").is_file()
         },
+        # Languages whose recording was made by the voice engine, not a person.
+        "fidel:summaryAudioMachineRead": [
+            lang for lang in ("en", "am") if (folder / f"summary-{lang}.machine").is_file()
+        ],
     }
     if labels:
         posting["jobBenefits"] = "Workplace accommodations: " + "; ".join(labels) + "."
@@ -145,7 +149,8 @@ def list_jobs(request: Request) -> list[dict]:
     today = date.today().isoformat()
     return [
         {"id": job_id, "title": job["title"], "organization": job["organization"],
-         "closing_date": job["closing_date"], "url": f"{base_url(request)}/api/v1/jobs/{job_id}"}
+         "closing_date": job["closing_date"], "url": f"{base_url(request)}/api/v1/jobs/{job_id}",
+         "has_summary_am": bool(job.get("summary_am"))}
         for job_id, job in db.list_jobs() if job["closing_date"] >= today
     ]
 
@@ -186,6 +191,7 @@ async def upload_summary_recording(request: Request, lang: Literal["en", "am"], 
         if not media.probe(upload)["has_audio"]:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "The file has no sound in it.")
         media.make_description_audio(upload, folder / f"summary-{lang}.opus")
+        (folder / f"summary-{lang}.machine").unlink(missing_ok=True)  # a person's recording now
     except media.MediaError as problem:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "This file could not be read as audio.") from problem
     finally:
@@ -198,4 +204,23 @@ async def upload_summary_recording(request: Request, lang: Literal["en", "am"], 
 def delete_summary_recording(request: Request, lang: Literal["en", "am"], job_id: str = JobId):
     job = get_job_or_404(job_id)
     (job_folder(job_id) / f"summary-{lang}.opus").unlink(missing_ok=True)
+    (job_folder(job_id) / f"summary-{lang}.machine").unlink(missing_ok=True)
+    return jsonld_response(to_jsonld(job_id, job, base_url(request)))
+
+
+@router.post("/{job_id}/summary-recording/{lang}/machine", dependencies=staff,
+             responses={200: {"content": {"application/ld+json": {}}}})
+def make_machine_summary_recording(request: Request, lang: Literal["en", "am"], job_id: str = JobId):
+    """Make a MACHINE-READ recording of the summary with the optional voice
+    engine (Amharic only), when no person has recorded it. The job card says
+    it is machine-read. 409 if no voice engine is set up."""
+    from .editing import machine_read_recording
+
+    job = get_job_or_404(job_id)
+    text = job["summary_en"] if lang == "en" else job.get("summary_am")
+    if not text:
+        raise HTTPException(status.HTTP_409_CONFLICT, "This job has no summary in that language yet.")
+    folder = job_folder(job_id)
+    folder.mkdir(parents=True, exist_ok=True)
+    machine_read_recording(" ".join(text.split()), lang, folder / f"summary-{lang}.opus")
     return jsonld_response(to_jsonld(job_id, job, base_url(request)))

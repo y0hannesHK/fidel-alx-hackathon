@@ -6,7 +6,7 @@ from ..captions import Cue, Word, cues_from_words
 from . import ProviderUnavailable
 from .models import DOWNLOAD_HINT, WHISPER_REPOS, is_downloaded, model_dir
 
-SUPPORTED_LANGUAGES = {"en"}  # Amharic speech needs a different model (not installed)
+SUPPORTED_LANGUAGES = {"en"}  # Amharic: the optional Omnilingual ASR engine (providers/omniasr.py)
 
 
 class WhisperSpeechToText:
@@ -20,7 +20,8 @@ class WhisperSpeechToText:
         if language not in SUPPORTED_LANGUAGES:
             raise ProviderUnavailable(
                 f"Speech-to-text for '{language}' is not installed. "
-                "Only lessons spoken in English can be transcribed for now."
+                "Whisper only transcribes English here. For Amharic, start the optional engine: "
+                "docker compose --profile amharic-speech up -d, and set FIDEL_OMNIASR_URL."
             )
         if not is_downloaded(self.path):
             raise ProviderUnavailable(f"The Whisper '{self.size}' model is not downloaded. {DOWNLOAD_HINT}")

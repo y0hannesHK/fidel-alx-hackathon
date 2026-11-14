@@ -51,16 +51,27 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 - **Offline page has no description recordings.** Descriptions appear as text
   in the one-page lesson; recordings play only in the online player.
-- **Amharic text-to-speech for descriptions** (speecht5_tts_amharic, needs
-  PyTorch) not added; staff attach recordings instead.
+- **Amharic voice engine: decisions for Amharic speakers.** (1) Listen to the
+  test recordings in `data/model-tests/outputs/toucan/` and decide whether the
+  voice is good enough to offer at all. (2) Ejectives (ጵ ቀ ጥ ጠ ቅ) are read as
+  plain p/k/t by default; `TOUCAN_EJECTIVE_MARK=1` tries the ejective sound:
+  compare `amh_*.wav` with `amh_*_ejectivefix.wav`. (3) Review the job card's
+  new Amharic sentence `machineReadAm` in `player/src/job-card.js`.
+- **Machine-read description audio is not labelled for learners.** Studio
+  marks it, and the job card says so for summaries, but the player plays
+  machine-read description recordings without saying it is a computer voice.
 
 - **Addis AI translation provider (reminder for the user).** Left out in
   Phase 3 because we have no API key or docs to test it. The translator slot is
   pluggable (`server/app/providers/`), so it can be added once a key exists.
   Must stay off by default and only run when the key is set.
-- **Amharic speech-to-text** (`Samuael/ethiopic-asr`, needs PyTorch). Skipped
-  in Phase 3 to keep the image small; lessons spoken in Amharic fail the
-  transcribe step with a clear "not installed" message.
+- **Amharic speech-to-text: measure caption quality.** Omnilingual ASR (optional
+  engine) is in, but its Amharic accuracy was only checked on one 20-second
+  clip with no reference text. Measure the character error rate on a few
+  reviewed Amharic lessons. Afaan Oromo and Tigrinya are supported by the model
+  but untested: add them to `FIDEL_OMNIASR_LANGUAGES` only after a test.
+- **Somali voice: not offered.** ToucanTTS reaches Somali only through
+  Transphone, a model from another publisher, which we chose not to load.
 - **Unpublished lesson files.** Phase 4 hides unpublished lessons from the API,
   but their files (/files/lessons/ID/...) can still be opened by anyone who
   knows the random 12-character id.
