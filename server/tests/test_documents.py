@@ -1,6 +1,7 @@
 """Accessible lesson documents: HTML and tagged PDF."""
 
 import re
+import zlib
 
 from tests.conftest import STAFF
 from tests.test_editing_api import lesson  # noqa: F401  (fixture)
@@ -56,12 +57,24 @@ def test_tagged_pdf(lesson):  # noqa: F811
     assert response.status_code == 200, response.text
     pdf = response.content
     assert pdf.startswith(b"%PDF")
-    for marker in (b"/StructTreeRoot", b"/MarkInfo", b"/Lang", b"pdfuaid"):  # tagged, language, PDF/UA id
-        assert marker in pdf, marker
+    # The structure is inside compressed object streams: decompress them first.
+    content = pdf
+    for match in re.finditer(rb"stream\r?\n(.*?)\r?\nendstream", pdf, re.S):
+        try:
+            content += zlib.decompress(match.group(1))
+        except zlib.error:
+            pass
+    # Tagged (structure tree), PDF/UA identifier, headings, figure with its alt text, language, title.
+    for marker in (b"/StructTreeRoot", b"/Marked true", b"pdfuaid:part", b"/H1", b"/H2", b"/Figure",
+                   b"/DisplayDocTitle"):
+        assert marker in content, marker
+    assert b"A slide with the word Welcome." in re.findall(rb"/Alt\s*\((.*?)\)", content)
+    assert b"am" in re.findall(rb"/Lang\s*\((.*?)\)", content)
+    assert re.search(rb"/FontName\s*/[A-Z]{6}\+\S*Ethiopic", content), "Ethiopic font is not embedded"
 
 
 def test_documents_are_in_the_manifest_and_private_until_published(lesson):  # noqa: F811
     client, lesson_id = lesson
     manifest = client.get(f"/api/v1/lessons/{lesson_id}", headers=STAFF).json()
-    assert set(manifest["documents"]) == {"html_en", "pdf_en", "html_am", "pdf_am"}
+    assert {"html_en", "pdf_en", "html_am", "pdf_am"} <= set(manifest["documents"])  # plus brf_* with liblouis
     assert client.get(f"/api/v1/lessons/{lesson_id}/document.html").status_code == 404
