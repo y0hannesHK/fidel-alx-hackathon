@@ -4,7 +4,8 @@ services:
       context: .
       dockerfile: server/Dockerfile
     ports:
-      - "${FIDEL_PORT:-8000}:8000"   # change the port with FIDEL_PORT in .env
+      # FIDEL_BIND=127.0.0.1 on a server behind a web server (only reachable through it).
+      - "${FIDEL_BIND:-0.0.0.0}:${FIDEL_PORT:-8000}:8000"
     # Optional settings file. Copy .env.example to .env to set the staff token.
     env_file:
       - path: .env
