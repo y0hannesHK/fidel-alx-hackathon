@@ -6,6 +6,9 @@ player/dist/
 data/
 assets/
 
+# ALX's Savanna starter, downloaded by scripts/setup-savanna.sh (not ours to republish)
+savanna/
+
 # Test output
 e2e/test-results/
 e2e/playwright-report/

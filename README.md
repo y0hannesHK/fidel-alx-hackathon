@@ -36,6 +36,24 @@ Then open:
 | http://localhost:8000/studio/ | Fidel Studio (staff), sign in with `FIDEL_STAFF_TOKEN` |
 | http://localhost:8000/api/docs | Interactive API documentation |
 
+### Fidel inside Savanna, and on a blank page
+
+The hackathon's two proofs that Fidel plugs in:
+
+```sh
+sh scripts/setup-savanna.sh   # downloads ALX's Savanna starter pages, adds Fidel
+```
+
+| Address | Proof |
+|---|---|
+| http://localhost:8000/savanna/pages/concept-with-navigation.html | **Inside Savanna**: ALX's starter lesson page, unchanged except two lines in `<head>` and one `<fidel-player>` in the lesson body (`#curriculum_navigation_content .savanna-styles`) |
+| http://localhost:8000/savanna/pages/jobs.html | Savanna-styled jobs page with `<fidel-job-card>` |
+| http://localhost:8000/demo/blank.html | **Outside Savanna**: no Bootstrap, no Savanna CSS, only Fidel |
+
+The starter is downloaded, not stored in this repository (it is ALX's).
+Fidel resets the few host styles that would otherwise reach it (Bootstrap's
+large floated `<legend>`, light-blue links) only inside its own elements.
+
 The demo video is not in git (it is cut from a large recording), so on a fresh
 install the mock page's player says the video could not be loaded. Upload any
 lesson video in Studio instead (next section).

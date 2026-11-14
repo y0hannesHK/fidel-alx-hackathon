@@ -7,7 +7,8 @@
   /embed/v1/          the built player (fidel.js, fidel.css, fonts); stable for partners
   /embed/             same, latest (for testing)
   /studio/            Fidel Studio, the staff page
-  /demo/              demo pages, e.g. the mock Savanna lesson page
+  /demo/              demo pages: mock lesson page, blank.html (no host styles)
+  /savanna/           ALX's Savanna starter pages with Fidel added, if set up
   /media/             demo media from data/demo (git-ignored)
   /api/docs           interactive API documentation
 """
@@ -102,4 +103,6 @@ mount_if_present("/embed/v1", settings.embed_dir, "embed-v1")
 mount_if_present("/embed", settings.embed_dir, "embed")
 mount_if_present("/studio", settings.studio_dir, "studio")
 mount_if_present("/demo", settings.demo_dir, "demo")
+# ALX's Savanna starter pages with Fidel added (scripts/setup-savanna.sh).
+mount_if_present("/savanna", settings.savanna_dir, "savanna")
 mount_if_present("/media", settings.data_dir / "demo", "media")

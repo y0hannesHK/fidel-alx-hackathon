@@ -36,6 +36,7 @@ COPY --from=player /build/player/dist ./embed
 ENV FIDEL_EMBED_DIR=/app/embed \
     FIDEL_DEMO_DIR=/app/demo \
     FIDEL_STUDIO_DIR=/app/studio \
+    FIDEL_SAVANNA_DIR=/app/savanna \
     FIDEL_DATA_DIR=/app/data \
     PYTHONUNBUFFERED=1
 

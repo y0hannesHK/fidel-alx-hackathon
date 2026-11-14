@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fidel on a blank page</title>
+  <!--
+    Proof that Fidel works OUTSIDE Savanna: no Bootstrap, no Savanna CSS,
+    no other styles or scripts. Only the two Fidel lines and the tags.
+  -->
+  <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <script src="/embed/v1/fidel.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Fidel on a blank page</h1>
+
+    <fidel-player
+      src="/media/lesson.mp4"
+      src-webm="/media/lesson.webm"
+      captions-en="/demo/media/en.vtt"
+      captions-am="/demo/media/am.vtt"
+      captions-am-status="draft"
+      chapters="/demo/media/chapters.vtt"
+      chapters-am="/demo/media/chapters-am.vtt"
+      sign="/media/sign.webm"
+      lang="en">
+    </fidel-player>
+  </main>
+
+  <script>
+    // The host listens to Fidel's events and decides what to do with them.
+    document.addEventListener('fidel-ended', () => console.log('Lesson watched to the end'));
+  </script>
+</body>
+</html>

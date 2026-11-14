@@ -21,6 +21,7 @@ class Settings:
     embed_dir: Path
     demo_dir: Path
     studio_dir: Path
+    savanna_dir: Path
     models_dir: Path
 
     # Write endpoints need this token (Authorization: Bearer <token>).
@@ -48,6 +49,7 @@ def load_settings() -> Settings:
         embed_dir=_path("FIDEL_EMBED_DIR", REPO_ROOT / "player" / "dist"),
         demo_dir=_path("FIDEL_DEMO_DIR", REPO_ROOT / "demo"),
         studio_dir=_path("FIDEL_STUDIO_DIR", REPO_ROOT / "studio"),
+        savanna_dir=_path("FIDEL_SAVANNA_DIR", REPO_ROOT / "savanna"),
         models_dir=_path("FIDEL_MODELS_DIR", data_dir / "models"),
         staff_token=os.environ.get("FIDEL_STAFF_TOKEN", "").strip(),
         max_upload_mb=int(os.environ.get("FIDEL_MAX_UPLOAD_MB", "1024")),

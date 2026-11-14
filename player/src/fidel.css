@@ -30,7 +30,7 @@ fidel-player :focus-visible {
 /* ---------- Amharic text (WCAG 3.1.2: lang is set on every Amharic part) --- */
 fidel-player :lang(am) {
   font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", "Abyssinica SIL", sans-serif;
-  line-height: 1.6;
+  line-height: 1.7;   /* guide: Ethiopic text needs about 1.7 */
 }
 
 /* ---------- Video + sign language dock -------------------------------------- */
@@ -308,7 +308,7 @@ fidel-job-card {
 }
 fidel-job-card :lang(am) {
   font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif;
-  line-height: 1.6;
+  line-height: 1.7;   /* guide: Ethiopic text needs about 1.7 */
 }
 fidel-job-card :focus-visible {
   outline: 3px solid #ffbf47;
@@ -419,7 +419,7 @@ fidel-session-viewer { display: block; }
 
 /* ---------- Certificate card --------------------------------------------------- */
 fidel-certificate { display: block; max-width: 36rem; }
-fidel-certificate :lang(am) { font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif; line-height: 1.6; }
+fidel-certificate :lang(am) { font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif; line-height: 1.7; }
 fidel-certificate :focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; box-shadow: 0 0 0 5px #1a1a1a; }
 .fidel-cert {
   border: 3px solid #5c5c5c; border-radius: 8px; padding: 1rem;
@@ -465,3 +465,27 @@ fidel-player button.able-ctl {
 .fidel-keys-dialog table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; }
 .fidel-keys-dialog th, .fidel-keys-dialog td { text-align: start; padding: 0.4rem 0.5rem; border-bottom: 1px solid #c4c8cf; vertical-align: top; }
 .fidel-keys-dialog kbd { font: inherit; font-weight: 700; border: 1px solid #5c5c5c; border-radius: 4px; padding: 0 0.3rem; }
+
+/* ---------- Living inside a host page (e.g. Savanna's Bootstrap 5) -------------
+   Host CSS reaches our light-DOM elements. Bootstrap turns every <legend> into
+   a 21px floated heading and colours links light blue (3.66:1 on white, fails
+   contrast). Reset what the host may change, only inside Fidel's own parts. */
+:is(fidel-player, fidel-session-viewer, fidel-job-card, fidel-certificate) legend {
+  float: none;
+  width: auto;
+  padding: 0;
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+:is(fidel-player, fidel-session-viewer, fidel-job-card, fidel-certificate) a {
+  color: #0b4f9c;
+  text-decoration: underline;
+}
+:is(fidel-player, fidel-session-viewer, fidel-job-card, fidel-certificate) :is(input, select, textarea, button) {
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+:is(fidel-player, fidel-session-viewer) .fidel-group > summary { font-size: 1.125rem; }

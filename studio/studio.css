@@ -12,7 +12,7 @@ body {
 }
 :lang(am) {
   font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 a { color: #0b4f9c; }
 :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }

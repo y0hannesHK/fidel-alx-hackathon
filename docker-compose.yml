@@ -13,6 +13,8 @@ services:
     volumes:
       # Runtime files (lessons, models, demo media) live on the host, git-ignored.
       - ./data:/app/data
+      # ALX's Savanna starter pages with Fidel added: sh scripts/setup-savanna.sh
+      - ./savanna:/app/savanna:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
