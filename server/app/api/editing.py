@@ -5,11 +5,11 @@ sign-language video upload, and publishing.
 
 import shutil
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Request, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from .. import document
-from ..captions import Cue, read_vtt, write_vtt
+from ..captions import Cue, from_vtt, read_vtt, write_vtt
 from ..pipeline import media
 from ..pipeline.runner import queue_steps, run_steps
 from ..pipeline.steps import lesson_folder
@@ -123,6 +123,31 @@ def save_captions(body: CaptionsEdit, lang: Language, lesson_id: str = LessonId)
     )
     db.set_caption_status(lesson_id, lang, file_status, reviews)
     return CaptionsWithReviews(lang=lang, status=file_status, cues=cues, drafts_left=reviews.count(False))
+
+
+@router.post("/{lesson_id}/captions", response_model=CaptionsWithReviews, dependencies=staff)
+async def upload_captions(lang: Language = Form(), file: UploadFile = File(description="WebVTT caption file (.vtt)"),
+                          lesson_id: str = LessonId):
+    """Upload a caption file (for lessons that already have captions, or when
+    the speech-to-text model is not installed). It replaces this language's
+    captions and is marked draft until a person checks it in Studio."""
+    get_lesson_or_404(lesson_id)
+    raw = await file.read(5 * 1024 * 1024 + 1)
+    if len(raw) > 5 * 1024 * 1024:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Caption file is larger than 5 MB.")
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError as problem:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The caption file must be UTF-8 text.") from problem
+    if not text.lstrip().startswith("WEBVTT"):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "This is not a WebVTT file (it must start with WEBVTT).")
+    cues = from_vtt(text)
+    if not cues:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "No captions found in the file.")
+    cues.sort(key=lambda c: c.start)
+    write_vtt(lesson_folder(lesson_id) / f"captions-{lang}.vtt", cues, note="Uploaded in Fidel Studio. Status: draft.")
+    db.set_caption_status(lesson_id, lang, "draft", [False] * len(cues))
+    return get_caption_cues(lang, lesson_id)
 
 
 # --- Chapters ---------------------------------------------------------------------------

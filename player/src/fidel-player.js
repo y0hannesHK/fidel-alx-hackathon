@@ -117,6 +117,7 @@ export class FidelPlayer extends HTMLElement {
       headingLevel: 3, // corrected below once Able Player has added its heading
       loadTracks: () => this.loadCaptionText(),
       playFrom: (seconds) => this.playFrom(seconds),
+      transcriptLang: () => this.ablePlayer?.transcriptLang || currentCaptionLang(this.ablePlayer || {}) || 'en',
     });
 
     const video = this.buildVideo(lang, this.transcript.bodyId);
@@ -188,6 +189,9 @@ export class FidelPlayer extends HTMLElement {
       'offline-page': manifest.offline?.page,
       'offline-page-video': manifest.offline?.page_with_video,
       'offline-pack': manifest.offline?.pack,
+      'offline-page-size': manifest.offline_sizes?.page,
+      'offline-page-video-size': manifest.offline_sizes?.page_with_video,
+      'offline-pack-size': manifest.offline_sizes?.pack,
     };
     for (const track of manifest.captions || []) {
       fromManifest[`captions-${track.lang}`] = track.url;
@@ -330,6 +334,11 @@ export class FidelPlayer extends HTMLElement {
         page: this.getAttribute('offline-page'),
         pageVideo: this.getAttribute('offline-page-video'),
         pack: this.getAttribute('offline-pack'),
+        sizes: {
+          page: Number(this.getAttribute('offline-page-size')) || 0,
+          pageVideo: Number(this.getAttribute('offline-page-video-size')) || 0,
+          pack: Number(this.getAttribute('offline-pack-size')) || 0,
+        },
         // The lesson document in the interface language, else English.
         documentHtml: this.getAttribute(`document-html-${lang}`) || this.getAttribute('document-html-en'),
         documentPdf: this.getAttribute(`document-pdf-${lang}`) || this.getAttribute('document-pdf-en'),

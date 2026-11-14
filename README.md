@@ -228,8 +228,14 @@ curl http://localhost:8000/api/v1/lessons/LESSON_ID/status
 # Unpublished lessons need the staff token.
 curl -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" http://localhost:8000/api/v1/lessons/LESSON_ID
 
-# Captions as WebVTT
+# Captions as WebVTT, and the transcript as plain text
 curl http://localhost:8000/api/v1/lessons/LESSON_ID/captions/am
+curl "http://localhost:8000/api/v1/lessons/LESSON_ID/transcript?lang=am"
+
+# Upload a caption file (replaces that language; marked draft until checked)
+curl -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" \
+     -F "lang=am" -F "file=@captions-am.vtt" \
+     http://localhost:8000/api/v1/lessons/LESSON_ID/captions
 
 # Publish (learners can only see published lessons)
 curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json" \

@@ -50,3 +50,14 @@ def test_zip_pack_contents(lesson):  # noqa: F811
     assert response.headers["content-type"] == "application/zip"
     names = set(zipfile.ZipFile(io.BytesIO(response.content)).namelist())
     assert {"index.html", "captions-en.vtt", "captions-am.vtt", "transcript-en.txt", "transcript-am.txt", "README.txt"} <= names
+
+
+def test_transcript_text_alias_and_sizes(lesson):  # noqa: F811
+    client, lesson_id = lesson
+    text = client.get(f"/api/v1/lessons/{lesson_id}/transcript?lang=am", headers=STAFF)
+    assert text.status_code == 200 and text.headers["content-type"].startswith("text/plain")
+    assert text.text.splitlines() == ["[am] Hello learners.", "[am] Welcome to Fidel."]
+    assert client.get(f"/api/v1/lessons/{lesson_id}/offline-pack", headers=STAFF).headers["content-type"] == "application/zip"
+    sizes = client.get(f"/api/v1/lessons/{lesson_id}", headers=STAFF).json()["offline_sizes"]
+    page = client.get(f"/api/v1/lessons/{lesson_id}/offline.html", headers=STAFF).content
+    assert abs(sizes["page"] - len(page)) < len(page) * 0.3  # estimate within 30%

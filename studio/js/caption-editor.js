@@ -9,7 +9,7 @@
 // Shortcut (with a visible button for each): in a translation box,
 // Ctrl+Enter = "Checked, go to next" for that language.
 import { api } from './api.js';
-import { formatTime, h, say, uid } from './util.js';
+import { formatTime, h, parseTime, say, uid } from './util.js';
 
 // Translated caption languages, in the order they are shown.
 const TRANSLATIONS = [
@@ -22,7 +22,9 @@ export async function captionEditor(lessonId, manifest) {
   const section = h('section', { class: 'card', 'aria-labelledby': 'captions-heading' },
     h('h2', { id: 'captions-heading' }, 'Captions'));
   if (!languages.length) {
-    section.append(h('p', {}, 'No captions yet. They appear here when the "transcribe" step is done.'));
+    section.append(
+      h('p', {}, 'No captions yet. They appear here when the "transcribe" step is done, or upload a caption file.'),
+      uploadForm(lessonId, section));
     return section;
   }
 
@@ -92,7 +94,25 @@ export async function captionEditor(lessonId, manifest) {
   const list = h('ol', { class: 'cue-list' },
     rows.map((row, i) => {
       const legendId = uid('cue');
-      const time = `${formatTime(row.start)} to ${formatTime(row.end)}`;
+      const legend = h('legend', { id: legendId }, `Caption ${i + 1}, ${formatTime(row.start)} to ${formatTime(row.end)}`);
+      // Start and end times can be corrected too (minutes:seconds, e.g. 1:23.5).
+      const timeInput = (key, label) => {
+        const id = uid(key);
+        row.timeInputs = row.timeInputs || {};
+        const input = h('input', {
+          id, type: 'text', inputmode: 'decimal', value: formatTime(row[key]), class: 'time-input',
+          oninput: (e) => {
+            row[key] = parseTime(e.target.value);
+            if (row.start >= 0 && row.end > row.start) {
+              legend.textContent = `Caption ${i + 1}, ${formatTime(row.start)} to ${formatTime(row.end)}`;
+            }
+            markDirty();
+          },
+        });
+        row.timeInputs[key] = input;
+        return h('div', { class: 'field time' }, h('label', { for: id }, label), input);
+      };
+      const times = h('div', { class: 'row times' }, timeInput('start', 'Start'), timeInput('end', 'End'));
       const fields = [];
       if (row.en) {
         const id = uid('en');
@@ -139,7 +159,7 @@ export async function captionEditor(lessonId, manifest) {
       row.hasGlossaryWord = words.length > 0;
       return h('li', { 'data-glossary': row.hasGlossaryWord ? 'yes' : 'no' },
         h('fieldset', { class: 'cue' },
-          h('legend', { id: legendId }, `Caption ${i + 1}, ${time}`),
+          legend,
           row.hasGlossaryWord && h('p', { class: 'glossary-note' },
             h('strong', {}, 'Check the glossary words: '),
             words.map((term, k) => [k ? '; ' : '', `"${term.en}"`,
@@ -147,6 +167,7 @@ export async function captionEditor(lessonId, manifest) {
           h('div', { class: 'row' },
             h('button', { type: 'button', class: 'button secondary', onclick: () => playRow(row) }, 'Play this caption'),
             nextButtons),
+          times,
           fields
         )
       );
@@ -170,11 +191,20 @@ export async function captionEditor(lessonId, manifest) {
 
   // --- Toolbar -------------------------------------------------------------
   async function save() {
+    // Times must be valid before anything is sent.
+    for (const [i, row] of rows.entries()) {
+      if (!(row.start >= 0) || !(row.end > row.start)) {
+        say(status, `Not saved: caption ${i + 1} needs a start time and an end time after it (minutes:seconds, like 1:23.5).`);
+        (row.start >= 0 ? row.timeInputs.end : row.timeInputs.start).focus();
+        return;
+      }
+    }
     say(status, 'Saving…');
     try {
       const results = [];
       for (const lang of ['en', ...targets.map((t) => t.code)]) {
-        const cues = rows.filter((r) => r[lang]).map((r) => ({ start: r.start, end: r.end, ...r[lang] }));
+        // The row's (possibly corrected) times must win over the cue's old ones.
+        const cues = rows.filter((r) => r[lang]).map((r) => ({ ...r[lang], start: r.start, end: r.end }));
         if (!cues.length) continue;
         results.push(await api(`/api/v1/lessons/${lessonId}/captions/${lang}`, { method: 'PUT', json: { cues } }));
       }
@@ -241,7 +271,49 @@ export async function captionEditor(lessonId, manifest) {
       onlyGlossary,
       status
     ),
-    h('div', { class: 'editor' }, h('div', { class: 'editor-video-wrap' }, video), list)
+    h('div', { class: 'editor' }, h('div', { class: 'editor-video-wrap' }, video), list),
+    h('details', {}, h('summary', {}, 'Upload a caption file instead'), uploadForm(lessonId, section))
   );
   return section;
+}
+
+/** Upload a WebVTT file for one language (replaces that language's captions,
+ *  marked draft until checked). For lessons that already have captions, or
+ *  when the speech-to-text model is not installed. */
+function uploadForm(lessonId, section) {
+  const langId = uid('upload-lang');
+  const fileId = uid('upload-file');
+  const status = h('p', { class: 'status', role: 'status' });
+  const form = h('form', {
+    onsubmit: async (e) => {
+      e.preventDefault();
+      const file = form.querySelector('input[type=file]').files[0];
+      if (!file) return say(status, 'Choose a .vtt caption file first.');
+      const data = new FormData();
+      data.append('lang', form.querySelector('select').value);
+      data.append('file', file);
+      say(status, 'Uploading…');
+      try {
+        const result = await api(`/api/v1/lessons/${lessonId}/captions`, { method: 'POST', form: data });
+        say(status, `Uploaded ${result.cues.length} captions (draft). Reloading the editor…`);
+        section.dispatchEvent(new CustomEvent('captions-saved', { bubbles: true }));
+        setTimeout(() => location.reload(), 800);
+      } catch (error) {
+        say(status, `Not uploaded: ${error.message}`);
+      }
+    },
+  },
+  h('div', { class: 'field' },
+    h('label', { for: langId }, 'Language of the captions'),
+    h('select', { id: langId },
+      h('option', { value: 'en' }, 'English'),
+      h('option', { value: 'am', lang: 'am' }, 'አማርኛ (Amharic)'),
+      h('option', { value: 'om', lang: 'om' }, 'Afaan Oromoo (Afaan Oromo)'))),
+  h('div', { class: 'field' },
+    h('label', { for: fileId }, 'Caption file (.vtt)'),
+    h('input', { type: 'file', id: fileId, accept: '.vtt,text/vtt' })),
+  h('p', { class: 'hint' }, 'This replaces the captions in that language. They are marked draft until you check them.'),
+  h('button', { type: 'submit', class: 'button secondary' }, 'Upload captions'),
+  status);
+  return form;
 }

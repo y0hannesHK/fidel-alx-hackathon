@@ -11,10 +11,11 @@ import { formatTime } from './vtt.js';
  *   lang, idPrefix, headingLevel,
  *   loadTracks: () => Promise<[{ lang, cues }]>,  // caption text to search
  *   playFrom: (seconds) => void,
+ *   transcriptLang: () => 'en' | 'am' | 'om',       // language shown now
  * }
  * Returns { element, bodyId }.
  */
-export function buildTranscript({ lang, idPrefix, headingLevel, loadTracks, playFrom }) {
+export function buildTranscript({ lang, idPrefix, headingLevel, loadTracks, playFrom, transcriptLang }) {
   const tr = (key, values) => t(lang, key, values);
   const headingId = `${idPrefix}-transcript-heading`;
   const inputId = `${idPrefix}-search`;
@@ -59,6 +60,23 @@ export function buildTranscript({ lang, idPrefix, headingLevel, loadTracks, play
     }
   }
 
+  // Download the transcript as a text file, made here in the browser from the
+  // captions already loaded (works with or without a Fidel server).
+  async function downloadText() {
+    const tracks = await loadTracks();
+    const wanted = transcriptLang();
+    const track = tracks.find((tr_) => tr_.lang === wanted && tr_.cues.length) || tracks.find((tr_) => tr_.cues.length);
+    if (!track) return;
+    const text = track.cues.map((cue) => cue.text.replace(/\n/g, ' ')).join('\n') + '\n';
+    // The byte-order mark helps Windows Notepad open Amharic text correctly.
+    const url = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/plain;charset=utf-8' }));
+    const link = h('a', { href: url, download: `transcript-${track.lang}.txt`, hidden: true });
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+
   const element = h(
     'section',
     { class: 'fidel-transcript', 'aria-labelledby': headingId },
@@ -71,6 +89,7 @@ export function buildTranscript({ lang, idPrefix, headingLevel, loadTracks, play
     ),
     status,
     results,
+    h('p', {}, h('button', { type: 'button', class: 'fidel-button', onclick: downloadText }, tr('downloadTranscript'))),
     h('div', { id: bodyId, class: 'fidel-transcript-body' })
   );
 

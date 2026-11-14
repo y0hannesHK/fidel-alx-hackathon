@@ -9,6 +9,8 @@ from fastapi.responses import HTMLResponse, Response
 
 from .. import braille, document, pack
 from .auth import is_staff
+from ..captions import read_vtt
+from ..pipeline.steps import lesson_folder
 from .lessons import LessonId, base_url, db, get_lesson_or_404
 
 router = APIRouter(prefix="/api/v1/lessons", tags=["offline"])
@@ -107,4 +109,25 @@ def lesson_braille(lesson_id: str = LessonId, lang: Literal["en", "am"] = "en",
         raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, str(problem)) from problem
     return Response(brf.encode("ascii", errors="replace"), media_type="text/plain; charset=us-ascii", headers={
         "Content-Disposition": f'attachment; filename="{file_name(lesson, "brf").replace(".brf", f"-{lang}.brf")}"',
+    })
+
+
+@router.get("/{lesson_id}/offline-pack", response_class=Response, include_in_schema=False)
+def offline_pack_alias(lesson_id: str = LessonId, authorization: str = Header(default="")):
+    """Same as /pack (the name used in the hackathon's data contract)."""
+    return offline_pack(lesson_id, authorization)
+
+
+@router.get("/{lesson_id}/transcript", response_class=Response,
+            responses={200: {"content": {"text/plain": {}}}})
+def transcript(lesson_id: str = LessonId, lang: Literal["en", "am", "om"] = "en",
+               authorization: str = Header(default="")):
+    """The transcript as plain text (UTF-8), one caption per line."""
+    lesson = visible_lesson(lesson_id, authorization)
+    path = lesson_folder(lesson_id) / f"captions-{lang}.vtt"
+    if not path.is_file():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, f"No {lang} captions for this lesson yet.")
+    text = "\n".join(c.text.replace("\n", " ") for c in read_vtt(path)) + "\n"
+    return Response(text.encode("utf-8"), media_type="text/plain; charset=utf-8", headers={
+        "Content-Disposition": f'attachment; filename="{file_name(lesson, "txt").replace(".txt", f"-transcript-{lang}.txt")}"',
     })

@@ -54,6 +54,7 @@ class Manifest(BaseModel):
         description="Recorded audio descriptions by language: [{start, url}]")
     sign: str | None = Field(description="Sign-language video (WebM)")
     offline: dict[str, str] = Field(description="Offline downloads: page (one HTML file), page_with_video, pack (.zip)")
+    offline_sizes: dict[str, int] = Field(description="About how many bytes each offline download is, to show before downloading")
     documents: dict[str, str] = Field(description="Accessible lesson documents: html_en, pdf_en, brf_en (Braille), html_am, pdf_am, brf_am")
     published: bool
     steps: dict[str, StepStatus]
@@ -90,6 +91,22 @@ def get_lesson_or_404(lesson_id: str) -> dict:
     if lesson is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No lesson with this id.")
     return lesson
+
+
+def offline_sizes(folder) -> dict[str, int]:
+    """Estimated download sizes. The offline page embeds the audio (and video)
+    as base64, which adds a third; the font adds about 100 KB."""
+    def size(name: str) -> int:
+        return (folder / name).stat().st_size if (folder / name).is_file() else 0
+    if not size("audio.opus"):
+        return {}
+    text = sum(size(f"{kind}-{lang}.vtt") for kind in ("captions", "chapters", "descriptions") for lang in ("en", "am", "om"))
+    page = size("audio.opus") * 4 // 3 + 100_000 + text * 2
+    return {
+        "page": page,
+        "page_with_video": page - size("audio.opus") * 4 // 3 + size("video-small.mp4") * 4 // 3,
+        "pack": page * 3 // 4 + text,  # the zip compresses part of the base64
+    }
 
 
 def build_manifest(lesson: dict, request: Request) -> Manifest:
@@ -135,6 +152,7 @@ def build_manifest(lesson: dict, request: Request) -> Manifest:
             "page_with_video": f"{api}/offline.html?video=true",
             "pack": f"{api}/pack",
         } if (folder / "audio.opus").is_file() else {},
+        offline_sizes=offline_sizes(folder),
         documents={
             **{f"{kind}_{lang}": f"{api}/document.{kind}?lang={lang}"
                for lang in ("en", "am") if (folder / f"captions-{lang}.vtt").is_file() for kind in ("html", "pdf")},

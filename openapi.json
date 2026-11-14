@@ -279,7 +279,8 @@
             "schema": {
               "enum": [
                 "en",
-                "am"
+                "am",
+                "om"
               ],
               "type": "string",
               "title": "Lang"
@@ -337,7 +338,8 @@
             "schema": {
               "enum": [
                 "en",
-                "am"
+                "am",
+                "om"
               ],
               "type": "string",
               "title": "Lang"
@@ -497,7 +499,8 @@
             "schema": {
               "enum": [
                 "en",
-                "am"
+                "am",
+                "om"
               ],
               "type": "string",
               "title": "Lang"
@@ -528,6 +531,74 @@
             "description": "Bearer <staff token>"
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptionsWithReviews"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/captions": {
+      "post": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Upload Captions",
+        "description": "Upload a caption file (for lessons that already have captions, or when\nthe speech-to-text model is not installed). It replaces this language's\ncaptions and is marked draft until a person checks it in Studio.",
+        "operationId": "upload_captions_api_v1_lessons__lesson_id__captions_post",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_captions_api_v1_lessons__lesson_id__captions_post"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -690,7 +761,8 @@
             "schema": {
               "enum": [
                 "en",
-                "am"
+                "am",
+                "om"
               ],
               "type": "string",
               "title": "Lang"
@@ -759,7 +831,8 @@
             "schema": {
               "enum": [
                 "en",
-                "am"
+                "am",
+                "om"
               ],
               "type": "string",
               "title": "Lang"
@@ -840,7 +913,8 @@
             "schema": {
               "enum": [
                 "en",
-                "am"
+                "am",
+                "om"
               ],
               "type": "string",
               "title": "Lang"
@@ -930,7 +1004,8 @@
             "schema": {
               "enum": [
                 "en",
-                "am"
+                "am",
+                "om"
               ],
               "type": "string",
               "title": "Lang"
@@ -1294,6 +1369,275 @@
             "description": "Successful Response",
             "content": {
               "application/zip": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/document.html": {
+      "get": {
+        "tags": [
+          "offline"
+        ],
+        "summary": "Lesson Document",
+        "description": "The lesson as an accessible document: chapters as headings, transcript,\naudio descriptions, and slide images with descriptions written by staff.",
+        "operationId": "lesson_document_api_v1_lessons__lesson_id__document_html_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "default": "en",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/document.pdf": {
+      "get": {
+        "tags": [
+          "offline"
+        ],
+        "summary": "Lesson Document Pdf",
+        "description": "The same document as a tagged PDF (PDF/UA-1) with Ethiopic font embedded.",
+        "operationId": "lesson_document_pdf_api_v1_lessons__lesson_id__document_pdf_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "default": "en",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/braille.brf": {
+      "get": {
+        "tags": [
+          "offline"
+        ],
+        "summary": "Lesson Braille",
+        "description": "The lesson's title, chapters and transcript as a Braille Ready File\n(.brf: Unified English Braille grade 2, 40 cells by 25 lines), for\nembossers and refreshable Braille displays.",
+        "operationId": "lesson_braille_api_v1_lessons__lesson_id__braille_brf_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "en",
+                "am"
+              ],
+              "type": "string",
+              "default": "en",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lessons/{lesson_id}/transcript": {
+      "get": {
+        "tags": [
+          "offline"
+        ],
+        "summary": "Transcript",
+        "description": "The transcript as plain text (UTF-8), one caption per line.",
+        "operationId": "transcript_api_v1_lessons__lesson_id__transcript_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "en",
+                "am",
+                "om"
+              ],
+              "type": "string",
+              "default": "en",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {}
             }
           },
           "422": {
@@ -1885,6 +2229,104 @@
         }
       }
     },
+    "/api/v1/glossary": {
+      "get": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Get Glossary",
+        "operationId": "get_glossary_api_v1_glossary_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Glossary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "editing (staff)"
+        ],
+        "summary": "Save Glossary",
+        "operationId": "save_glossary_api_v1_glossary_put",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Glossary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Glossary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -1912,6 +2354,31 @@
   },
   "components": {
     "schemas": {
+      "Body_upload_captions_api_v1_lessons__lesson_id__captions_post": {
+        "properties": {
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "am",
+              "om"
+            ],
+            "title": "Lang"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "WebVTT caption file (.vtt)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lang",
+          "file"
+        ],
+        "title": "Body_upload_captions_api_v1_lessons__lesson_id__captions_post"
+      },
       "Body_upload_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_post": {
         "properties": {
           "audio": {
@@ -1945,7 +2412,8 @@
             "type": "string",
             "enum": [
               "en",
-              "am"
+              "am",
+              "om"
             ],
             "title": "Spoken Language",
             "description": "Language spoken in the video",
@@ -1993,7 +2461,8 @@
             "type": "string",
             "enum": [
               "en",
-              "am"
+              "am",
+              "om"
             ],
             "title": "Lang"
           },
@@ -2042,7 +2511,8 @@
             "type": "string",
             "enum": [
               "en",
-              "am"
+              "am",
+              "om"
             ],
             "title": "Lang"
           },
@@ -2180,6 +2650,43 @@
               }
             ],
             "title": "Title Am"
+          },
+          "image_alt_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 600
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Alt En",
+            "description": "Description of the chapter's slide image (for the lesson document)"
+          },
+          "image_alt_am": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 600
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Alt Am"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url",
+            "description": "The slide image (read-only)"
           }
         },
         "type": "object",
@@ -2312,6 +2819,23 @@
           "text"
         ],
         "title": "EditCue"
+      },
+      "Glossary": {
+        "properties": {
+          "terms": {
+            "items": {
+              "$ref": "#/components/schemas/Term"
+            },
+            "type": "array",
+            "maxItems": 300,
+            "title": "Terms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "terms"
+        ],
+        "title": "Glossary"
       },
       "HTTPValidationError": {
         "properties": {
@@ -2488,7 +3012,8 @@
             "type": "string",
             "enum": [
               "en",
-              "am"
+              "am",
+              "om"
             ],
             "title": "Spoken Language"
           },
@@ -2530,7 +3055,8 @@
             "type": "string",
             "enum": [
               "en",
-              "am"
+              "am",
+              "om"
             ],
             "title": "Spoken Language"
           },
@@ -2609,6 +3135,22 @@
             "title": "Offline",
             "description": "Offline downloads: page (one HTML file), page_with_video, pack (.zip)"
           },
+          "offline_sizes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Offline Sizes",
+            "description": "About how many bytes each offline download is, to show before downloading"
+          },
+          "documents": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Documents",
+            "description": "Accessible lesson documents: html_en, pdf_en, brf_en (Braille), html_am, pdf_am, brf_am"
+          },
           "published": {
             "type": "boolean",
             "title": "Published"
@@ -2635,6 +3177,8 @@
           "description_recordings",
           "sign",
           "offline",
+          "offline_sizes",
+          "documents",
           "published",
           "steps"
         ],
@@ -2709,6 +3253,47 @@
           "updated_at"
         ],
         "title": "StepStatus"
+      },
+      "Term": {
+        "properties": {
+          "en": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "En",
+            "description": "English word or phrase"
+          },
+          "am": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Am",
+            "description": "Agreed Amharic (written by a fluent speaker)"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "en"
+        ],
+        "title": "Term"
       },
       "ValidationError": {
         "properties": {

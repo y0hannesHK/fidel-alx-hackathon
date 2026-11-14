@@ -150,3 +150,17 @@ test('"Save for offline" keeps the lesson in the browser for use with no interne
   await expect.poll(() => page.locator('#media').evaluate((a) => a.duration), { timeout: 10_000 }).toBeGreaterThan(100);
   await context.setOffline(false);
 });
+
+test('download links show their size, and the transcript downloads as text', async ({ page }) => {
+  await page.goto(`/demo/savanna-mock/lesson.html?id=${lessonId}`);
+  const panel = page.locator('fidel-player .fidel-panel');
+  await expect(panel).toBeVisible({ timeout: 15_000 });
+  await expect(panel.getByRole('link', { name: /Download lesson for offline use/ })).toHaveText(/\((\d+(\.\d)? MB|\d+ KB)\)$/);
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Download the transcript as text (.txt)' }).click(),
+  ]);
+  const text = await (await download.createReadStream()).toArray().then((chunks) => Buffer.concat(chunks).toString('utf8'));
+  expect(text).toContain('First sentence.');
+});

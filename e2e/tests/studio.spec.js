@@ -157,3 +157,44 @@ test('glossary: captions with risky words are marked with the agreed Amharic', a
   await expect(page.getByRole('heading', { level: 1, name: 'Glossary' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'English word or phrase' }).first()).toBeVisible();
 });
+
+test('caption times can be corrected, and wrong times are refused with a clear message', async ({ page, request }) => {
+  await signIn(page);
+  await page.goto(`/studio/#/lesson/${lessonId}`);
+  const editor = page.locator('section', { has: page.getByRole('heading', { name: 'Captions' }) });
+  const first = editor.getByRole('group', { name: /Caption 1/ });
+  const end = first.getByRole('textbox', { name: 'End' });
+
+  // An end before the start is refused.
+  await first.getByRole('textbox', { name: 'Start' }).fill('0:02.0');
+  await end.fill('0:00.5');
+  await editor.getByRole('button', { name: 'Save captions' }).click();
+  await expect(editor.getByRole('status').filter({ hasText: 'needs a start time and an end time after it' })).toBeVisible();
+  await expect(end).toBeFocused();
+
+  await first.getByRole('textbox', { name: 'Start' }).fill('0:00.2');
+  await end.fill('0:02.5');
+  await editor.getByRole('button', { name: 'Save captions' }).click();
+  await expect(editor.getByRole('status').filter({ hasText: 'Saved.' })).toBeVisible();
+  const cues = (await (await request.get(`/api/v1/lessons/${lessonId}/captions/en/cues`, { headers: STAFF })).json()).cues;
+  expect([cues[0].start, cues[0].end]).toEqual([0.2, 2.5]);
+});
+
+test('a caption file can be uploaded in Studio', async ({ page, request }) => {
+  await signIn(page);
+  await page.goto(`/studio/#/lesson/${lessonId}`);
+  const editor = page.locator('section', { has: page.getByRole('heading', { name: 'Captions' }) });
+  await editor.getByText('Upload a caption file instead').click();
+  await editor.getByLabel('Language of the captions').selectOption('om');
+  await editor.getByLabel('Caption file (.vtt)').setInputFiles({
+    name: 'om.vtt', mimeType: 'text/vtt',
+    buffer: Buffer.from('WEBVTT\n\n00:00:00.000 --> 00:00:03.000\nJecha qormaataa.\n'),
+  });
+  const [response] = await Promise.all([
+    page.waitForResponse((r) => r.url().endsWith('/captions') && r.request().method() === 'POST'),
+    editor.getByRole('button', { name: 'Upload captions' }).click(),
+  ]);
+  expect(response.status()).toBe(200);
+  const manifest = await (await request.get(`/api/v1/lessons/${lessonId}`, { headers: STAFF })).json();
+  expect(manifest.captions.find((c) => c.lang === 'om').status).toBe('draft');
+});

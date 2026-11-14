@@ -183,10 +183,11 @@ export function buildPanel(options) {
   const offline = options.offline || {};
   let offlineGroup = null;
   if (offline.page || offline.pack || offline.documentHtml || options.hasSmallVideo) {
+    const sizes = offline.sizes || {};
     const links = [
-      [offline.page, 'downloadPage'],
-      [offline.pageVideo, 'downloadPageVideo'],
-      [offline.pack, 'downloadPack'],
+      [offline.page, 'downloadPage', sizes.page],
+      [offline.pageVideo, 'downloadPageVideo', sizes.pageVideo],
+      [offline.pack, 'downloadPack', sizes.pack],
       [offline.documentPdf, 'downloadPdf'],
       [offline.documentBrf, 'downloadBrf'],
     ].filter(([url]) => url);
@@ -206,7 +207,7 @@ export function buildPanel(options) {
             onclick: () => on.lowData(!prefs.lowData),
           }, tr('lowData')),
         links.length > 0 && h('ul', { class: 'fidel-downloads' },
-          links.map(([url, key]) => h('li', {}, h('a', { href: url, download: '' }, tr(key))))),
+          links.map(([url, key, bytes]) => h('li', {}, h('a', { href: url, download: '' }, tr(key), bytes ? ` (${formatSize(bytes)})` : '')))),
         links.length > 0 && h('p', {}, tr('offlineHelp')),
         offline.documentHtml && h('p', {}, h('a', { href: offline.documentHtml }, tr('readDocument'))),
         saveOfflineControls(offline.page, tr)
@@ -278,4 +279,9 @@ function saveOfflineControls(offlinePage, tr) {
   }, tr('saveOffline'));
   isSaved(offlinePage).then((saved) => saved && showSaved());
   return h('div', {}, button, status);
+}
+
+/** 1234567 -> "1.2 MB"; 98765 -> "96 KB" (shown before downloading, for 3G data costs). */
+export function formatSize(bytes) {
+  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }

@@ -132,3 +132,20 @@ def test_description_recordings(lesson, tiny_video):
     client.put(url, headers=STAFF, json={"cues": []})
     manifest = client.get(f"/api/v1/lessons/{lesson_id}", headers=STAFF).json()
     assert "am" not in manifest["description_recordings"]
+
+
+def test_upload_a_caption_file(lesson):
+    client, lesson_id = lesson
+    url = f"/api/v1/lessons/{lesson_id}/captions"
+    vtt = "\ufeffWEBVTT\n\n00:00:02.000 --> 00:00:03.000\nSecond.\n\n00:00:00.500 --> 00:00:01.500\nFirst.\n"
+    response = client.post(url, headers=STAFF, data={"lang": "om"},
+                           files={"file": ("captions.vtt", vtt.encode("utf-8"), "text/vtt")})
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert [c["text"] for c in data["cues"]] == ["First.", "Second."]  # sorted by time
+    assert data["status"] == "draft" and data["drafts_left"] == 2
+
+    for bad in (b"not a caption file", "WEBVTT\n\nno cues here\n".encode(), b"\xff\xfe\x00bad"):
+        r = client.post(url, headers=STAFF, data={"lang": "om"}, files={"file": ("x.vtt", bad, "text/vtt")})
+        assert r.status_code == 422, bad
+    assert client.post(url, data={"lang": "om"}, files={"file": ("x.vtt", vtt.encode(), "text/vtt")}).status_code == 401
