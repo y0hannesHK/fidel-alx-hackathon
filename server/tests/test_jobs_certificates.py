@@ -57,9 +57,9 @@ def test_job_is_valid_schema_org_jobposting(client):
 
 def test_job_validation(client):
     bad = {**JOB, "location": None, "remote": False}
-    assert client.post("/api/v1/jobs", headers=STAFF, json=bad).status_code == 422
-    assert client.post("/api/v1/jobs", headers=STAFF, json={**JOB, "closing_date": "2026-01-01"}).status_code == 422
-    assert client.post("/api/v1/jobs", headers=STAFF, json={**JOB, "apply_email": "not-an-email"}).status_code == 422
+    assert client.post("/api/v1/jobs", headers=STAFF, json=bad).status_code == 400
+    assert client.post("/api/v1/jobs", headers=STAFF, json={**JOB, "closing_date": "2026-01-01"}).status_code == 400
+    assert client.post("/api/v1/jobs", headers=STAFF, json={**JOB, "apply_email": "not-an-email"}).status_code == 400
     assert client.post("/api/v1/jobs", json=JOB).status_code == 401
 
 

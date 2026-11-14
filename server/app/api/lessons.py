@@ -201,13 +201,13 @@ async def upload_lesson(
         await save_upload(video, source)
         info = media.probe(source)
         if not info["has_video"]:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The file has no video in it.")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "The file has no video in it.")
     except (HTTPException, media.MediaError) as problem:
         for file in folder.iterdir():
             file.unlink()
         folder.rmdir()
         if isinstance(problem, media.MediaError):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "This file could not be read as a video.") from problem
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This file could not be read as a video.") from problem
         raise
 
     db.add_lesson(lesson_id, title.strip(), spoken_language, source.name)

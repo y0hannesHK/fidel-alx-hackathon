@@ -53,7 +53,7 @@ def test_bad_caption_edits_are_rejected(lesson):
     client, lesson_id = lesson
     url = f"/api/v1/lessons/{lesson_id}/captions/am"
     for bad in ({"start": 2, "end": 1, "text": "x"}, {"start": 0, "end": 1, "text": "   "}):
-        assert client.put(url, headers=STAFF, json={"cues": [bad]}).status_code == 422
+        assert client.put(url, headers=STAFF, json={"cues": [bad]}).status_code == 400
     assert client.put(url, json={"cues": []}).status_code == 401  # no token
 
 
@@ -147,5 +147,5 @@ def test_upload_a_caption_file(lesson):
 
     for bad in (b"not a caption file", "WEBVTT\n\nno cues here\n".encode(), b"\xff\xfe\x00bad"):
         r = client.post(url, headers=STAFF, data={"lang": "om"}, files={"file": ("x.vtt", bad, "text/vtt")})
-        assert r.status_code == 422, bad
+        assert r.status_code == 400, bad
     assert client.post(url, data={"lang": "om"}, files={"file": ("x.vtt", vtt.encode(), "text/vtt")}).status_code == 401

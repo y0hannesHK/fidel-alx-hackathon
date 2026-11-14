@@ -41,3 +41,7 @@ def run_steps(db: Database, lesson_id: str, names: list[str]) -> None:
             except Exception as error:  # noqa: BLE001 - show any failure to staff, keep going
                 log.exception("Step %s failed for lesson %s", name, lesson_id)
                 db.set_step(lesson_id, name, "failed", f"{type(error).__name__}: {error}")
+        # Tell the host's server (webhooks), if it asked.
+        from ..api.webhooks import notify  # here, to avoid an import cycle
+        notify("lesson.ready", {"lesson_id": lesson_id,
+                                "steps": {n: v["status"] for n, v in db.get_steps(lesson_id).items()}})

@@ -226,7 +226,7 @@ says which version a page has loaded.
 
 ## Level 2: REST API
 
-Interactive docs at `/api/docs`; the spec is in [openapi.json](openapi.json)
+Interactive docs at `/docs` (Swagger UI); the spec is in [openapi.yaml](openapi.yaml) and [openapi.json](openapi.json)
 (regenerate with `sh scripts/export-openapi.sh`). Read endpoints are public;
 write endpoints need `Authorization: Bearer <FIDEL_STAFF_TOKEN>`.
 
@@ -286,6 +286,24 @@ curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: app
      http://localhost:8000/api/v1/certificates
 ```
 
+### Webhooks
+
+The host's server can be told when something happens, with no person involved:
+
+```sh
+curl -X POST -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" -H "Content-Type: application/json" \
+     -d '{"url": "https://your-platform.example/fidel-hook", "events": ["lesson.ready", "captions.reviewed"]}' \
+     http://localhost:8000/api/v1/webhooks
+```
+
+Events: `lesson.ready` (processing finished), `lesson.published`,
+`lesson.unpublished`, `captions.reviewed` (every caption of a language checked),
+`certificate.issued`, `certificate.revoked`. Fidel POSTs
+`{"event", "data", "sent_at"}` with ids and links only (no personal data), signed
+in the `X-Fidel-Signature: sha256=…` header with the secret returned when the
+webhook was created (shown once). Bad input to any endpoint returns **400 with a
+message in words**, for example `"Please check: url: input should be a valid URL."`
+
 ## Level 3: schema.org/JobPosting
 
 `GET /api/v1/jobs/JOB_ID` returns standard JSON-LD that job boards and search
@@ -313,6 +331,30 @@ engines read (and `<fidel-job-card>` adds it to the page), for example:
 
 schema.org has no property for workplace accommodations, so they are written in
 `jobBenefits` and, as keys, in the small `fidel:` extension.
+
+### How LTI 1.3 would connect (not built)
+
+LTI 1.3 lets a learning platform such as Moodle or Canvas open Fidel inside a
+course with the learner already signed in. We have not built it: the guide says
+a clear plan is better than a broken attempt, and we had no LMS to test with.
+This is how it would plug into Fidel's existing parts:
+
+1. **Registration.** The LMS admin registers Fidel as a tool: login URL
+   `/lti/login`, launch URL `/lti/launch`, and Fidel's public key set at
+   `/lti/jwks`. Fidel stores the platform's issuer, client id and key-set URL.
+2. **Launch.** A learner clicks the activity. The LMS sends a signed message (a
+   JWT, signed with the platform's private key). Fidel checks the signature with
+   the platform's public keys, and checks issuer, audience, expiry and a one-time
+   nonce; if any check fails, nothing opens.
+3. **Content.** The launch names a Fidel lesson (chosen by the teacher through
+   LTI Deep Linking). Fidel shows the same page a learner sees today: the
+   `<fidel-player lesson="…">`, so nothing in the player changes.
+4. **Grades (LTI Advantage).** Fidel's `fidel-complete` event would send
+   "completed" back to the LMS gradebook through the Assignment and Grade
+   Services API, the same moment our webhooks already report.
+
+Libraries to use: PyLTI1p3 (MIT) for the launch checks. Effort: about a day,
+plus testing against a Moodle instance.
 
 ## AI engines and running fully offline
 

@@ -14,6 +14,7 @@ from ..pipeline import media
 from ..pipeline.runner import queue_steps, run_steps
 from ..pipeline.steps import lesson_folder
 from .auth import require_staff
+from .webhooks import notify
 from .lessons import VIDEO_EXTENSIONS, Language, LessonId, Manifest, build_manifest, db, get_lesson_or_404, save_upload
 
 router = APIRouter(prefix="/api/v1/lessons", tags=["editing (staff)"])
@@ -122,6 +123,8 @@ def save_captions(body: CaptionsEdit, lang: Language, lesson_id: str = LessonId)
         note=f"Edited in Fidel Studio. Status: {file_status}.",
     )
     db.set_caption_status(lesson_id, lang, file_status, reviews)
+    if file_status == "reviewed":
+        notify("captions.reviewed", {"lesson_id": lesson_id, "lang": lang})
     return CaptionsWithReviews(lang=lang, status=file_status, cues=cues, drafts_left=reviews.count(False))
 
 
@@ -138,12 +141,12 @@ async def upload_captions(lang: Language = Form(), file: UploadFile = File(descr
     try:
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError as problem:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The caption file must be UTF-8 text.") from problem
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "The caption file must be UTF-8 text.") from problem
     if not text.lstrip().startswith("WEBVTT"):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "This is not a WebVTT file (it must start with WEBVTT).")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This is not a WebVTT file (it must start with WEBVTT).")
     cues = from_vtt(text)
     if not cues:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "No captions found in the file.")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No captions found in the file.")
     cues.sort(key=lambda c: c.start)
     write_vtt(lesson_folder(lesson_id) / f"captions-{lang}.vtt", cues, note="Uploaded in Fidel Studio. Status: draft.")
     db.set_caption_status(lesson_id, lang, "draft", [False] * len(cues))
@@ -231,7 +234,7 @@ def save_descriptions(body: DescriptionsEdit, lang: Language, lesson_id: str = L
     cues = sorted(body.cues, key=lambda c: c.start)
     for cue in cues:
         if cue.end <= cue.start:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "A description must end after it starts.")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "A description must end after it starts.")
     if cues:
         write_vtt(path, [Cue(c.start, c.end, c.text.strip()) for c in cues])
     else:
@@ -265,10 +268,10 @@ async def upload_description_recording(
         await save_upload(audio, upload)
         info = media.probe(upload)
         if not info["has_audio"]:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The file has no sound in it.")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "The file has no sound in it.")
         media.make_description_audio(upload, folder / recording_name(lang, match.start))
     except media.MediaError as problem:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "This file could not be read as audio.") from problem
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This file could not be read as audio.") from problem
     finally:
         upload.unlink(missing_ok=True)
     return get_descriptions(lang, lesson_id)
@@ -299,10 +302,10 @@ async def upload_sign_video(background: BackgroundTasks, video: UploadFile = Fil
     try:
         await save_upload(video, target)
         if not media.probe(target)["has_video"]:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The file has no video in it.")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "The file has no video in it.")
     except media.MediaError as problem:
         target.unlink(missing_ok=True)
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "This file could not be read as a video.") from problem
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This file could not be read as a video.") from problem
     except HTTPException:
         target.unlink(missing_ok=True)
         raise
@@ -319,7 +322,10 @@ def publish(body: PublishEdit, request: Request, lesson_id: str = LessonId):
     """Make the lesson visible to learners (or hide it again)."""
     get_lesson_or_404(lesson_id)
     db.set_published(lesson_id, body.published)
-    return build_manifest(db.get_lesson(lesson_id), request)
+    manifest = build_manifest(db.get_lesson(lesson_id), request)
+    notify("lesson.published" if body.published else "lesson.unpublished",
+           {"lesson_id": lesson_id, "manifest_url": str(request.url_for("get_manifest", lesson_id=lesson_id))})
+    return manifest
 
 
 # --- Delete -----------------------------------------------------------------------------------

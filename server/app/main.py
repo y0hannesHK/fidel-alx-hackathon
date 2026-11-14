@@ -10,20 +10,23 @@
   /demo/              demo pages: mock lesson page, blank.html (no host styles)
   /savanna/           ALX's Savanna starter pages with Fidel added, if set up
   /media/             demo media from data/demo (git-ignored)
-  /api/docs           interactive API documentation
+  /api/docs, /docs    interactive API documentation (Swagger UI)
 """
 
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import auth, certificates, editing, glossary, jobs, lessons, offline
+from .api import auth, certificates, editing, glossary, jobs, lessons, offline, webhooks
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -61,6 +64,17 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(RequestValidationError)
+async def bad_input(request: Request, error: RequestValidationError) -> JSONResponse:
+    """Bad input: 400 with a message in words (the guide's Level 2 rule), plus
+    the details for developers."""
+    def field(loc) -> str:
+        parts = [str(p) for p in loc if p not in ("body", "query", "path", "header", "form")]
+        return ".".join(parts) or "request"
+    messages = [f"{field(e['loc'])}: {e['msg'].removeprefix('Value error, ').lower()}" for e in error.errors()]
+    return JSONResponse(status_code=400, content={"detail": "Please check: " + "; ".join(messages) + ".",
+                                                  "errors": jsonable_encoder(error.errors())})
+
 
 class CompressText:
     """Compress text (scripts, styles, pages, JSON) for slow connections:
@@ -90,6 +104,7 @@ app.include_router(offline.router)
 app.include_router(jobs.router)
 app.include_router(certificates.router)
 app.include_router(glossary.router)
+app.include_router(webhooks.router)
 
 
 @app.get("/health", tags=["system"])
@@ -103,6 +118,12 @@ def service_worker() -> FileResponse:
     """Service worker for "Save for offline" (must be served from the site root)."""
     return FileResponse(Path(__file__).parent / "static" / "fidel-sw.js", media_type="text/javascript",
                         headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/docs", include_in_schema=False)
+def docs_shortcut() -> RedirectResponse:
+    """The interactive API documentation (Swagger UI) is at /api/docs."""
+    return RedirectResponse(url="/api/docs")
 
 
 @app.get("/", include_in_schema=False)

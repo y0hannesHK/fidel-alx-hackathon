@@ -53,6 +53,14 @@ CREATE TABLE IF NOT EXISTS certificates (
     status        TEXT NOT NULL,            -- valid | revoked
     created_at    TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS webhooks (
+    id          TEXT PRIMARY KEY,
+    url         TEXT NOT NULL,              -- the host's address to call
+    events      TEXT NOT NULL,              -- JSON list of event names
+    secret      TEXT NOT NULL,              -- signs each delivery (HMAC-SHA256)
+    created_at  TEXT NOT NULL
+);
 """
 
 # Columns added after the first version. Older databases get them on start.
@@ -211,3 +219,19 @@ class Database:
     def set_certificate_status(self, cert_id: str, status: str) -> None:
         with self.connect() as db:
             db.execute("UPDATE certificates SET status = ? WHERE id = ?", (status, cert_id))
+
+    # --- webhooks --------------------------------------------------------------------
+
+    def add_webhook(self, hook: dict) -> None:
+        with self.connect() as db:
+            db.execute("INSERT INTO webhooks (id, url, events, secret, created_at) VALUES (?, ?, ?, ?, ?)",
+                       (hook["id"], hook["url"], json.dumps(hook["events"]), hook["secret"], now()))
+
+    def list_webhooks(self) -> list[dict]:
+        with self.connect() as db:
+            rows = db.execute("SELECT * FROM webhooks ORDER BY created_at").fetchall()
+        return [{**dict(r), "events": json.loads(r["events"])} for r in rows]
+
+    def delete_webhook(self, hook_id: str) -> bool:
+        with self.connect() as db:
+            return db.execute("DELETE FROM webhooks WHERE id = ?", (hook_id,)).rowcount > 0

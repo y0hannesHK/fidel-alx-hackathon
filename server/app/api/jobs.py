@@ -184,10 +184,10 @@ async def upload_summary_recording(request: Request, lang: Literal["en", "am"], 
     try:
         await save_upload(audio, upload)
         if not media.probe(upload)["has_audio"]:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The file has no sound in it.")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "The file has no sound in it.")
         media.make_description_audio(upload, folder / f"summary-{lang}.opus")
     except media.MediaError as problem:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "This file could not be read as audio.") from problem
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This file could not be read as audio.") from problem
     finally:
         upload.unlink(missing_ok=True)
     return jsonld_response(to_jsonld(job_id, job, base_url(request)))

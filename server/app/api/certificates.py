@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from ..ethiopian_calendar import format_both
 from .auth import require_staff
 from .lessons import base_url, db
+from .webhooks import notify
 
 router = APIRouter(tags=["certificates"])
 staff = [Depends(require_staff)]
@@ -71,7 +72,9 @@ def issue(body: CertificateIn, request: Request):
         "issuer": body.issuer.strip(),
     }
     db.add_certificate(cert)
-    return public(db.get_certificate(cert["id"]), request)
+    result = public(db.get_certificate(cert["id"]), request)
+    notify("certificate.issued", {"certificate_id": result.id, "verify_url": result.verify_url})
+    return result
 
 
 @router.get("/api/v1/certificates", response_model=list[Certificate], dependencies=staff)
@@ -89,7 +92,9 @@ def get_certificate(request: Request, cert_id: str = CertId):
 def revoke(request: Request, cert_id: str = CertId):
     get_or_404(cert_id)
     db.set_certificate_status(cert_id, "revoked")
-    return public(db.get_certificate(cert_id), request)
+    result = public(db.get_certificate(cert_id), request)
+    notify("certificate.revoked", {"certificate_id": result.id, "verify_url": result.verify_url})
+    return result
 
 
 # --- Public verification page ---------------------------------------------------------

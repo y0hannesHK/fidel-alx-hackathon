@@ -102,7 +102,7 @@ def test_write_endpoints_need_the_staff_token(client, tiny_video):
 def test_rejects_files_that_are_not_video(client, tmp_path):
     text_file = tmp_path / "notes.mp4"
     text_file.write_text("this is not a video")
-    assert upload(client, text_file).status_code == 422
+    assert upload(client, text_file).status_code == 400
     other = tmp_path / "virus.exe"
     other.write_bytes(b"MZ")
     with open(other, "rb") as f:
@@ -113,7 +113,7 @@ def test_rejects_files_that_are_not_video(client, tmp_path):
 
 def test_unknown_or_malformed_lesson_ids(client):
     assert client.get("/api/v1/lessons/000000000000").status_code == 404
-    assert client.get("/api/v1/lessons/..%2F..%2Fetc").status_code in (404, 422)
+    assert client.get("/api/v1/lessons/..%2F..%2Fetc").status_code in (400, 404)
 
 
 def test_missing_model_gives_a_clear_message(monkeypatch, tiny_video):
