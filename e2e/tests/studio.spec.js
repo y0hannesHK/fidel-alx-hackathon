@@ -135,3 +135,25 @@ test('Studio pages have no critical or serious axe issues', async ({ page }) => 
     expect(blocking, url).toEqual([]);
   }
 });
+
+test('glossary: captions with risky words are marked with the agreed Amharic', async ({ page, request }) => {
+  // Agree on the Amharic for "disability" (keep the other words as they are).
+  const { terms } = await (await request.get('/api/v1/glossary', { headers: STAFF })).json();
+  const updated = terms.map((t) => (t.en === 'disability' ? { ...t, am: 'አካል ጉዳት' } : t));
+  await request.put('/api/v1/glossary', { headers: STAFF, data: { terms: updated } });
+
+  await signIn(page);
+  await page.goto(`/studio/#/lesson/${lessonId}`);
+  const editor = page.locator('section', { has: page.getByRole('heading', { name: 'Captions' }) });
+  const first = editor.getByRole('group', { name: /Caption 1/ });
+  await expect(first.locator('.glossary-note')).toContainText('"disability" = አካል ጉዳት');
+  await expect(first.locator('.glossary-note')).toContainText('"refugee" (no agreed Amharic yet)');
+
+  await editor.getByLabel(/Show only captions with glossary words/).check();
+  await expect(editor.getByRole('status').filter({ hasText: 'captions with glossary words' })).toBeVisible();
+
+  // The glossary page lists the words.
+  await page.goto('/studio/#/glossary');
+  await expect(page.getByRole('heading', { level: 1, name: 'Glossary' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'English word or phrase' }).first()).toBeVisible();
+});

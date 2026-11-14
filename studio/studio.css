@@ -120,3 +120,4 @@ td .button { margin: 0.25rem 0.25rem 0.25rem 0; }
 .keyframe img { max-width: 100%; height: auto; border: 1px solid #5c5c5c; display: block; }
 .keyframe figcaption { color: #333; font-size: 0.95rem; max-width: 40rem; }
 .embed-label { display: block; font-weight: 600; margin: 0.25rem 0; } .embed-label input { display: block; width: 100%; min-width: 14rem; }
+.glossary-note { background: #fff8e1; border-left: 5px solid #8a5a00; padding: 0.4rem 0.6rem; margin: 0.25rem 0 0.5rem; }

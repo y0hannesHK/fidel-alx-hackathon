@@ -2,7 +2,7 @@
 // Pages are switched with the address hash: #/ (home) and #/lesson/ID.
 import { api, ApiError, token, uploadWithProgress } from './api.js';
 import { lessonPage } from './lesson.js';
-import { certificatesPage, jobsPage } from './career.js';
+import { certificatesPage, glossaryPage, jobsPage } from './career.js';
 import { h, say, uid } from './util.js';
 
 const main = document.getElementById('main');
@@ -28,6 +28,7 @@ async function route() {
     if (match) await lessonPage(main, match[1]);
     else if (location.hash === '#/jobs') await jobsPage(main);
     else if (location.hash === '#/certificates') await certificatesPage(main);
+    else if (location.hash === '#/glossary') await glossaryPage(main);
     else await homePage();
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {

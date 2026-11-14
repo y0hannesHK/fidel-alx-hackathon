@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import auth, certificates, editing, jobs, lessons, offline
+from .api import auth, certificates, editing, glossary, jobs, lessons, offline
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +64,7 @@ app.include_router(auth.router)
 app.include_router(offline.router)
 app.include_router(jobs.router)
 app.include_router(certificates.router)
+app.include_router(glossary.router)
 
 
 @app.get("/health", tags=["system"])

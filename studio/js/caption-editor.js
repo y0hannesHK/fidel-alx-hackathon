@@ -21,7 +21,13 @@ export async function captionEditor(lessonId, manifest) {
 
   // Load both languages. They share timings (the Amharic is translated cue by cue).
   const load = async (lang) => (languages.includes(lang) ? api(`/api/v1/lessons/${lessonId}/captions/${lang}/cues`) : null);
-  const [english, amharic] = await Promise.all([load('en'), load('am')]);
+  const [english, amharic, glossary] = await Promise.all([
+    load('en'), load('am'), api('/api/v1/glossary').catch(() => ({ terms: [] })),
+  ]);
+  // Glossary words in a caption's English text (word match; also plurals and -ed/-ing).
+  const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const patterns = glossary.terms.map((term) => ({ term, re: new RegExp(`\\b${escape(term.en)}(s|es|d|ed|ing)?\\b`, 'i') }));
+  const glossaryWords = (text) => patterns.filter(({ re }) => re.test(text || '')).map(({ term }) => term);
   const base = english || amharic;
   const rows = base.cues.map((cue, i) => ({
     start: cue.start,
@@ -116,9 +122,15 @@ export async function captionEditor(lessonId, manifest) {
           h('div', { class: 'check' }, checkbox, h('label', { for: checkId }, 'Amharic checked'))
         );
       }
-      return h('li', {},
+      const words = glossaryWords(row.en?.text);
+      row.hasGlossaryWord = words.length > 0;
+      return h('li', { 'data-glossary': row.hasGlossaryWord ? 'yes' : 'no' },
         h('fieldset', { class: 'cue' },
           h('legend', { id: legendId }, `Caption ${i + 1}, ${time}`),
+          row.hasGlossaryWord && h('p', { class: 'glossary-note' },
+            h('strong', {}, 'Check the glossary words: '),
+            words.map((term, k) => [k ? '; ' : '', `"${term.en}"`,
+              term.am ? [' = ', h('span', { lang: 'am' }, term.am)] : ' (no agreed Amharic yet)'])),
           h('div', { class: 'row' },
             h('button', { type: 'button', class: 'button secondary', onclick: () => playRow(row) }, 'Play this caption'),
             row.am && h('button', { type: 'button', class: 'button secondary', onclick: () => checkAndNext(i) }, 'Checked, go to next')
@@ -190,8 +202,19 @@ export async function captionEditor(lessonId, manifest) {
   }
 
   updateCounter();
+  const glossaryCount = rows.filter((r) => r.hasGlossaryWord).length;
+  const onlyId = uid('only-glossary');
+  const onlyGlossary = glossaryCount > 0 && h('div', { class: 'check' },
+    h('input', {
+      type: 'checkbox', id: onlyId,
+      onchange: (e) => {
+        for (const item of list.children) item.hidden = e.target.checked && item.dataset.glossary !== 'yes';
+        say(status, e.target.checked ? `Showing the ${glossaryCount} captions with glossary words.` : 'Showing all captions.');
+      },
+    }),
+    h('label', { for: onlyId }, `Show only captions with glossary words (${glossaryCount})`));
   section.append(
-    h('p', { class: 'hint' }, 'Tip: in an Amharic box, press Ctrl+Enter for "Checked, go to next".'),
+    h('p', { class: 'hint' }, 'Tip: in an Amharic box, press Ctrl+Enter for "Checked, go to next". Captions with glossary words (words machines often get wrong) are marked: check those first.'),
     h('div', { class: 'toolbar' },
       counter,
       h('div', { class: 'row' },
@@ -199,6 +222,7 @@ export async function captionEditor(lessonId, manifest) {
         amharic && h('button', { type: 'button', class: 'button secondary', onclick: markAll }, 'Mark all Amharic as checked')
       ),
       englishChecked,
+      onlyGlossary,
       status
     ),
     h('div', { class: 'editor' }, h('div', { class: 'editor-video-wrap' }, video), list)

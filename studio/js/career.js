@@ -1,6 +1,7 @@
 // Studio: jobs (schema.org/JobPosting) and certificates.
 import { api, uploadWithProgress } from './api.js';
 import { h, say, uid } from './util.js';
+import { rowsEditor } from './rows-editor.js';
 
 const ACCOMMODATIONS = {
   sign_language_interpreter: 'Sign language interpreter available',
@@ -195,5 +196,39 @@ export async function certificatesPage(main) {
           h('thead', {}, h('tr', {}, ['Learner', 'Course', 'Date', 'Status', 'Actions'].map((c) => h('th', { scope: 'col' }, c)))),
           h('tbody', {}, rows)))
         : h('p', {}, 'None yet.')));
+  main.querySelector('h1').focus();
+}
+
+// --- Glossary ---------------------------------------------------------------------------
+
+export async function glossaryPage(main) {
+  document.title = 'Glossary – Fidel Studio';
+  const { terms } = await api('/api/v1/glossary');
+  main.replaceChildren(
+    h('h1', { tabindex: '-1' }, 'Glossary'),
+    h('p', {}, 'Key words that machine translation often gets wrong, with the agreed Amharic. '
+      + 'In the caption editor, every caption containing one of these words is marked so reviewers check it first. '
+      + 'The Amharic must be written by a fluent speaker.'),
+    rowsEditor({
+      heading: 'Words',
+      itemName: 'Word',
+      emptyText: 'No words yet.',
+      addLabel: 'Add word',
+      saveLabel: 'Save glossary',
+      fields: [
+        { key: 'en', label: 'English word or phrase', kind: 'text', lang: 'en' },
+        { key: 'am', label: 'Agreed Amharic', kind: 'text', lang: 'am', optional: true },
+        { key: 'note', label: 'Note for reviewers', kind: 'text', optional: true },
+      ],
+      rows: terms,
+      newRow: () => ({ en: '', am: '', note: '' }),
+      getVideoTime: () => 0,
+      save: async (rows) => {
+        const saved = await api('/api/v1/glossary', { method: 'PUT', json: { terms: rows.map((r) => ({ en: r.en, am: r.am || null, note: r.note || null })) } });
+        const missing = saved.terms.filter((t) => !t.am).length;
+        return { rows: saved.terms, message: `Saved ${saved.terms.length} words.${missing ? ` ${missing} still need the agreed Amharic.` : ''}` };
+      },
+    })
+  );
   main.querySelector('h1').focus();
 }
