@@ -8,7 +8,9 @@
 //     with buttons (no dragging needed, WCAG 2.5.7).
 //   - three sizes, chosen with buttons.
 
-export const SIGN_SIZES = { small: 160, medium: 240, large: 320 };
+// Big enough to read hands and face (the guide: the sign window is the real
+// access route for many Deaf learners). Never wider than its container.
+export const SIGN_SIZES = { small: 200, medium: 320, large: 480 };
 export const SIGN_CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 
 export class SignWindow {
@@ -21,7 +23,27 @@ export class SignWindow {
       // Able Player marks the window as a dialog, but it is not modal and
       // does not trap focus, so "region" describes it better.
       this.win.setAttribute('role', 'region');
+      this.startDriftCorrection();
     }
+  }
+
+  /** Able Player syncs the signer on play, pause, seek and speed changes.
+   *  Videos still drift apart over a long lesson, so once a second we pull
+   *  the signer back if it is more than 0.3 s off. */
+  startDriftCorrection() {
+    const main = this.player.media;
+    const sign = this.player.signVideo;
+    if (!main || !sign) return;
+    this.driftTimer = setInterval(() => {
+      if (!this.visible || main.paused || sign.readyState < 2) return;
+      if (Math.abs(sign.currentTime - main.currentTime) > 0.3) sign.currentTime = main.currentTime;
+      if (sign.playbackRate !== main.playbackRate) sign.playbackRate = main.playbackRate;
+      if (sign.paused) sign.play().catch(() => {});
+    }, 1000);
+  }
+
+  stop() {
+    clearInterval(this.driftTimer);
   }
 
   get available() {

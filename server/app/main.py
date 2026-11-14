@@ -19,6 +19,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -59,6 +60,29 @@ app.add_middleware(
     expose_headers=["Content-Range", "Accept-Ranges", "Content-Length"],
 )
 
+
+
+class CompressText:
+    """Compress text (scripts, styles, pages, JSON) for slow connections:
+    fidel.js goes from about 550 KB to about 160 KB. Media, zip, PDF and
+    Braille files are left alone: they are compressed already, and compressing
+    video would break seeking (range requests)."""
+
+    SKIP = (".mp4", ".webm", ".opus", ".jpg", ".png", ".woff2", ".zip", ".pdf", "/pack", "/offline-pack", ".brf")
+
+    def __init__(self, app):
+        self.app = app
+        self.gzip = GZipMiddleware(app, minimum_size=1000)
+
+    async def __call__(self, scope, receive, send):
+        path = scope.get("path", "") if scope["type"] == "http" else ""
+        if path and not path.endswith(self.SKIP):
+            await self.gzip(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
+
+
+app.add_middleware(CompressText)
 app.include_router(lessons.router)
 app.include_router(editing.router)
 app.include_router(auth.router)

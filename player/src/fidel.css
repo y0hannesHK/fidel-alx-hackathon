@@ -90,7 +90,7 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
   display: none;
 }
 .fidel-draft-notice {
-  border-left: 6px solid #8a5a00;
+  border-inline-start: 6px solid #8a5a00;
   background: #fff8e1;
   padding: 0.5rem 0.75rem;
 }
@@ -411,7 +411,7 @@ fidel-session-viewer { display: block; }
 .fidel-chat-message:hover { background: #e8f0fa; }
 .fidel-chat-time { font-weight: 700; color: #0b4f9c; }
 .fidel-chat-name { font-weight: 700; }
-.fidel-chat-past .fidel-chat-message { border-left: 5px solid #0b4f9c; }  /* already said at this point */
+.fidel-chat-past .fidel-chat-message { border-inline-start: 5px solid #0b4f9c; }  /* already said at this point */
 .fidel-sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -489,3 +489,20 @@ fidel-player button.able-ctl {
   letter-spacing: normal;
 }
 :is(fidel-player, fidel-session-viewer) .fidel-group > summary { font-size: 1.125rem; }
+
+/* Transcript: each caption is its own line and its own button (the guide:
+   "every line is a button"), at least 24px tall (WCAG 2.5.8 target size). */
+.fidel-transcript-body .able-transcript-caption {
+  display: block;
+  min-height: 24px;
+  padding: 0.2rem 0.35rem;
+  margin: 0.1rem 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.fidel-transcript-body .able-transcript-caption:hover { background: #e8f0fa; }
+.fidel-transcript-body .able-transcript-caption.able-highlight:hover { background: var(--able-cue-highlighted-background, #000); }
+.fidel-transcript-body .able-transcript-desc .able-transcript-seekpoint {
+  display: inline-block;
+  min-height: 24px;
+}

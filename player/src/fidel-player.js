@@ -24,7 +24,8 @@
 //                                    {"am":[{"start":12.5,"url":"d1.opus"}]}
 //   lang                             default interface language ("en" or "am")
 //
-// Events sent to the page: fidel-ready, fidel-ended, fidel-captions-change,
+// Events sent to the page: fidel-ready, fidel-progress, fidel-ended, fidel-complete,
+// fidel-prefs, fidel-captions-change,
 // fidel-language-change, fidel-low-data-change, fidel-offline-saved, fidel-error.
 //
 // We use the light DOM (no shadow root) because Able Player is built on
@@ -81,9 +82,20 @@ export class FidelPlayer extends HTMLElement {
   savePrefs(changes) {
     Object.assign(this.prefs, changes);
     savePrefs(this.prefs);
+    // Tell the host what the learner chose (display settings only, no personal data).
+    emit(this, 'fidel-prefs', {
+      captionSize: this.prefs.captionSize,
+      captionColor: this.prefs.captionColours,
+      captionLanguage: this.prefs.captionLang,
+      signPosition: this.prefs.signLayout === 'docked' ? 'beside' : this.prefs.signCorner,
+      signSize: this.prefs.signSize,
+      lowData: this.prefs.lowData,
+      language: this.prefs.uiLang,
+    });
   }
 
   destroyPlayer() {
+    this.sign?.stop();
     if (this.ablePlayer) {
       this.ablePlayer.dispose();
       this.ablePlayer = null;
@@ -261,6 +273,17 @@ export class FidelPlayer extends HTMLElement {
    * shows the English titles inside Amharic text; we mark them lang="en" so
    * screen readers switch voice. Runs whenever Able Player redraws.
    */
+  /** Transcript lines (captions and descriptions) seek when activated. Able
+   *  Player builds them as focusable <span>s; role="button" makes screen
+   *  readers announce them as buttons, and Able Player then also activates
+   *  them with Enter and Space. (Real <button>s would break Able Player's
+   *  highlighting and click handling: see player/patches/README.md.) */
+  markTranscriptButtons() {
+    for (const line of this.querySelectorAll('.able-transcript-caption, .able-transcript-desc .able-transcript-seekpoint')) {
+      if (line.getAttribute('role') !== 'button') line.setAttribute('role', 'button');
+    }
+  }
+
   markChapterLanguages() {
     const player = this.ablePlayer;
     if (!player?.chapters?.length) return;
@@ -362,14 +385,31 @@ export class FidelPlayer extends HTMLElement {
     // changes; re-mark chapter languages each time (attribute changes do not
     // trigger this observer, so it cannot loop).
     this.markChapterLanguages();
+    this.markTranscriptButtons();
     this.chapterObserver?.disconnect();
-    this.chapterObserver = new MutationObserver(() => this.markChapterLanguages());
+    this.chapterObserver = new MutationObserver(() => {
+      this.markChapterLanguages();
+      this.markTranscriptButtons();
+    });
     this.chapterObserver.observe(this, { childList: true, subtree: true });
 
     if (focus) this.querySelector(focus)?.focus();
 
     // Events for the host page (see events.js).
-    video.addEventListener('ended', () => emit(this, 'fidel-ended', { duration: video.duration }));
+    video.addEventListener('ended', () => {
+      emit(this, 'fidel-ended', { duration: video.duration });
+      emit(this, 'fidel-complete', {}); // the name used in the hackathon's data contract
+    });
+    // Progress for the host (e.g. "62% watched"), at most every 5 seconds of playback.
+    let lastProgress = -Infinity;
+    video.addEventListener('timeupdate', () => {
+      if (Math.abs(video.currentTime - lastProgress) < 5 || !video.duration) return;
+      lastProgress = video.currentTime;
+      emit(this, 'fidel-progress', {
+        seconds: Math.round(video.currentTime),
+        percent: Math.round((video.currentTime / video.duration) * 100),
+      });
+    });
     emit(this, 'fidel-ready', {
       lang,
       captionLanguages: captionLangs,

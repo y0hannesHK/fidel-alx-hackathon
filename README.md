@@ -197,11 +197,26 @@ document.addEventListener('fidel-ended', (e) => markLessonDone(e.target.id));
 | `fidel-language-change` | player | `lang`: interface language |
 | `fidel-low-data-change` | player | `lowData` (true/false) |
 | `fidel-offline-saved` | player | `url` of the saved lesson |
+| `fidel-progress` | player | `seconds`, `percent` (at most every 5 seconds of playback) |
+| `fidel-complete` | player | `{}` when watched to the end (same moment as `fidel-ended`) |
+| `fidel-prefs` | player | the learner's display choices: `captionSize`, `captionColor`, `captionLanguage`, `signPosition`, `signSize`, `lowData`, `language` |
 | `fidel-error` | player | `message` |
 | `fidel-job-ready` | job card | `id`, `title` |
 | `fidel-summary-play` | job card | `lang` |
 | `fidel-certificate-ready` | certificate card | `status` (`valid`, `revoked`, `missing`) |
 | `fidel-session-ready` | session viewer | `messages`: number of chat messages |
+
+**Fitting your page.** Fidel uses your page's font. Its accent colour is the
+CSS variable `--fidel-accent` (default `#0b4f9c`, 8:1 contrast on white); set it
+to your brand colour if that has at least 4.5:1 contrast on white:
+`fidel-player { --fidel-accent: #123f6d; }`. (We do not take Savanna's
+`--bs-primary` automatically: its red `#db3e3e` is 4.4:1, just below the 4.5:1
+that text needs.) Fidel's styles are scoped to its own elements and reset the
+few host styles that would reach them (e.g. Bootstrap's `<legend>`).
+
+**Globals.** Fidel adds only `window.Fidel` (its version), and Able Player
+inside it sets `window.onYouTubeIframeAPIReady` (used only for YouTube videos).
+It does not change the host's elements or `<body>` styles.
 
 **Versions (we never break your page).** Load Fidel from `/embed/v1/`. Changes
 to `v1` keep every attribute and event working; anything that would break a

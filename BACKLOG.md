@@ -4,6 +4,12 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 ## Open
 
+- **REMINDER (B1, a teammate is doing it): interface text in JSON files**
+  (`i18n/en.json`, `am.json`; adding a language = one file, as the Team
+  Technical Guide asks). Then: `translate="no"` on language names, "Fidel" and
+  key names; a MADLAD tool that drafts a new language file, reviewed in Studio
+  before learners see it.
+
 - **Glossary for reviewers (suggestion, not yet agreed).** MADLAD mistranslates
   key words for our audience ("disability" became "street people" or
   "affected people"; "captions" became "titles"; "fails" became "succeeds").

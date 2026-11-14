@@ -260,6 +260,7 @@ export async function captionEditor(lessonId, manifest) {
     h('label', { for: onlyId }, `Show only captions with glossary words (${glossaryCount})`));
   section.append(
     h('p', { class: 'hint' }, 'Tip: in a translation box, press Ctrl+Enter for "Checked, go to next". Captions with glossary words (words machines often get wrong) are marked: check those first.'),
+    h('p', { class: 'hint' }, 'Sound-off check: speech-to-text writes only words. Watch with sound and add every sound that carries meaning in square brackets, for example [music], [laughter], [phone rings], [door closes], so Deaf learners get it too.'),
     h('div', { class: 'toolbar' },
       counter,
       h('div', { class: 'row' },

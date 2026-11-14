@@ -121,7 +121,7 @@ test('the sign window can float over the video and move to a corner with buttons
   const [s, m] = [await sign.boundingBox(), await media.boundingBox()];
   expect(Math.abs(s.x - m.x)).toBeLessThan(2);
   expect(Math.abs(s.y - m.y)).toBeLessThan(2);
-  expect(s.width).toBeLessThanOrEqual(161);
+  expect(s.width).toBeLessThanOrEqual(201); // "Small" is 200px
 });
 
 test('switching the interface to Amharic keeps focus and the playback position', async ({ page }) => {
@@ -275,4 +275,30 @@ test('"Keyboard help" opens a dialog; Escape closes it and focus returns', async
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(open).toBeFocused();
+});
+
+test('progress, prefs and complete events reach the host; transcript lines are buttons', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.fidelEvents = [];
+    for (const name of ['fidel-progress', 'fidel-prefs', 'fidel-complete']) {
+      document.addEventListener(name, (e) => window.fidelEvents.push({ name, detail: e.detail }));
+    }
+  });
+  await openLesson(page);
+  await page.locator('.fidel-panel').getByRole('button', { name: /Larger captions/ }).click();
+  const video = page.locator('fidel-player .able-media-container video');
+  await video.evaluate((v) => { v.currentTime = 20; return v.play(); });
+  await expect.poll(() => page.evaluate(() => window.fidelEvents.map((e) => e.name)), { timeout: 10_000 })
+    .toEqual(expect.arrayContaining(['fidel-prefs', 'fidel-progress']));
+  const events = await page.evaluate(() => window.fidelEvents);
+  expect(events.find((e) => e.name === 'fidel-prefs').detail.captionSize).toBe(175);
+  const progress = events.find((e) => e.name === 'fidel-progress').detail;
+  expect(progress.seconds).toBeGreaterThanOrEqual(20);
+  expect(progress.percent).toBeGreaterThan(0);
+
+  const lines = page.locator('.fidel-transcript-body .able-transcript-caption');
+  await expect(lines.first()).toHaveAttribute('role', 'button');
+  await lines.nth(2).focus();
+  await page.keyboard.press('Enter');
+  await expect.poll(() => video.evaluate((v) => v.currentTime)).toBeLessThan(20); // jumped back to line 3
 });

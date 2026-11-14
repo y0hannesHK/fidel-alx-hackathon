@@ -95,7 +95,8 @@ depends on what staff add (explained).
 
 | Criterion | Level | Result | Notes |
 |---|---|---|---|
-| 2.1.1 Keyboard | A | Supports | All functions work with the keyboard (tested). Every transcript line can be reached and activated. Player keys (K, Space, arrows) work while the player has focus and are listed in a "Keyboard help" dialog. |
+| 2.1.1 Keyboard | A | Supports | Transcript lines are focusable and activate with Enter or Space; they are `role="button"` spans (Able Player's), not native buttons. |
+| 2.1.1 Keyboard (all functions) | A | Supports | All functions work with the keyboard (tested). Every transcript line can be reached and activated. Player keys (K, Space, arrows) work while the player has focus and are listed in a "Keyboard help" dialog. |
 | 2.1.2 No Keyboard Trap | A | Supports | No traps found in testing; dialogs close with Escape. |
 | 2.1.4 Character Key Shortcuts | A | Supports | Able Player shortcuts need Alt+Ctrl by default and can be changed or switched off in Preferences. Studio's only shortcut is Ctrl+Enter inside a text box. |
 | 2.2.1 Timing Adjustable | A | Supports | No time limits. |

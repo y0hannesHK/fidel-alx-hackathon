@@ -21,3 +21,12 @@ def test_home_redirects_to_demo_page():
     response = client.get("/", follow_redirects=False)
     assert response.status_code == 307
     assert response.headers["location"] == "/demo/savanna-mock/"
+
+
+def test_text_is_compressed_but_media_is_not():
+    # JSON (and scripts, pages) are compressed for slow connections.
+    response = client.get("/api/openapi.json", headers={"Accept-Encoding": "gzip"})
+    assert response.headers.get("content-encoding") == "gzip"
+    # Media is never compressed (it is already, and seeking needs byte ranges).
+    from app.main import CompressText
+    assert "/files/lessons/abc/video.mp4".endswith(CompressText.SKIP)
