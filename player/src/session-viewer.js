@@ -11,9 +11,12 @@
 //   (polite live region, grouped at most every few seconds). While the learner
 //   jumps around, nothing is announced.
 // - "anonymize": show Participant 1, 2... instead of names (no consent needed).
+// - "chat-offset": Zoom chat times count from the START OF THE MEETING, but
+//   the recording often starts later. Give the gap (e.g. "19:05") and it is
+//   taken off every chat time. Messages from before the recording are dropped.
 import { h } from './dom.js';
 import { parseZoomChat, anonymize } from './chat.js';
-import { formatTime } from './vtt.js';
+import { formatTime, parseTimestamp } from './vtt.js';
 import { emit } from './events.js';
 
 const STRINGS = {
@@ -62,7 +65,10 @@ export class FidelSessionViewer extends HTMLElement {
     try {
       const response = await fetch(this.getAttribute('chat'));
       if (!response.ok) throw new Error(String(response.status));
-      messages = parseZoomChat(await response.text());
+      const offset = this.hasAttribute('chat-offset') ? parseTimestamp(this.getAttribute('chat-offset')) : 0;
+      messages = parseZoomChat(await response.text())
+        .map((m) => ({ ...m, time: m.time - offset }))
+        .filter((m) => m.time >= 0);
       if (this.hasAttribute('anonymize')) messages = anonymize(messages, lang === 'am' ? 'ተሳታፊ' : 'Participant');
     } catch {
       list.replaceWith(h('p', { class: 'fidel-error', role: 'alert' }, t('loadError')));

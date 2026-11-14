@@ -100,13 +100,19 @@ test.describe('<fidel-session-viewer>', () => {
     await expect(chat).not.toContainText('Naod'); // names hidden
     await expect(chat.locator('.fidel-chat-name').first()).toHaveText('Participant 1:');
 
-    // Select the first message (19:32): the recording jumps there.
-    await chat.getByRole('button', { name: /Play from 19:32/ }).click();
+    // Chat times are lined up with the recording (chat-offset): every message
+    // is within its 44:58 length. The first one ("Sound is not clear") is at 0:27.
+    const times = await chat.locator('.fidel-chat-time').allTextContents();
+    expect(times[0]).toBe('0:27');
+    expect(times.every((t) => t.split(':').length === 2 && Number(t.split(':')[0]) < 45)).toBe(true);
+
+    // Select a message: the recording jumps there.
+    await chat.getByRole('button', { name: /Play from 0:27/ }).click();
     const video = viewer.locator('.able-media-container video');
-    await expect.poll(() => video.evaluate((v) => v.currentTime)).toBeGreaterThanOrEqual(1171);
+    await expect.poll(() => video.evaluate((v) => v.currentTime)).toBeGreaterThanOrEqual(26);
 
     // Normal playback past a message reads it aloud (polite live region).
-    await video.evaluate((v) => { v.currentTime = 1188; return v.play(); });
+    await video.evaluate((v) => { v.currentTime = 40; return v.play(); });
     await expect(viewer.locator('[aria-live]').last()).toContainText('Replying to', { timeout: 15_000 });
     await noSeriousAxeIssues(page);
   });

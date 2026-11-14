@@ -155,7 +155,8 @@ use the small Whisper model and skip translation (see "Hardware and models").
 `<fidel-job-card>`: `job` (URL), `lang` (`en`/`am`), `heading-level` (2–6).
 `<fidel-certificate>`: `certificate` (URL), `lang`, `heading-level`.
 `<fidel-session-viewer>`: the player's attributes plus `chat` (Zoom chat .txt),
-`anonymize`, `heading-level`.
+`chat-offset` (Zoom chat times count from the meeting start; give how much later
+the recording started, e.g. `19:05`), `anonymize`, `heading-level`.
 
 **Events (settings in, events out).** Components tell the host page what
 happens, so it can, for example, mark a lesson as done. Events bubble, carry no
