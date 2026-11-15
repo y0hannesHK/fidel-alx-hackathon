@@ -85,6 +85,7 @@ async function homePage() {
     uploadSection(),
     lessonList(lessons)
   );
+  (await import('./sound-check.js')).markLessonList(main); // Package D: sound-off check column
   main.querySelector('h1').focus();
 }
 

@@ -187,3 +187,76 @@ test.describe('D2: report a caption problem', () => {
     expect((await reports(request)).length).toBe(before + 1);
   });
 });
+
+// --- Studio: caption reports (D2) and the sound-off check (D3) ------------------
+
+async function studioLesson(page) {
+  await page.goto('/studio/');
+  await page.getByLabel('Staff token').fill(TOKEN);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Lessons' })).toBeVisible();
+  await page.evaluate((id) => { location.hash = `#/lesson/${id}`; }, lessonId);
+  await expect(page.getByRole('heading', { level: 1, name: 'Package D test lesson' })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('heading', { name: /^Silent gaps/ })).toBeVisible({ timeout: 20_000 });
+}
+
+test.describe('Studio lesson page with the Package D panels', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  for (const zoom of ZOOMS) {
+    test(`axe clean and no sideways scrolling at ${zoom.name} zoom`, async ({ browser }) => {
+      const context = await browser.newContext({ viewport: zoom.viewport, deviceScaleFactor: zoom.deviceScaleFactor });
+      const page = await context.newPage();
+      await studioLesson(page);
+      await page.getByRole('button', { name: 'Add a sound caption here' }).first().click();
+      await page.waitForTimeout(500);
+      expect(await seriousAxeIssues(page)).toEqual([]);
+      await expectNoSidewaysScroll(page);
+      await context.close();
+    });
+  }
+
+  test('D2: staff see a learner report, go to the caption, and resolve it', async ({ page, request }) => {
+    const created = await request.post(`/api/v1/lessons/${lessonId}/caption-reports`, {
+      data: { time: 6.5, lang: 'am', kind: 'wrong_words', correction: 'አሁን ኮዱን እናያለን።' },
+    });
+    expect(created.status()).toBe(201);
+    await studioLesson(page);
+    const panel = page.locator('section', { has: page.getByRole('heading', { name: /^Caption reports/ }) });
+    await expect(panel.getByRole('heading', { name: /^Caption reports \(\d+ open\)/ })).toBeVisible();
+    const item = panel.locator('li', { hasText: 'አሁን ኮዱን እናያለን።' });
+    await item.getByRole('button', { name: 'Go to this caption' }).click();
+    // Focus is in the Amharic text box of the caption at 0:06 in the caption editor.
+    // (Checked by the caption's legend: the editor's text boxes are filled by caption-editor.js.)
+    const focused = page.locator('textarea[lang="am"]:focus');
+    await expect(focused).toHaveCount(1);
+    const legend = await focused.evaluate((box) => document.getElementById(box.getAttribute('aria-describedby')).textContent);
+    expect(legend).toBe('Caption 2, 0:06.0 to 0:08.0');
+    await item.getByRole('button', { name: 'Resolved' }).click();
+    await expect(panel.getByRole('status')).toContainText('Marked resolved.');
+    await expect(panel.locator('li', { hasText: 'አሁን ኮዱን እናያለን።' })).toHaveCount(0);
+  });
+
+  test('D3: a silent gap gets a sound caption in English and Amharic; the check is marked done', async ({ page, request }) => {
+    await studioLesson(page);
+    const panel = page.locator('section', { has: page.getByRole('heading', { name: 'Sound-off check' }) });
+    await expect(panel.getByText('English: 0 sound descriptions in 2 captions.')).toBeVisible();
+    const gap = panel.locator('li', { hasText: '0:02.0 to 0:06.0: no caption.' });
+    const toggle = gap.getByRole('button', { name: 'Add a sound caption here' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(gap.getByLabel('[music] / [ሙዚቃ]')).toBeFocused();
+    await gap.getByRole('button', { name: 'Save sound caption' }).click();
+    // The page is drawn again: the new captions are in the editor and counted.
+    await expect(page.getByRole('heading', { name: 'Sound-off check' })).toBeFocused({ timeout: 20_000 });
+    await expect(page.getByText('English: 1 sound description in 3 captions.')).toBeVisible();
+    const cues = async (lang) => (await (await request.get(`/api/v1/lessons/${lessonId}/captions/${lang}/cues`, { headers: STAFF })).json()).cues;
+    expect((await cues('en')).map((c) => c.text)).toContain('[music]');
+    expect((await cues('am')).map((c) => c.text)).toContain('[ሙዚቃ]');
+
+    await page.getByLabel('Sound-off check done for this lesson').check();
+    await page.getByRole('link', { name: '← All lessons' }).click();
+    const row = page.getByRole('row', { name: /Package D test lesson/ });
+    await expect(row.getByRole('cell').last()).toHaveText('Done');
+  });
+});
