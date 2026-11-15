@@ -125,3 +125,14 @@ test('download later: queued while offline, downloaded when online, can be cance
   await page.locator('fidel-offline-status summary').click();
   await expect(page.locator('fidel-offline-status').getByRole('link', { name: 'Lesson 3 (demo file)' })).toBeVisible();
 });
+
+test('Ethiopian date: both calendars in a real <time>, ordered by language', async ({ page }) => {
+  await ready(page);
+  const dates = page.locator('fidel-ethiopian-date time');
+  await expect(dates.nth(0)).toHaveText('15 Nov 2026 / ህዳር 6 2019');
+  await expect(dates.nth(0)).toHaveAttribute('datetime', '2026-11-15');
+  await expect(dates.nth(0).locator('span[lang="am"]')).toHaveText('ህዳር 6 2019');
+  await expect(dates.nth(1)).toHaveText('ህዳር 6 2019 / 15 Nov 2026');
+  await expect(dates.nth(2)).toHaveText('Sunday 15 November 2026 / እሑድ ህዳር 6 2019 ዓ.ም.');
+  await expect(dates.nth(3)).toHaveText('10 Sep 2026 / ጳጉሜ 5 2018');
+});
