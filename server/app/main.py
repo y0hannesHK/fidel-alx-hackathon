@@ -26,7 +26,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import auth, certificates, editing, engines, glossary, jobs, lessons, offline, webhooks
+from .api import auth, caption_reports, certificates, editing, engines, glossary, jobs, lessons, offline, webhooks
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -106,6 +106,7 @@ app.include_router(certificates.router)
 app.include_router(glossary.router)
 app.include_router(webhooks.router)
 app.include_router(engines.router)
+app.include_router(caption_reports.router)  # Package D: learners report caption problems
 
 
 @app.get("/health", tags=["system"])

@@ -61,6 +61,20 @@ CREATE TABLE IF NOT EXISTS webhooks (
     secret      TEXT NOT NULL,              -- signs each delivery (HMAC-SHA256)
     created_at  TEXT NOT NULL
 );
+
+-- Package D: learners report a caption problem (api/caption_reports.py). No name, no account, no IP.
+CREATE TABLE IF NOT EXISTS caption_reports (
+    id          TEXT PRIMARY KEY,
+    lesson_id   TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    time        REAL NOT NULL,              -- seconds into the video
+    lang        TEXT NOT NULL,              -- caption language shown
+    kind        TEXT NOT NULL,              -- wrong_words | wrong_time | missing_caption | missing_sound | other
+    correction  TEXT,                       -- the learner's suggested text (optional)
+    caption     TEXT,                       -- the caption shown at that moment (optional)
+    status      TEXT NOT NULL,              -- open | resolved | dismissed
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
 """
 
 # Columns added after the first version. Older databases get them on start.

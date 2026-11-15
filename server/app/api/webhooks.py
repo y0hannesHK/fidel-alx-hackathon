@@ -33,7 +33,7 @@ log = logging.getLogger("fidel.webhooks")
 router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"], dependencies=[Depends(require_staff)])
 db = Database(settings.data_dir / "fidel.db")
 
-Event = Literal["lesson.ready", "lesson.published", "lesson.unpublished", "captions.reviewed",
+Event = Literal["lesson.ready", "lesson.published", "lesson.unpublished", "captions.reviewed", "caption.reported",
                 "certificate.issued", "certificate.revoked"]
 
 
