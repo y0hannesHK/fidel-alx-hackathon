@@ -752,6 +752,133 @@ files are not edited.
 After pulling this change, run `sh scripts/setup-savanna.sh` again.
 <!-- PACKAGE D END -->
 
+<!-- PACKAGE FORMS START -->
+#### Form fields: text, form, choices, select, file, date
+
+Real `<label>`s and real fields in the light DOM (no shadow DOM), so they
+submit with your own `<form>` and work with every screen reader. Errors are in
+words under the field and say how to fix it; they are checked when you leave
+a field and on submit, never on every key. Messages are in English or Amharic
+(`ui-lang`). Try them on [demo/inputs.html](demo/inputs.html) (an Amharic job
+application and an English caption correction) and in the "Form fields"
+section of [demo/components.html](demo/components.html).
+
+```html
+<fidel-form id="apply" sensitive="support" ui-lang="am">
+  <form>
+    <fidel-input label="ሙሉ ስም" name="fullName" lang="am" required></fidel-input>
+    <fidel-input label="ስልክ ቁጥር" name="phone" format="phone-et" required></fidel-input>
+    <fidel-date label="መጀመር የሚችሉበት ቀን" name="startDate"></fidel-date>
+    <fidel-file label="CV" name="cv" accept=".pdf,.doc,.docx" max-size="5MB"></fidel-file>
+    <fidel-choice type="checkbox" label="Support I need" name="support">
+      <option value="sign-language">Sign language interpreter</option>
+      <option value="extra-time">Extra time</option>
+    </fidel-choice>
+    <fidel-textarea label="About you" name="about" lang="am" listen voice-api="/api/v1"></fidel-textarea>
+    <button type="submit">Send</button>
+  </form>
+</fidel-form>
+```
+
+**`<fidel-input>` and `<fidel-textarea>`**
+
+| Attribute | Meaning |
+|---|---|
+| `label` | The visible label (required). `placeholder` is never used instead of it. |
+| `name`, `value`, `placeholder`, `autocomplete`, `inputmode`, `maxlength` | As on a native field |
+| `required`, `disabled`, `readonly` | As on a native field; "(required)" is shown next to the label |
+| `type` | `<fidel-input>` only: `text` (default), `search`, `email`, `tel` |
+| `rows` | `<fidel-textarea>` only (default 4) |
+| `lang` | Language of what is typed (`am`, `en`, `om`...): set on the field itself |
+| `ui-lang` | `en` or `am`: language of our messages (else the nearest `ui-lang`, else the page's `lang`) |
+| `hint` | Help text under the label, read with the field |
+| `format` | `mmss` (1:23.5), `phone-et` (09..., 07..., +251..., 251..., spaces allowed; tidied to +2519... when you leave the field), `email` |
+| `pattern` + `error` | Your own rule (a regular expression for the whole value) and the words to show when it fails |
+| `keyboard-hint` | `off` switches off the keyboard-language hint |
+| `caps-warning` | `on` / `off`. Default: on for Latin-script fields, off for Amharic and Tigrinya |
+| `listen` | Adds a "Listen" button that reads the field in its language |
+| `voice-api` | e.g. `/api/v1`: use the server's voice engine for Listen when the browser has no voice for the language |
+| `speak` | `off`, `words` or `characters`: the typing voice for this field (default: the learner's setting `typingVoice`, off) |
+| `describedby` | ids of your own descriptions, read before ours |
+
+Properties and methods: `value`, `validity` (`{ valid, message }`),
+`checkValidity()` (checks and shows the error; returns true or false),
+`focus()`.
+
+- **Keyboard-language hint:** in an Amharic or Tigrinya field, when only
+  English letters are typed (a whole word of 3+ letters, or more than 60% of
+  12+ letters), "You are typing English letters. To type Amharic, switch the
+  keyboard: Windows + Space." It is shown and said once, goes away as soon as
+  Amharic appears, and never shows for one English word inside Amharic text
+  ("HTML", "git"). English fields get the mirror hint. "Don't remind me in this
+  field" is remembered for the session. None for Afaan Oromo, Somali, Arabic.
+- **Caps Lock:** "Caps Lock is on" is shown and said only when it changes.
+- **Listen:** "Listen" / "Stop" (Escape stops too), with "Computer voice"
+  next to it. No voice for the language on this device or server = no button.
+- **Typing voice** (off by default): says each word or letter as it is typed;
+  with Amharic input methods it waits for the finished letter.
+- **`<fidel-amharic-keyboard for="ID">`** (Package D) with `for` = the id of a
+  `<fidel-input>`/`<fidel-textarea>` writes into its field.
+
+**Other fields** (each has `label`, `name`, `hint`, `required`, `disabled`, `ui-lang`, and the same `value`, `validity`, `checkValidity()`, `focus()`):
+
+| Tag | Extra attributes | What it does |
+|---|---|---|
+| `<fidel-choice>` | `type` (`radio` or `checkbox`), `options` (JSON `[{"value","label","lang"}]`) or child `<option>`s, `value` (comma-separated) | A `<fieldset>` with a `<legend>`; real radios/checkboxes, 44 px rows, `lang` per option. "Choose one option." / "Choose at least one option." `value` is a string (radio) or an array (checkbox). |
+| `<fidel-select>` | `options` (JSON) or child `<option>`/`<optgroup>`s, `search`, `placeholder` | A native `<select>`. With `search`, a real "Search the list" box above it keeps the matching options and says how many match. "Choose an option from the list." |
+| `<fidel-file>` | `accept`, `max-size` (e.g. `50MB`) | A native file field. The hint says "Video, up to 50 MB"; the chosen file's name and size are shown and said; a wrong type or a file too big is refused in words; "Remove". |
+| `<fidel-date>` | `value`, `min`, `max` (YYYY-MM-DD) | A native date field; the same date in the Ethiopian calendar under it (`<fidel-ethiopian-date>`), read with the field. |
+
+**`<fidel-error-summary for="FORM-ID">`**: on submit, checks every Fidel field
+in the form. If any is wrong: stops the submit, shows "2 fields need fixing"
+with a link to each field, moves focus to its heading, keeps everything typed.
+Turns off the browser's own pop-up checks on that form (`novalidate`).
+Attribute `heading-level` (default 2).
+
+**`<fidel-form>`** (wraps your `<form>`; adds the error summary itself)
+
+| Attribute | Meaning |
+|---|---|
+| `api` or `action` | Address to POST the answers to as JSON (multipart when a file is chosen). Without it, the event `fidel-form-submit` hands the answers to the page. |
+| `sensitive` | Comma-separated field names NEVER stored on the device (drafts, offline queue). Files and passwords are never stored either. |
+| `draft` | `off`: no draft |
+| `draft-key` | Storage name (default: the element's id). Stored as `fidel-form-draft:<key>` and `fidel-form-outbox:<key>` in localStorage. |
+| `ui-lang` | `en` / `am` for the form's messages and every field inside |
+
+- **Draft:** saved as you type ("Draft saved"), put back after a reload or a
+  time-out ("Your draft was restored."), "Clear draft".
+- **Offline at submit:** "Saved on this phone. It will be sent when you are
+  online." Sent on the browser's `online` event. Sensitive answers wait only
+  in memory (sent if the page is still open).
+- A second press while sending does nothing; "Sent. Thank you." is shown and
+  said; then the form is emptied and the draft removed.
+
+**Events** (all bubble and are `composed`):
+
+| Event | From | `detail` |
+|---|---|---|
+| `fidel-field-input` | text fields | `{ value, name }` (every change) |
+| `fidel-field-change` | every field | `{ value, name }` (`{ file, name }` for files) |
+| `fidel-field-invalid` | every field | `{ message, name }` |
+| `fidel-field-valid` | every field | `{ name }` |
+| `fidel-keyboard-hint` | text fields | `{ shown, expected }` (`expected`: `am`, `ti` or `en`) |
+| `fidel-caps-lock` | text fields | `{ on }` |
+| `fidel-form-submit` | `<fidel-form>` without `api` | `{ data, queued }`; call `preventDefault()` to show your own message |
+| `fidel-form-sent` | `<fidel-form>` with `api` | `{ data, status }` |
+| `fidel-form-queued` | `<fidel-form>` | `{ data }` (kept for later: offline) |
+| `fidel-form-draft-saved`, `fidel-form-draft-restored` | `<fidel-form>` | `{}` / `{ data }` |
+
+**Voice for Listen (Level 2):** `GET /api/v1/speak` lists the languages of the
+optional voice engine (`[]` when none is set up); `POST /api/v1/speak`
+`{"text": "...", "lang": "am"}` returns WAV audio, or 409 with the reason in
+words when there is no voice for that language. Text is limited to 500
+characters.
+
+In Studio, the caption editor's Start/End times are `<fidel-input format="mmss">`
+and the translation boxes are `<fidel-textarea lang>`; the "Report a caption
+problem" dialog's correction box is a `<fidel-textarea>`.
+<!-- PACKAGE FORMS END -->
+
 ## Level 2: REST API
 
 Interactive docs at `/docs` (Swagger UI); the spec is in [openapi.yaml](openapi.yaml) and [openapi.json](openapi.json)

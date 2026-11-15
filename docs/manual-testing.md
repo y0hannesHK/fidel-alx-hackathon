@@ -204,3 +204,20 @@ Deaf co-designer:
 - [ ] Sign answer: a **Deaf co-designer on their own phone over HTTPS** (a tunnel, see the Technical Guide section 2) records, watches at 0.5x and sends; also refuse the camera once and use the phone's camera app instead.
 - [ ] Reading guide at 200% and 400% zoom: Next/Previous line keep the block in view; Dim the rest stays readable; with Windows High Contrast the outline still shows.
 <!-- PACKAGE D END -->
+
+<!-- PACKAGE FORMS START -->
+### Form fields (demo/inputs.html)
+
+- [ ] NVDA + Chrome/Firefox: each field is read as label, "required", hint; after Tab out of a wrong Start time, "Start: Use minutes:seconds..." is read once (not twice); typing it right says "Fixed".
+- [ ] NVDA: empty submit moves to "3 fields need fixing"; each link puts the cursor in the field; the field reads its error.
+- [ ] NVDA: "Draft saved" is said once, not at every pause; after reload "Your draft was restored." is said.
+- [ ] NVDA with the typing voice OFF: nothing is spoken twice. Turn on "Words": check it does not fight NVDA's own echo (expected: people who use NVDA leave it off).
+- [ ] TalkBack on Android Chrome: the Amharic form, the select with "Search the list", the date picker (Ethiopian date read after it), choosing a CV from the phone, "Remove".
+- [ ] TalkBack: flight mode, send the caption form: "Saved on this phone"; flight mode off: "Your saved form was sent."
+- [ ] **Amharic-keyboard typist** (Windows Amharic IME or Keyman, and Android Gboard Amharic): type in the Amharic name and "About you" boxes. The keyboard-language hint must NOT appear while typing Amharic normally, must appear for "selam " typed by mistake with an English keyboard, and disappear at the first Amharic letter. Does Caps Lock matter with the Amharic layout? (decides the Caps Lock default, see BACKLOG).
+- [ ] Amharic typist with the typing voice on "Letters": each finished letter (not each Latin key) is spoken, if the device has an Amharic voice.
+- [ ] **Co-designer** (blind, Braille display): errors and hints are short enough to read on one Braille line; "⚠" is shown as a symbol the display can show.
+- [ ] Co-designer (low vision, 200% and 400% zoom, Windows High Contrast): errors, hints and the summary box stay visible, nothing scrolls sideways, focus is always visible.
+- [ ] Listen: on a device with an English voice, "Listen" reads the English box; Escape stops it. With the Toucan voice engine running (`docker compose --profile amharic-voice up -d`), "Listen" appears under the Amharic boxes and reads them.
+- [ ] Studio caption editor: Start/End errors in words on leaving the field; Ctrl+Enter still moves to the next translation; the keyboard-language hint shows in the Amharic box when typing English.
+<!-- PACKAGE FORMS END -->

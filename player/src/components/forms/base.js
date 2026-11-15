@@ -15,7 +15,7 @@ import { announce } from '../../announce.js';
 import { emit, text, uiLang } from './common.js';
 
 export class FidelFieldBase extends HTMLElement {
-  static get observedAttributes() { return ['ui-lang', 'label', 'hint', 'disabled', 'readonly', 'required']; }
+  static get observedAttributes() { return ['ui-lang', 'label', 'hint', 'disabled', 'readonly', 'required', 'describedby']; }
 
   connectedCallback() {
     if (this.built) return;
@@ -145,7 +145,9 @@ export class FidelFieldBase extends HTMLElement {
 
   /** Ids of the visible messages, in reading order. Subclasses add theirs. */
   describedBy() {
-    const ids = [];
+    // describedby="id1 id2" on the host: the page's own descriptions come first
+    // (e.g. Studio links each caption's boxes to that caption's legend).
+    const ids = (this.getAttribute('describedby') || '').split(/\s+/).filter(Boolean);
     if (!this.hintEl.hidden) ids.push(this.ids.hint);
     if (!this.errorEl.hidden) ids.push(this.ids.error);
     return ids;

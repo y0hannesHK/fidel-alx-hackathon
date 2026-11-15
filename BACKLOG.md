@@ -182,3 +182,33 @@ All six components are finished and on `demo/components.html`. Still to do:
 - **Caption-report abuse limit** is counted in memory: it resets on restart and
   is per server process.
 <!-- PACKAGE D END -->
+
+<!-- PACKAGE FORMS START -->
+- **Form fields: all components of assets/AGENT_TASK_fidel_forms.md built**
+  (input, textarea, error summary, form, choice, select, file, date, Listen,
+  typing voice, keyboard-language hint, Caps Lock) and used in Studio's
+  caption editor and the caption-report dialog.
+- **Caps Lock warning in Amharic fields: decision needed.** Off by default for
+  `am`/`ti` until our Amharic typist confirms whether Amharic keyboard layouts
+  (e.g. Keyman, Windows Amharic IME) use Caps Lock or Shift for the 6th/7th
+  forms. If they do, a warning would be noise; if not, turn it on. One line in
+  `capsWarningDefault()` (`player/src/components/forms/logic.js`).
+- **Amharic text to review** (written by an AI, not a native speaker):
+  `player/i18n/components-forms.am.json` and the Amharic labels in
+  `demo/inputs.html`. Especially: "(ግዴታ)" for "(required)", the keyboard
+  hint, "ረቂቁ ተቀምጧል" (Draft saved), "በዚህ ስልክ ላይ ተቀምጧል..." (Saved on this
+  phone), "{name}" grammar in "የተመረጠ፦ {name}፣ {size}".
+- **`POST /api/v1/speak` is public** (learners use it) with a 500-character
+  limit but no rate limit: a busy site should add one (like caption reports).
+- **Sensitive answers offline** wait only in memory: if the page is closed
+  before the phone is online, the queued form is sent without them.
+- **Files cannot wait offline**: a form with a chosen file says "send again
+  when you are online" instead of queueing.
+- **Server messages** from `api` endpoints are not shown; only the status code.
+- **Error summary** is updated on submit and when a field is fixed, not when a
+  new error appears on blur.
+- **Phone format** accepts Ethiopian mobiles (9 and 7) only, not landlines
+  (011...).
+- **Listen with the server voice** needs `voice-api` on each field; it could
+  default to the page's Fidel server.
+<!-- PACKAGE FORMS END -->

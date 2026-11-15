@@ -12,7 +12,8 @@
 //   format (mmss | phone-et | email), pattern + error (your own rule and words),
 //   keyboard-hint ("off" to switch off), caps-warning (on | off),
 //   listen (adds "Listen"), voice-api (e.g. /api/v1: the server voice for Listen),
-//   speak (off | words | characters: typing voice; default from the settings).
+//   speak (off | words | characters: typing voice; default from the settings),
+//   describedby (ids of the page's own descriptions, read before ours).
 // Properties and methods: value, validity, checkValidity(), focus().
 // Events (bubble, composed): fidel-field-input, fidel-field-change,
 //   fidel-field-invalid {message}, fidel-field-valid, fidel-keyboard-hint {shown, expected},
@@ -33,6 +34,8 @@ const COPY = ['name', 'placeholder', 'autocomplete', 'inputmode', 'maxlength', '
 const NO_HINT_KEY = 'fidel-field-no-keyboard-hint:';
 
 export class FidelTextField extends FidelFieldBase {
+  static get observedAttributes() { return [...super.observedAttributes, 'lang']; }
+
   get multiline() { return false; }
 
   /** Language of what is typed (the host's lang, else the page's). */
@@ -125,6 +128,7 @@ export class FidelTextField extends FidelFieldBase {
     c.required = this.required;
     c.disabled = this.hasAttribute('disabled');
     c.readOnly = this.hasAttribute('readonly');
+    if (this.hasAttribute('lang')) c.setAttribute('lang', this.getAttribute('lang'));
     this.kbButton.textContent = this.tt('keyboard.dontRemind');
     if (this.expected) this.kbText.textContent = this.tt(`keyboard.${this.expected}`);
     if (!this.capsEl.hidden) this.capsEl.textContent = this.tt('caps.on');

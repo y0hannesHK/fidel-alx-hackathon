@@ -264,3 +264,23 @@ TalkBack) are not done yet; see docs/manual-testing.md.
 | 4.1.2 Name, Role, Value | A | Supports | Toggles use `aria-expanded` / `aria-pressed`; all controls are native buttons, links, radios and checkboxes. |
 | Camera (rule 5) | - | Note | The camera and recording start only when the learner presses a button, are shown while on ("Camera on", "Recording") and have Stop buttons. |
 <!-- PACKAGE D END -->
+
+<!-- PACKAGE FORMS START -->
+### Form fields: input, textarea, form, error summary, choice, select, file, date
+
+| Criterion | Level | Support | Notes |
+|---|---|---|---|
+| 1.3.1 Info and Relationships | A | Supports | Real `<label for>`, `<fieldset>`/`<legend>` for choices, hints and errors tied with `aria-describedby`, all in the light DOM. The visible "(required)" is hidden from screen readers because the field's own `required` already says it. |
+| 1.3.5 Identify Input Purpose | AA | Supports | `autocomplete` is passed through; `phone-et` sets `tel-national` and `email` sets `email` unless the page sets its own. The page must set it for names (the demo does). |
+| 2.2.1 Timing Adjustable | A | Supports (with `<fidel-form>`) | Every field is saved as a draft on the device as you type and put back after a reload or a session time-out. Not on forms without `<fidel-form>`. |
+| 2.5.8 Target Size (Minimum) | AA | Supports | Fields, buttons and whole choice rows are at least 44 px tall; summary links are padded to 44 px. |
+| 3.1.2 Language of Parts | AA | Supports | `lang` of the content is set on the field itself; our messages have the interface language; each choice option can have its own `lang`. |
+| 3.3.1 Error Identification | A | Supports | The error is in words under the field ("⚠ Use minutes:seconds, for example 1:23.5"), the field gets `aria-invalid`, and the error summary lists every field with a link. Not colour alone. |
+| 3.3.2 Labels or Instructions | A | Supports | A visible label is required; hints say the expected form; file fields say the types and size in words. Placeholders are never used as labels. |
+| 3.3.3 Error Suggestion | AA | Supports | Every message says how to fix it (an example time, phone number or email; the largest file size; the accepted types; the earliest date). |
+| 3.3.7 Redundant Entry | A | Supports (with `<fidel-form>`) | Answers are kept in the draft and after a failed or offline send, so nothing has to be typed twice. Sensitive fields are not kept by design and must be entered again after a reload. |
+| 4.1.2 Name, Role, Value | A | Supports | Only native inputs, textareas, selects, checkboxes, radios, file and date fields and buttons; "Listen" buttons include the field's name. |
+| 4.1.3 Status Messages | AA | Supports | Errors (when leaving a field), "Fixed", the keyboard and Caps Lock hints, "Draft saved" (said once), "Sent", "Saved on this phone", the chosen file and the number of matching options are announced through the shared polite announcer, and are also visible. |
+| Speech (rule 2) | - | Note | The typing voice and Listen start only by the user's choice; nothing speaks by itself, so screen-reader users do not hear things twice. |
+| Native date field | - | Partially supports | The date picker is the browser's own: its look and its Amharic support vary between browsers and phones. The Ethiopian date under it is always in words. |
+<!-- PACKAGE FORMS END -->
