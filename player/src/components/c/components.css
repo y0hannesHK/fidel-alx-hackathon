@@ -1,1 +1,288 @@
-/* Package C component styles. Scoped to fidel-<component>-... classes only. */
+/* Package C component styles. Scoped to Package C's tags and fidel-<component>-...
+   classes only; nothing here touches the host page.
+   Colours: text at least 4.5:1, borders and focus rings at least 3:1. */
+
+:is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) {
+  --fidel-accent: #0b4f9c;   /* 8.3:1 on white */
+  --fidel-ink: #1a1a1a;
+  --fidel-paper: #ffffff;
+  --fidel-border: #5c5c5c;
+  overflow-wrap: anywhere;   /* long words, e-mails and links never scroll sideways */
+}
+:is(fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) {
+  display: block;
+  margin-block: 1rem;
+  color: var(--fidel-ink);
+}
+fidel-sign-term { display: inline; }
+
+/* Focus: 3px outline in the accent colour, plus a light ring so it shows on dark too. */
+:is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) :focus-visible {
+  outline: 3px solid var(--fidel-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #ffffff;
+}
+
+/* Amharic text: Ethiopic font, taller lines, no letter-spacing or capitals. */
+:is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) :lang(am) {
+  font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", "Abyssinica SIL", sans-serif;
+  line-height: 1.7;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* Host CSS (e.g. Bootstrap) reaches light-DOM elements: reset what it changes. */
+:is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) :is(legend, summary) {
+  float: none;
+  width: auto;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+:is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) a {
+  color: var(--fidel-accent);
+  text-decoration: underline;
+}
+:is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) :is(button, input) {
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+:is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) [hidden] {
+  display: none !important;
+}
+
+/* Visually hidden, still read by screen readers. */
+.fidel-c-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Shared: buttons, rows, dialogs --------------------------------- */
+.fidel-c-button {
+  min-height: 2.75rem;   /* 44px target */
+  min-width: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--fidel-accent);
+  background: var(--fidel-paper);
+  border: 2px solid var(--fidel-accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.fidel-c-button:hover { background: #e8f0fa; }
+.fidel-c-button[aria-pressed="true"] { color: #ffffff; background: var(--fidel-accent); }
+.fidel-c-button[aria-pressed="true"]::before { content: "✓ "; } /* not colour alone */
+.fidel-c-button.fidel-c-primary { color: #ffffff; background: var(--fidel-accent); }
+.fidel-c-button.fidel-c-primary:hover { background: #083d78; }
+.fidel-c-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-block: 0.75rem 0;
+}
+.fidel-c-dialog {
+  width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  box-sizing: border-box;
+  padding: 1rem 1.25rem;
+  color: var(--fidel-ink);
+  background: var(--fidel-paper);
+  border: 2px solid var(--fidel-ink);
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-style: normal;
+  font-weight: normal;
+  text-align: start;
+  white-space: normal;
+}
+.fidel-c-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+.fidel-c-dialog-title { font-size: 1.375rem; margin: 0 0 0.75rem; }
+.fidel-c-dialog p { margin: 0.5rem 0; }
+.fidel-c-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+}
+.fidel-c-check input { width: 1.5rem; height: 1.5rem; margin: 0; flex: none; }
+.fidel-c-note { color: #3d3d3d; font-size: 0.95rem; }
+
+/* ---------- C1 <fidel-sign-term> ------------------------------------------- */
+.fidel-sign-term-word {
+  display: inline;
+  min-height: 1.5rem;          /* inline word: 24px target (WCAG 2.5.8 inline exception) */
+  padding: 0.1rem 0.15rem;
+  margin: 0;
+  font: inherit;
+  color: var(--fidel-accent);
+  background: transparent;
+  border: 0;
+  border-block-end: 2px dotted var(--fidel-accent);
+  border-radius: 0;
+  cursor: pointer;
+}
+.fidel-sign-term-word:hover { background: #e8f0fa; }
+.fidel-sign-term-icon { margin-inline-start: 0.15em; font-size: 0.85em; }
+.fidel-sign-term-figure { margin: 0 0 1rem; }
+.fidel-sign-term-video {
+  display: block;
+  width: 100%;
+  max-height: 50vh;
+  background: #1a1a1a;
+  border-radius: 6px;
+}
+.fidel-sign-term-figure figcaption { margin-block-start: 0.5rem; }
+.fidel-sign-term-placeholder { display: block; color: #6b3a00; }
+.fidel-sign-term-subhead { font-size: 1.125rem; margin: 1rem 0 0.25rem; }
+.fidel-sign-term-none {
+  padding: 0.5rem 0.75rem;
+  border-inline-start: 6px solid #6b3a00;
+  background: #fff8e1;
+}
+
+/* ---------- C2 <fidel-visual-alert> --------------------------------------- */
+.fidel-visual-alert-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.fidel-visual-alert-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #1a1a1a;
+  background: #fff4c2;
+  border: 3px solid #1a1a1a;
+  border-inline-start-width: 0.75rem;
+  border-radius: 8px;
+  font-size: 1.125rem;
+}
+.fidel-visual-alert-icon { font-size: 1.5rem; line-height: 1; }
+.fidel-visual-alert-text { flex: 1 1 12rem; margin: 0; font-weight: 600; }
+.fidel-visual-alert-settings { margin-block-start: 0.5rem; }
+.fidel-visual-alert-settings > summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--fidel-accent);
+  font-weight: 600;
+}
+
+/* ---------- C3 <fidel-step-nav> -------------------------------------------- */
+.fidel-step-nav-position { margin: 0 0 0.5rem; font-weight: 600; }
+.fidel-step-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fidel-step-nav-links li { flex: 1 1 14rem; display: flex; }
+fidel-step-nav a.fidel-step-nav-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 3rem;            /* 48px: easy for tremor and switch users */
+  box-sizing: border-box;
+  padding: 0.75rem 1rem;
+  color: var(--fidel-accent);
+  background: var(--fidel-paper);
+  border: 2px solid var(--fidel-accent);
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 1.125rem;
+}
+fidel-step-nav a.fidel-step-nav-link:hover { background: #e8f0fa; }
+.fidel-step-nav-next .fidel-step-nav-link { text-align: end; }
+.fidel-step-nav-direction { font-weight: 700; }
+.fidel-step-nav-dest { text-decoration: underline; }
+
+/* ---------- C4 <fidel-session-keeper> -------------------------------------- */
+.fidel-session-keeper > details > summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--fidel-accent);
+  font-weight: 600;
+}
+.fidel-session-keeper-ended {
+  padding: 0.5rem 0.75rem;
+  border-inline-start: 6px solid #8b1a1a;
+  background: #fdecea;
+  font-weight: 600;
+}
+
+/* ---------- C5 <fidel-lesson-map> ------------------------------------------ */
+.fidel-lesson-map {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--fidel-border);
+  border-radius: 8px;
+  background: var(--fidel-paper);
+}
+.fidel-lesson-map-label { margin: 0 0 0.25rem; font-weight: 700; font-size: 1.125rem; }
+.fidel-lesson-map-links,
+.fidel-lesson-map-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+.fidel-lesson-map-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding-inline: 0.25rem;
+}
+.fidel-lesson-map-chapters { flex-direction: column; align-items: stretch; }
+.fidel-lesson-map-chapters .fidel-c-button { width: 100%; text-align: start; }
+.fidel-lesson-map-sub { font-size: 1rem; font-weight: 700; margin: 0.5rem 0 0.25rem; }
+.fidel-lesson-map-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+.fidel-lesson-map-progress progress { inline-size: min(14rem, 100%); block-size: 1rem; accent-color: var(--fidel-accent); }
+
+/* ---------- C6 <fidel-help> ------------------------------------------------ */
+.fidel-help-routes { margin: 0.5rem 0; padding: 0; list-style: none; }
+.fidel-help-routes li {
+  padding-block: 0.5rem;
+  border-block-end: 1px solid #c4c8cf;
+}
+.fidel-help-routes a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+.fidel-help-routes p { margin: 0; }
+
+/* Motion: nothing here animates; keep it that way when the learner asks. */
+@media (prefers-reduced-motion: reduce) {
+  :is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Windows high contrast: keep borders and the focus ring visible. */
+@media (forced-colors: active) {
+  .fidel-c-button,
+  fidel-step-nav a.fidel-step-nav-link,
+  .fidel-visual-alert-banner { border-color: ButtonText; }
+  .fidel-sign-term-word { border-block-end-color: LinkText; }
+  :is(fidel-sign-term, fidel-visual-alert, fidel-step-nav, fidel-session-keeper, fidel-lesson-map, fidel-help) :focus-visible {
+    outline-color: Highlight;
+  }
+}
