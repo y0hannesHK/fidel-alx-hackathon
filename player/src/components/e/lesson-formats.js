@@ -22,6 +22,7 @@
 //   heading-level (2-5, default 3), ui-lang.
 // Event: fidel-lesson-format { format } (watch | listen | read | sign | simple).
 import { h, uid } from '../../dom.js';
+import { timeNodes } from '../../spoken-time.js';
 import { announce } from '../../announce.js';
 import { loadPrefs, savePrefs } from '../../prefs.js';
 import { parseVtt } from '../../vtt.js';
@@ -247,7 +248,7 @@ export class FidelLessonFormats extends HTMLElement {
             audio.currentTime = cue.start;
             audio.play()?.catch?.(() => {});
           },
-        }, h('span', { class: 'fidel-e-sr' }, tt('playFrom')), clock(cue.start)),
+        }, h('span', { class: 'fidel-e-sr' }, tt('playFrom')), timeNodes('{time}', cue.start, clock(cue.start), this.lang)),
         ' ', h('span', {}, cue.text))));
     })();
     return section;

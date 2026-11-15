@@ -125,7 +125,7 @@ test('code snapshots: time order, Now follows the video, announced once, quiet a
     return video.play();
   });
   const polite = page.locator('.fidel-announcer[aria-live="polite"]');
-  await expect(polite).toHaveText('Code for 0:59 is ready', { timeout: 10_000 });
+  await expect(polite).toHaveText('Code for 59 seconds is ready', { timeout: 10_000 }); // time in words: "0:59" sounds like a number
   await expect(items.nth(1)).toHaveAttribute('aria-current', 'time');
   await page.evaluate(() => document.querySelector('#a-lesson-player video').pause());
 });

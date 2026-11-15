@@ -262,7 +262,7 @@ test('<fidel-lesson-map>: jump links to what exists, chapters play, progress on 
   await expect(map.getByRole('link', { name: 'Code' })).toHaveAttribute('href', '#c-code');
   await expect(map.getByRole('link', { name: 'Next lesson: Lesson 4: A lesson inside Savanna' })).toHaveAttribute('href', '/demo/savanna-mock/');
   await expect(map.getByRole('link', { name: 'Transcript' })).toBeVisible({ timeout: 20_000 }); // after the player builds
-  const chapter = map.getByRole('button', { name: 'Play from 0:59 Tech education as an equalizer' });
+  const chapter = map.getByRole('button', { name: 'Play from 0:59 (59 seconds) Tech education as an equalizer' });
   await expect(chapter).toBeVisible();
 
   // Progress comes from the player's fidel-progress event; shown, not read out.

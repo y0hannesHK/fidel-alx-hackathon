@@ -14,7 +14,8 @@
 import { h } from '../../dom.js';
 import { emit } from '../../events.js';
 import { announce } from '../../announce.js';
-import { stringsFor, tr, langAttr, findPlayer } from './common.js';
+import { stringsFor, tr, langAttr, findPlayer, uiLang } from './common.js';
+import { spokenTime } from '../../spoken-time.js';
 import { parseTime, formatTime, currentIndex } from './logic.js';
 
 export class FidelCodeSnapshots extends HTMLElement {
@@ -86,11 +87,10 @@ export class FidelCodeSnapshots extends HTMLElement {
       item.querySelector('.fidel-code-snapshots-now').hidden = !now;
     });
     if (index < 0) return;
-    const time = formatTime(this.times[index]);
     if (quiet) this.announced.add(index);
     if (!this.announced.has(index)) {
       this.announced.add(index);
-      announce(tr(this.strings, 'codeReady', { time }));
+      announce(tr(this.strings, 'codeReady', { time: spokenTime(this.times[index], uiLang(this)) }));
     }
     emit(this, 'fidel-code-snapshots-change', { index, seconds: this.times[index] });
   }

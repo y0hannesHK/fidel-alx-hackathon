@@ -19,6 +19,7 @@
 import { announce } from '../../announce.js';
 import { emit } from '../../events.js';
 import { parseVtt, formatTime } from '../../vtt.js';
+import { spokenTime, timeNodes } from '../../spoken-time.js';
 import { h, langOf, translator, nextId, textLang } from './shared.js';
 import { chapterAt, clampPercent } from './logic.js';
 
@@ -129,7 +130,7 @@ export class FidelLessonMap extends HTMLElement {
       h('ul', { class: 'fidel-lesson-map-chapters', 'aria-labelledby': headingId },
         this.chapters.map((chapter) => h('li', {},
           h('button', { type: 'button', class: 'fidel-c-button', onclick: () => this.playFrom(chapter.start) },
-            tr('mapPlayFrom', { time: formatTime(chapter.start) }), ' ',
+            timeNodes(tr('mapPlayFrom', { time: '{time}' }), chapter.start, formatTime(chapter.start), this.lang_), ' ',
             h('span', { lang: textLang(chapter.text, 'en') }, chapter.text))))));
   }
 
@@ -137,7 +138,7 @@ export class FidelLessonMap extends HTMLElement {
     const player = this.player();
     if (!player?.playFrom || !player.ablePlayer) return;
     player.playFrom(seconds);
-    announce(this.tr('mapPlayingFrom', { time: formatTime(seconds) }));
+    announce(this.tr('mapPlayingFrom', { time: spokenTime(seconds, this.lang_) }));
     emit(this, 'fidel-lesson-map-play', { seconds });
   }
 

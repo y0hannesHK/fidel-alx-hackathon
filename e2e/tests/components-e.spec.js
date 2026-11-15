@@ -405,7 +405,7 @@ test.describe('E5: notes', () => {
     await expect(notes.getByLabel('Time in the video (minutes:seconds)')).toHaveValue('0:12');
     await notes.getByRole('textbox', { name: /^Note/ }).fill('Demography matters here');
     await notes.getByRole('button', { name: 'Save note' }).click();
-    const play = notes.getByRole('button', { name: 'Play from 0:12: Demography matters here' });
+    const play = notes.getByRole('button', { name: /^Play from 0:12 \(12 seconds\)\s*: Demography matters here$/ });
     await expect(play).toBeFocused();
     const events = [];
     await page.exposeFunction('noteCount', (n) => events.push(n));
@@ -416,7 +416,7 @@ test.describe('E5: notes', () => {
     await notes.getByLabel('Time in the video (minutes:seconds)').fill('0:03');
     await notes.getByRole('textbox', { name: /^Note/ }).fill('Opening');
     await notes.getByRole('button', { name: 'Save note' }).click();
-    await expect(notes.locator('.fidel-notes-play')).toHaveText(['Play from 0:03: Opening', 'Play from 0:12: Demography matters here']);
+    await expect(notes.locator('.fidel-notes-play')).toHaveText(['Play from 0:03 (3 seconds): Opening', 'Play from 0:12 (12 seconds): Demography matters here']);
 
     // Jump.
     await play.click();
@@ -430,14 +430,14 @@ test.describe('E5: notes', () => {
     await expect(notes.locator('.fidel-notes-said')).toHaveText('Note at 0:03 deleted.');
     await page.keyboard.press('Enter');
     await expect(notes.locator('.fidel-notes-play')).toHaveCount(2);
-    await expect(notes.getByRole('button', { name: 'Play from 0:03: Opening' })).toBeFocused();
+    await expect(notes.getByRole('button', { name: /^Play from 0:03 \(3 seconds\)\s*: Opening$/ })).toBeFocused();
 
     // Edit; Escape cancels and returns focus.
     await notes.getByRole('button', { name: 'Edit note at 0:03' }).click();
     await expect(notes.getByRole('textbox', { name: /^Note/ })).toHaveValue('Opening');
     await notes.getByRole('textbox', { name: /^Note/ }).fill('The opening words');
     await notes.getByRole('button', { name: 'Save note' }).click();
-    await expect(notes.getByRole('button', { name: 'Play from 0:03: The opening words' })).toBeFocused();
+    await expect(notes.getByRole('button', { name: /^Play from 0:03 \(3 seconds\)\s*: The opening words$/ })).toBeFocused();
     expect(events).toEqual([2, 1, 2, 2]);
 
     // Kept on this device only, after a reload.

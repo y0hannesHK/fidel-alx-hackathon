@@ -9,6 +9,7 @@
 //  - "Download my notes (.txt)".
 // Event: fidel-notes-change { count } (never the text of the notes).
 import { h, uid } from '../../dom.js';
+import { timeNodes } from '../../spoken-time.js';
 import { announce } from '../../announce.js';
 import { emit, findPlayer, mediaOf, playFrom, translator, uiLang } from './common.js';
 import { clock, loadNotes, makeNote, noteLabel, notesToText, parseMmss, saveNotes, sortNotes } from './logic.js';
@@ -152,7 +153,7 @@ export class FidelNotes extends HTMLElement {
         onclick: () => {
           if (!playFrom(findPlayer(this), note.time)) this.say(this.tt('noPlayer'));
         },
-      }, noteLabel(note, this.tt('play'))),
+      }, timeNodes(noteLabel(note, this.tt('play').replace('{time}', '[[time]]')).replace('[[time]]', '{time}'), note.time, clock(note.time), this.lang)),
       h('div', { class: 'fidel-notes-actions' },
         h('button', { type: 'button', class: 'fidel-e-button fidel-e-small', onclick: () => this.edit(note) },
           this.tt('edit'), h('span', { class: 'fidel-e-sr' }, ` ${this.tt('noteAt', { time: at })}`)),

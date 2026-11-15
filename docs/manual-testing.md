@@ -104,6 +104,8 @@ The co-designer should finish this **without help**:
 
 | Date | Tester (with consent) | Setup | Task step | Result | Problem found | Fixed? |
 |---|---|---|---|---|---|---|
+| 15 Nov 2026 | Team member | Windows 11, Brave, Narrator (scan mode), 80 s screen recording | Components page: headings, links, first code block | Headings, landmark and links read correctly | Narrator read video times such as "1:23" as a number ("one hundred twenty-three") | Yes: times now also read in words, e.g. "Play from 1:23 (1 minute 23 seconds)" |
+| 15 Nov 2026 | Automated walk-through (Chrome accessibility tree, 471 Tab stops) | Lesson, job card, components, forms pages | Every Tab stop: name, role, state, focus ring | All named, no traps, focus visible | Transcript chapter titles were focusable but had no role | Yes: now buttons |
 | | | | | | | |
 
 ## Component library (`demo/components.html`): NVDA, TalkBack, Braille display, keyboard

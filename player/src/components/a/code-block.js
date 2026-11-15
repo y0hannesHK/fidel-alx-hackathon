@@ -14,7 +14,8 @@
 import { h, uid } from '../../dom.js';
 import { emit } from '../../events.js';
 import { announce } from '../../announce.js';
-import { stringsFor, tr, langAttr, findPlayer, playFrom } from './common.js';
+import { stringsFor, tr, langAttr, findPlayer, playFrom, uiLang } from './common.js';
+import { spokenTime, timeNodes } from '../../spoken-time.js';
 import { codeLines, describeLine, parseTime, formatTime } from './logic.js';
 
 export class FidelCodeBlock extends HTMLElement {
@@ -67,17 +68,18 @@ export class FidelCodeBlock extends HTMLElement {
     let at = null;
     if (seconds !== null) {
       const time = formatTime(seconds);
-      at = h('p', { class: 'fidel-code-block-at' }, tr(s, 'fromVideo', { time }));
+      const lang = uiLang(this);
+      at = h('p', { class: 'fidel-code-block-at' }, timeNodes(tr(s, 'fromVideo', { time: '{time}' }), seconds, time, lang));
       if (this.player()) {
         tools.append(h('button', {
           type: 'button', class: 'fidel-a-button fidel-code-block-play',
           onclick: () => {
             if (playFrom(this.player(), seconds)) {
-              announce(tr(s, 'playingFrom', { time }));
+              announce(tr(s, 'playingFrom', { time: spokenTime(seconds, lang) }));
               emit(this, 'fidel-code-block-play', { seconds });
             }
           },
-        }, tr(s, 'playFrom', { time })));
+        }, timeNodes(tr(s, 'playFrom', { time: '{time}' }), seconds, time, lang)));
       }
     }
 
