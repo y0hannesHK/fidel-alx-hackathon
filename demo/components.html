@@ -409,6 +409,76 @@
           document.getElementById('report-player-slot').replaceWith(player);
         })();
       </script>
+      <h3 id="d-keyboard">Amharic keyboard</h3>
+      <p>Who this helps: refugees and learners on shared or borrowed computers with no Amharic keyboard installed, and anyone who cannot remember the key combinations.</p>
+      <label for="d-answer">Your answer in Amharic</label>
+      <textarea id="d-answer" lang="am" rows="3" style="display: block; box-sizing: border-box; width: 100%; max-width: 30rem; font-size: 1.25rem; line-height: 1.7;"></textarea>
+      <fidel-amharic-keyboard for="d-answer"></fidel-amharic-keyboard>
+      <p id="d-answer-count" aria-live="off">Letters typed: 0</p>
+      <script>
+        // Host page code: the keyboard fires the field's own "input" event.
+        document.getElementById('d-answer').addEventListener('input', (e) => {
+          document.getElementById('d-answer-count').textContent = 'Letters typed: ' + [...e.target.value].length;
+        });
+      </script>
+      <p>Try it:</p>
+      <ul>
+        <li>Press "Show Amharic keyboard". Tab to the letters; arrow keys move between them, Home and End jump to the first and last.</li>
+        <li>Choose ለ, then ሉ: "ሉ" is added at the cursor and you are back at the letters. Escape goes back from the forms to the letters.</li>
+        <li>"Delete one letter" removes one whole letter; "Back to the text" puts you in the text box.</li>
+      </ul>
+      <h3 id="d-event">Live session card</h3>
+      <p>Who this helps: Deaf, hard-of-hearing and blind learners deciding whether they can follow a live class, and asking for the support they need.</p>
+      <fidel-event-card title="Office hours: how to present" event-id="office-hours-demo"
+        start="2026-12-04T19:00:00+03:00" end="2026-12-04T20:30:00+03:00"
+        join-url="https://meet.example.org/office-hours" captions="yes" sign-language="on-request"
+        languages="en,am" heading-level="4"></fidel-event-card>
+      <fidel-event-card title="Info session: the Digital Bridge programme" event-id="info-session-demo"
+        start="2026-11-10T10:00:00+03:00" end="2026-11-10T11:00:00+03:00"
+        join-url="https://meet.example.org/info" captions="yes" sign-language="yes" languages="am,en"
+        recording-url="/demo/savanna-mock/session.html" heading-level="4" ui-lang="am"></fidel-event-card>
+      <p>Try it:</p>
+      <ul>
+        <li>Read the access line: captions, sign language and spoken languages are written in words.</li>
+        <li>Press "Request access support", tick what you need and Send. Only the kind of support is asked, never why.</li>
+        <li>"Add to calendar" downloads a calendar file. The Join link appears 15 minutes before the start; after the end, "Watch the recording".</li>
+      </ul>
+      <h3 id="d-sign">Answer in sign language</h3>
+      <p>Who this helps: Deaf learners whose first language is Ethiopian Sign Language, to reply, ask a question or explain a caption problem without writing.</p>
+      <fidel-sign-answer label="Ask your question in sign language" max-seconds="30" heading-level="4"></fidel-sign-answer>
+      <p id="d-sign-host" aria-live="off"></p>
+      <script>
+        // Host page code: this demo has no upload address, so the component
+        // hands the recording to the page, which could upload it.
+        document.addEventListener('fidel-sign-answer-ready', (e) => {
+          document.getElementById('d-sign-host').textContent = 'The page received a ' + e.detail.mimeType + ' video of ' + (e.detail.durationSeconds ?? '?') + ' seconds. Nothing was uploaded.';
+        });
+      </script>
+      <p>Try it:</p>
+      <ul>
+        <li>Press "Start camera": only now does the browser ask for the camera. "Camera on" shows while it is on; "Stop camera" turns it off.</li>
+        <li>Press Record: a 3-2-1 countdown, then "Recording". Stop recording turns the camera off. Watch it, slower if you like, then Record again or Send.</li>
+        <li>With no camera (or the camera refused), the message says so and offers your phone's camera app or a video file instead.</li>
+      </ul>
+      <h3 id="d-guide">Reading guide</h3>
+      <p>Who this helps: low-vision learners at 200 to 400% zoom, and learners with dyslexia or attention difficulties.</p>
+      <fidel-reading-guide target="#d-reading-text"></fidel-reading-guide>
+      <div id="d-reading-text">
+        <p>A web page is a text file that a browser turns into what you see. The text is written in HTML.</p>
+        <p>HTML uses tags, such as a heading tag and a paragraph tag, to say what each part of the page is.</p>
+        <ul>
+          <li>Headings help screen-reader users jump through a page.</li>
+          <li>Paragraphs hold ordinary text.</li>
+          <li>Links take you to <a href="#d-guide">another place</a>.</li>
+        </ul>
+        <p lang="am">ድረ-ገጽ አሳሹ ወደሚያዩት ገጽ የሚቀይረው የጽሑፍ ፋይል ነው።</p>
+      </div>
+      <p>Try it:</p>
+      <ul>
+        <li>Press "Reading guide". Move the pointer, click in the text or Tab to the link: the block you are in is outlined.</li>
+        <li>Use "Next line" and "Previous line" to move block by block. Choose "Dim the rest" to fade the other blocks.</li>
+        <li>Your choice is remembered on this device.</li>
+      </ul>
     </section>
     <!-- PACKAGE D END -->
   </main>

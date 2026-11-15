@@ -624,6 +624,115 @@ limit: 20 reports per IP address per hour (`FIDEL_CAPTION_REPORTS_PER_HOUR`),
 counted in the server's memory, so it resets when the server restarts. Each
 report also sends the webhook event `caption.reported`.
 
+#### Package D: sound-off check (Studio)
+
+On a lesson's Studio page, "Sound-off check" counts the captions with a sound
+description in square brackets (`[music]`, `[door closes]`) per language and
+lists every silent gap longer than 3 seconds. "Add a sound caption here" saves
+a new caption in every caption language through the normal caption API
+(`PUT /api/v1/lessons/{id}/captions/{lang}`), with English and Amharic choices
+(`[music]` / `[ሙዚቃ]`, `[laughter]` / `[ሳቅ]`, ...) or your own words; other
+languages get the English words as a draft for a translator. A "Sound-off
+check done" box per lesson shows on the lesson list. It warns, never blocks
+publishing, and is remembered in that browser only.
+
+#### Package D: Amharic keyboard
+
+```html
+<label for="answer">Your answer</label>
+<textarea id="answer" lang="am"></textarea>
+<fidel-amharic-keyboard for="answer"></fidel-amharic-keyboard>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `for` | id of an `<input>` or `<textarea>`, or of a `<fidel-input>` / `<fidel-textarea>` (its inner field is used) |
+| `ui-lang` | `en` or `am` |
+
+The Fidel table in two steps: choose the consonant (34 buttons, each also
+named in Latin letters, e.g. "ለ, le"), then its form (ለ ሉ ሊ ላ ሌ ል ሎ ሏ).
+The letter goes in at the cursor with `setRangeText`, and the field's own
+`input` event fires, so the host's listeners and validation see it. Space,
+Delete one letter, ። ፣ ፤ ፧, Back to the text, Hide keyboard. Arrow keys,
+Home and End move between letters (one Tab stop); Escape in step 2 goes back.
+Event: none (the field's `input` event).
+
+#### Package D: live session card
+
+```html
+<fidel-event-card title="Office hours: how to present"
+  start="2026-11-20T19:00:00+03:00" end="2026-11-20T20:30:00+03:00"
+  join-url="https://..." captions="yes" sign-language="on-request" languages="en,am"
+  recording-url="session.html" request-url="/your/api/requests" reply-by="email"
+  event-id="ev1" heading-level="3" ui-lang="en"></fidel-event-card>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `title`, `start`, `end` | the session (ISO 8601 times with a time zone) |
+| `join-url` | the live link; shown from 15 minutes before the start until the end |
+| `captions` | `yes` or `no` |
+| `sign-language` | `yes`, `no` or `on-request` (Ethiopian Sign Language interpreter) |
+| `languages` | spoken languages, e.g. `en,am` |
+| `recording-url` | after the end: "Watch the recording" (e.g. a page with `<fidel-session-viewer>`) |
+| `request-url` | where access requests are POSTed as JSON `{eventId, needs, other?}` (optional) |
+| `reply-by` | `email`: the card then says "The organisers will reply by email" |
+| `event-id`, `heading-level`, `ui-lang` | id used in events and the .ics file; heading level (default 3); `en` or `am` |
+
+Date and time in both calendars, the length, and the access line in words
+("Live captions: yes", "Ethiopian Sign Language interpreter: on request",
+"Spoken in: English, Amharic"). "Request access support" asks only which
+support is needed (sign language interpreter, live captions, Amharic
+interpreter, other), never why. "Add to calendar" downloads an `.ics` file made
+in the browser. Event: `fidel-event-request` `{ eventId, needs, other? }`.
+
+**Level 3:** each card also puts a schema.org `Event` in JSON-LD on the page
+(`name`, `startDate`, `endDate`, `eventAttendanceMode: OnlineEventAttendanceMode`,
+`location: VirtualLocation {url}`, `inLanguage`, and the access line as
+`description`), like the job card's `JobPosting`, so search engines and
+calendars can read it.
+
+#### Package D: answer in sign language
+
+```html
+<fidel-sign-answer label="Ask your question in sign language"
+  upload-url="/your/api/answers" max-seconds="120"></fidel-sign-answer>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `label` | the heading of the box |
+| `upload-url` | where Send POSTs the video (multipart field `video`); without it, the video is given to the page in an event |
+| `max-seconds` | longest recording (default 120) |
+| `heading-level`, `ui-lang` | heading level (default 3); `en` or `am` |
+
+Start camera (only then is the camera asked for: video, no sound), "Camera
+on" with Stop camera, Record after a 3-2-1 countdown in text, Stop recording
+(the camera goes off at once), watch it back (Slower 0.5x), Record again or
+Send (the size in MB is shown first). 480 x 360, WebM VP9/VP8 or MP4,
+whichever the browser supports. No camera, camera refused or not https: it
+says so and offers the phone's own camera app or a video file instead. Event
+(no `upload-url`): `fidel-sign-answer-ready` `{ blob, durationSeconds, mimeType }`.
+Fidel has no server endpoint for these videos (see BACKLOG).
+
+#### Package D: reading guide
+
+```html
+<fidel-reading-guide target="#lesson-text"></fidel-reading-guide>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `target` | CSS selector of the text to guide through |
+| `ui-lang` | `en` or `am` |
+
+"Reading guide" (on/off) outlines the paragraph or list item under the
+pointer, with the text cursor, or with keyboard focus; "Dim the rest" fades the
+other blocks (text stays above 4.5:1). "Next line" / "Previous line" move block
+by block and scroll it to the middle of the screen. Overlays only (never
+changes your text, never takes clicks); off by default; remembered in this
+browser. Event: none.
+
 #### Starter defects we patched (Savanna)
 
 The gate is taken on Savanna's lesson page, so we checked the way to the player
