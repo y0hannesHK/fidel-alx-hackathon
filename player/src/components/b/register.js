@@ -4,9 +4,13 @@
 //   if (!customElements.get('fidel-example')) customElements.define('fidel-example', FidelExample);
 import './components.css';
 import { FidelDataSaver } from './data-saver.js';
+import { FidelOfflineStatus } from './offline-status.js';
+import { FidelDownloadLater } from './download-later.js';
 
 const TAGS = {
   'fidel-data-saver': FidelDataSaver,
+  'fidel-offline-status': FidelOfflineStatus,
+  'fidel-download-later': FidelDownloadLater,
 };
 
 for (const [name, Element] of Object.entries(TAGS)) {

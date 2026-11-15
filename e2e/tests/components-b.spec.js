@@ -73,3 +73,55 @@ test('data saver: nothing big loads before the choice; Load it plays the video',
   await expect(saver.locator('video')).toBeVisible();
   await expect(saver.locator('video')).toBeFocused();
 });
+
+const politeText = (page) => page.locator('.fidel-announcer[aria-live="polite"]').textContent();
+
+test('offline status: says offline when the connection goes, announced once', async ({ page, context }) => {
+  await ready(page);
+  const line = page.locator('fidel-offline-status .fidel-offline-status-line');
+  await expect(line).toHaveText('Online.');
+  await context.setOffline(true);
+  await expect(line).toHaveText('You are offline. No lessons are saved on this phone.');
+  await expect.poll(() => politeText(page)).toBe('You are offline. No lessons are saved on this phone.');
+  const announcements = await page.evaluate(() => new Promise((resolve) => {
+    // Count changes to the announcer for a moment: nothing more may be said.
+    const el = document.querySelector('.fidel-announcer[aria-live="polite"]');
+    let n = 0;
+    new MutationObserver(() => { n += 1; }).observe(el, { childList: true, characterData: true, subtree: true });
+    setTimeout(() => resolve(n), 1500);
+  }));
+  expect(announcements).toBe(0);
+  await context.setOffline(false);
+  await expect(line).toHaveText('Online.');
+});
+
+test('download later: queued while offline, downloaded when online, can be cancelled', async ({ page, context }) => {
+  await ready(page);
+  const box = page.locator('fidel-download-later');
+  await context.setOffline(true);
+  await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+  await box.getByRole('button', { name: "Download when I'm online (Lesson 3 (demo file), 0.1 MB)" }).click();
+  await expect(box).toContainText('Lesson 3 (demo file) will download when you are online.');
+  const remove = box.getByRole('button', { name: 'Remove Lesson 3 (demo file) from the queue' });
+  await expect(remove).toBeFocused();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fidel-download-queue')).length)).toBe(1);
+
+  // Cancel, then queue again.
+  await remove.click();
+  const download = box.getByRole('button', { name: /Download when I'm online/ });
+  await expect(download).toBeFocused();
+  await download.click();
+
+  const readyEvent = page.evaluate(() => new Promise((resolve) => {
+    document.addEventListener('fidel-download-ready', (e) => resolve(e.detail), { once: true });
+  }));
+  await context.setOffline(false);
+  expect(await readyEvent).toEqual({ href: '/demo/media/chapters.vtt', label: 'Lesson 3 (demo file)' });
+  await expect(box).toContainText('Lesson 3 (demo file) is ready offline.');
+  await expect(box.getByRole('link', { name: 'Open Lesson 3 (demo file)' })).toBeVisible();
+  await expect.poll(() => politeText(page)).toBe('Lesson 3 (demo file) is ready offline.');
+  // The offline status counts it and lists it by name.
+  await expect(page.locator('fidel-offline-status')).toContainText('1 lesson is saved on this phone.');
+  await page.locator('fidel-offline-status summary').click();
+  await expect(page.locator('fidel-offline-status').getByRole('link', { name: 'Lesson 3 (demo file)' })).toBeVisible();
+});
