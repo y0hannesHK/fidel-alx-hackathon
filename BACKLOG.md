@@ -162,14 +162,6 @@ All six components are finished and on `demo/components.html`. Still to do:
 
 <!-- PACKAGE D START -->
 - **Package D: all items D1-D7 done** (resumed after the usage limit).
-- **Studio caption editor shows empty text boxes** (found while testing D2/D3,
-  not fixed: `studio/js/util.js` `h()` sets a `<textarea>`'s `value` with
-  `setAttribute`, which a textarea ignores). Staff see blank caption boxes; the
-  saved text is unchanged unless they type. Fix: set `el.value` for
-  textareas in `h()` (or in caption-editor.js).
-- **Caption reports from other websites:** the server's CORS rule allows only
-  GET, so a player embedded on another domain cannot POST a report (it is
-  kept on the device and never sent). Allow POST for `/caption-reports` if needed.
 - **"Sound-off check done"** is remembered per browser (localStorage), not on
   the server.
 - **Sign-language answers storage policy:** Fidel has no endpoint for them;

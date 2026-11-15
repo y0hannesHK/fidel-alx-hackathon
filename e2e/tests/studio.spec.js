@@ -80,6 +80,10 @@ test('staff fix and check the Amharic captions; the draft notice disappears', as
 
   // Fix caption 1 (the machine wrote "street people" for "people with disability").
   const first = editor.getByRole('group', { name: /Caption 1/ }).getByRole('textbox', { name: /Amharic/ });
+  // The boxes show the saved text (they were once empty: a <textarea> ignores a value attribute).
+  await expect(first).toHaveValue('የጎዳና ተዳዳሪዎችንና ስደተኞችን።');
+  await expect(editor.getByRole('group', { name: /Caption 1/ }).getByRole('textbox', { name: 'English' }))
+    .toHaveValue('People with disability and refugees.');
   await first.fill('አካል ጉዳተኞችና ስደተኞች።');
   await first.press('Control+Enter'); // "Checked, go to next"
   const second = editor.getByRole('group', { name: /Caption 2/ }).getByRole('textbox', { name: /Amharic/ });

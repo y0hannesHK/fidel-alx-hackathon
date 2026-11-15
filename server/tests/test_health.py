@@ -30,3 +30,18 @@ def test_text_is_compressed_but_media_is_not():
     # Media is never compressed (it is already, and seeking needs byte ranges).
     from app.main import CompressText
     assert "/files/lessons/abc/video.mp4".endswith(CompressText.SKIP)
+
+
+def test_other_sites_may_send_learner_posts_but_never_staff_requests():
+    """A player embedded on Savanna (another address) can send a caption report
+    (JSON POST), but a page on another site can never send the staff token."""
+    learner = client.options("/api/v1/lessons/abc123abc123/caption-reports", headers={
+        "Origin": "https://savanna.example", "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type"})
+    assert learner.status_code == 200
+    assert "POST" in learner.headers["access-control-allow-methods"]
+
+    staff = client.options("/api/v1/lessons", headers={
+        "Origin": "https://savanna.example", "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "authorization"})
+    assert staff.status_code == 400  # the browser refuses to send the request

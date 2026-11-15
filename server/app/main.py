@@ -54,12 +54,14 @@ app = FastAPI(
 )
 
 # Lets websites on other addresses (e.g. Savanna) embed the player and load
-# lesson files. Only reading is allowed from other sites.
+# lesson files. From other sites: reading, plus the learner's public JSON POSTs
+# (e.g. "Report a caption problem"). The Authorization header is NOT allowed,
+# so staff actions can never be made from another site's page.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
-    allow_methods=["GET"],
-    allow_headers=["Range"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Range", "Content-Type"],
     expose_headers=["Content-Range", "Accept-Ranges", "Content-Length"],
 )
 

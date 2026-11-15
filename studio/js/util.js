@@ -6,6 +6,7 @@ export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
   for (const [name, value] of Object.entries(attrs)) {
     if (value === false || value === null || value === undefined) continue;
+    if (name === 'value') continue; // set below, as a property (see there)
     if (name.startsWith('on') && typeof value === 'function') el.addEventListener(name.slice(2), value);
     else if (name === 'class') el.className = value;
     else if (name in el && typeof value !== 'string') el[name] = value; // e.g. checked, value
@@ -14,6 +15,14 @@ export function h(tag, attrs = {}, ...children) {
   for (const child of children.flat(Infinity)) {
     if (child === null || child === undefined || child === false) continue;
     el.append(child instanceof Node ? child : document.createTextNode(String(child)));
+  }
+  // value as a property, after the children: a <textarea> ignores a value
+  // attribute (the caption boxes showed empty), and a <select> needs its
+  // <option>s before its value can be chosen.
+  if (attrs.value !== undefined && attrs.value !== null && attrs.value !== false) {
+    if ('defaultValue' in el) el.defaultValue = attrs.value; // what form.reset() returns to
+    if ('value' in el) el.value = attrs.value;
+    else el.setAttribute('value', attrs.value);
   }
   return el;
 }
