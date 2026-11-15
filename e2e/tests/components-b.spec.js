@@ -237,6 +237,7 @@ test('keyboard: Tab reaches every package B control and never gets stuck', async
   const expected = ['button:Load it (2.2 MB)', "button:Download when I'm online (Lesson 3 (demo",
     'button:English', 'button:አማርኛ', 'button:Afaan Oromoo', 'button:العربية', 'button:Display settings', 'a:A link inside the lesson'];
   for (const name of expected) expect(seen, seen.join(' > ')).toContain(name);
-  const stuck = seen.some((s, i) => i >= 4 && seen.slice(i - 4, i + 1).every((x) => x === s));
+  // 'outside' repeating is fine: focus has moved on to other packages' controls on the shared page.
+  const stuck = seen.some((s, i) => i >= 4 && s !== 'outside' && seen.slice(i - 4, i + 1).every((x) => x === s));
   expect(stuck).toBe(false);
 });
