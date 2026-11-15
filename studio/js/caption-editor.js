@@ -8,6 +8,8 @@
 //
 // Shortcut (with a visible button for each): in a translation box,
 // Ctrl+Enter = "Checked, go to next" for that language.
+// Times and translation boxes are Fidel form fields (<fidel-input format="mmss">,
+// <fidel-textarea lang>) from the player bundle that Studio loads.
 import { api } from './api.js';
 import { formatTime, h, parseTime, say, uid } from './util.js';
 
@@ -96,11 +98,12 @@ export async function captionEditor(lessonId, manifest) {
       const legendId = uid('cue');
       const legend = h('legend', { id: legendId }, `Caption ${i + 1}, ${formatTime(row.start)} to ${formatTime(row.end)}`);
       // Start and end times can be corrected too (minutes:seconds, e.g. 1:23.5).
+      // <fidel-input format="mmss">: a wrong time is explained in words when
+      // the field is left ("Use minutes:seconds, for example 1:23.5").
       const timeInput = (key, label) => {
-        const id = uid(key);
         row.timeInputs = row.timeInputs || {};
-        const input = h('input', {
-          id, type: 'text', inputmode: 'decimal', value: formatTime(row[key]), class: 'time-input',
+        const input = h('fidel-input', {
+          id: uid(key), label, format: 'mmss', value: formatTime(row[key]), 'field-class': 'time-input',
           oninput: (e) => {
             row[key] = parseTime(e.target.value);
             if (row.start >= 0 && row.end > row.start) {
@@ -110,7 +113,7 @@ export async function captionEditor(lessonId, manifest) {
           },
         });
         row.timeInputs[key] = input;
-        return h('div', { class: 'field time' }, h('label', { for: id }, label), input);
+        return h('div', { class: 'field time' }, input);
       };
       const times = h('div', { class: 'row times' }, timeInput('start', 'Start'), timeInput('end', 'End'));
       const fields = [];
@@ -128,10 +131,11 @@ export async function captionEditor(lessonId, manifest) {
       const nextButtons = [];
       for (const t of targets) {
         if (!row[t.code]) continue;
-        const id = uid(t.code);
-        const box = h('textarea', {
-          id, lang: t.code, rows: 2, value: row[t.code].text,
-          'aria-describedby': legendId,
+        // <fidel-textarea lang>: shows "You are typing English letters..." when
+        // the keyboard is on the wrong language; still described by the legend.
+        const box = h('fidel-textarea', {
+          id: uid(t.code), label: `${t.name} (${t.native})`, lang: t.code, rows: 2, value: row[t.code].text,
+          describedby: legendId,
           oninput: (e) => { row[t.code].text = e.target.value; markDirty(); },
           onkeydown: (e) => {
             if (e.key === 'Enter' && e.ctrlKey) {
@@ -148,7 +152,6 @@ export async function captionEditor(lessonId, manifest) {
         });
         row.checks[t.code] = checkbox;
         fields.push(
-          h('label', { for: id }, `${t.name} `, h('span', { lang: t.code }, `(${t.native})`)),
           box,
           h('div', { class: 'check' }, checkbox, h('label', { for: checkId }, `${t.name} checked`))
         );
@@ -259,7 +262,7 @@ export async function captionEditor(lessonId, manifest) {
     }),
     h('label', { for: onlyId }, `Show only captions with glossary words (${glossaryCount})`));
   section.append(
-    h('p', { class: 'hint' }, 'Tip: in a translation box, press Ctrl+Enter for "Checked, go to next". Captions with glossary words (words machines often get wrong) are marked: check those first.'),
+    h('p', { class: 'hint' }, 'Keyboard: in a translation box, press Ctrl+Enter for "Checked, go to next". Times are minutes:seconds, for example 1:23.5. Captions with glossary words (words machines often get wrong) are marked: check those first.'),
     h('p', { class: 'hint' }, 'Sound-off check: speech-to-text writes only words. Watch with sound and add every sound that carries meaning in square brackets, for example [music], [laughter], [phone rings], [door closes], so Deaf learners get it too.'),
     h('div', { class: 'toolbar' },
       counter,

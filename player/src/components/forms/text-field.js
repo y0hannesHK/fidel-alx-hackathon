@@ -13,7 +13,8 @@
 //   keyboard-hint ("off" to switch off), caps-warning (on | off),
 //   listen (adds "Listen"), voice-api (e.g. /api/v1: the server voice for Listen),
 //   speak (off | words | characters: typing voice; default from the settings),
-//   describedby (ids of the page's own descriptions, read before ours).
+//   describedby (ids of the page's own descriptions, read before ours),
+//   field-class (the page's own class names for the inner <input>/<textarea>).
 // Properties and methods: value, validity, checkValidity(), focus().
 // Events (bubble, composed): fidel-field-input, fidel-field-change,
 //   fidel-field-invalid {message}, fidel-field-valid, fidel-keyboard-hint {shown, expected},
@@ -45,7 +46,8 @@ export class FidelTextField extends FidelFieldBase {
 
   buildField({ initial, content }) {
     const format = this.getAttribute('format');
-    const attrs = { id: this.ids.field, class: 'fidel-field-control', lang: this.getAttribute('lang') || null };
+    const extra = this.getAttribute('field-class'); // the page's own class(es) for the inner field
+    const attrs = { id: this.ids.field, class: `fidel-field-control${extra ? ` ${extra}` : ''}`, lang: this.getAttribute('lang') || null };
     for (const name of COPY) if (this.hasAttribute(name)) attrs[name] = this.getAttribute(name);
     if (this.multiline) {
       attrs.rows = attrs.rows || '4';

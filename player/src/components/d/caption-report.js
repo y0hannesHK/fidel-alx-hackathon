@@ -127,7 +127,7 @@ export class FidelCaptionReport extends HTMLElement {
     const common = translator(this.lang, 'common');
     const ids = { heading: uid('report-heading'), time: uid('report-time'), timeHint: uid('report-time-hint'),
       timeError: uid('report-time-error'), lang: uid('report-lang'), correction: uid('report-correction'),
-      correctionHint: uid('report-correction-hint'), kindError: uid('report-kind-error') };
+      kindError: uid('report-kind-error') };
 
     const timeInput = h('input', {
       id: ids.time, name: 'time', type: 'text', inputmode: 'numeric', autocomplete: 'off', class: 'fidel-d-input fidel-report-time',
@@ -162,9 +162,11 @@ export class FidelCaptionReport extends HTMLElement {
           h('label', { for: id }, tt(`kinds.${kind}`)));
       }),
       kindError);
-    const correction = h('textarea', {
-      id: ids.correction, name: 'correction', rows: 3, maxlength: 500, lang, class: 'fidel-d-input',
-      'aria-describedby': ids.correctionHint,
+    // A Fidel form field (player/src/components/forms): label, hint, and the
+    // keyboard-language hint when an Amharic correction is typed in English letters.
+    const correction = h('fidel-textarea', {
+      id: ids.correction, name: 'correction', rows: 3, maxlength: 500, lang, 'ui-lang': this.lang,
+      label: tt('correction'), hint: tt('correctionHint'),
     });
     const status = h('p', { class: 'fidel-d-status' }); // announced with announce()
     const sendButton = h('button', { type: 'submit', class: 'fidel-d-button fidel-d-primary' }, common('send'));
@@ -177,10 +179,7 @@ export class FidelCaptionReport extends HTMLElement {
       h('div', { class: 'fidel-d-field' }, h('label', { for: ids.lang }, tt('language')), langSelect),
       h('div', { class: 'fidel-d-field' }, h('p', { class: 'fidel-d-label' }, tt('shown')), shown),
       kinds,
-      h('div', { class: 'fidel-d-field' },
-        h('label', { for: ids.correction }, tt('correction')),
-        h('p', { id: ids.correctionHint, class: 'fidel-d-hint' }, tt('correctionHint')),
-        correction),
+      correction,
       status,
       h('div', { class: 'fidel-d-actions' },
         sendButton,

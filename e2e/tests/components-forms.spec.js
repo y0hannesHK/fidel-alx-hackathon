@@ -4,8 +4,19 @@
 // in words, the error summary, drafts (never the sensitive field), offline
 // sending, the keyboard-language hint, Caps Lock, Listen, the Amharic
 // keyboard writing into a <fidel-textarea>, file, select and date.
+import { readFileSync, existsSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+
+function staffToken() {
+  if (process.env.FIDEL_STAFF_TOKEN) return process.env.FIDEL_STAFF_TOKEN;
+  if (!existsSync('../.env')) return '';
+  const line = readFileSync('../.env', 'utf8').split(/\r?\n/).find((l) => l.startsWith('FIDEL_STAFF_TOKEN='));
+  return line ? line.split('=', 2)[1].trim() : '';
+}
+const TOKEN = staffToken();
+const STAFF = { Authorization: `Bearer ${TOKEN}` };
+const VIDEO = '../data/demo/sign.webm';
 
 const ZOOMS = [
   { name: '100%', viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
@@ -387,4 +398,74 @@ test('Tab moves through the inputs page and never gets stuck', async ({ page }) 
   expect(stuck, seen.join(' > ')).toBe(false);
   expect(seen).toContain('input#job-name-field:fullName');
   expect(seen).toContain('textarea#caption-am-field:textAm');
+});
+
+test.describe('in Studio and the caption-report dialog', () => {
+  test.skip(!TOKEN || !existsSync(VIDEO), 'Needs FIDEL_STAFF_TOKEN and data/demo/sign.webm.');
+  let lessonId;
+
+  test.beforeAll(async ({ request }) => {
+    test.setTimeout(180_000);
+    const upload = await request.post('/api/v1/lessons', {
+      headers: STAFF,
+      multipart: { title: 'Forms test lesson', spoken_language: 'en', video: { name: 'f.webm', mimeType: 'video/webm', buffer: readFileSync(VIDEO) } },
+    });
+    expect(upload.status()).toBe(201);
+    lessonId = (await upload.json()).id;
+    await expect.poll(async () => {
+      const steps = await (await request.get(`/api/v1/lessons/${lessonId}/status`)).json();
+      return Object.values(steps).every((s) => !['pending', 'running'].includes(s.status));
+    }, { timeout: 120_000 }).toBe(true);
+    for (const [lang, text] of [['en', 'Welcome to the lesson.'], ['am', 'እንኳን ወደ ትምህርቱ በደህና መጡ።']]) {
+      const put = await request.put(`/api/v1/lessons/${lessonId}/captions/${lang}`, { headers: STAFF, data: { cues: [{ start: 0, end: 3, text }] } });
+      expect(put.status(), await put.text()).toBe(200);
+    }
+    await request.post(`/api/v1/lessons/${lessonId}/publish`, { headers: STAFF, data: { published: true } });
+  });
+
+  test.afterAll(async ({ request }) => {
+    if (lessonId) await request.delete(`/api/v1/lessons/${lessonId}`, { headers: STAFF });
+  });
+
+  test('caption editor: times explained in words, Amharic box hints the keyboard, Ctrl+Enter still checks', async ({ page }) => {
+    await page.goto('/studio/');
+    await page.getByLabel('Staff token').fill(TOKEN);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Lessons' })).toBeVisible();
+    await page.goto(`/studio/#/lesson/${lessonId}`);
+    const editor = page.locator('section', { has: page.getByRole('heading', { name: 'Captions' }) });
+    const first = editor.getByRole('group', { name: /Caption 1/ });
+    const start = first.getByRole('textbox', { name: 'Start' });
+    await expect(start).toHaveValue('0:00.0');
+    await start.fill('abc');
+    await start.press('Tab');
+    await expect(start).toHaveAttribute('aria-invalid', 'true');
+    await expect(first.getByText('⚠ Use minutes:seconds, for example 1:23.5')).toBeVisible();
+    await start.fill('0:00.0');
+    await expect(start).not.toHaveAttribute('aria-invalid', 'true');
+    const amharic = first.getByRole('textbox', { name: /Amharic/ });
+    await expect(amharic).toHaveValue('እንኳን ወደ ትምህርቱ በደህና መጡ።');
+    const describedBy = (await amharic.getAttribute('aria-describedby')).split(' ');
+    expect(await first.locator('legend').getAttribute('id')).toBe(describedBy[0]);
+    await amharic.fill('selam ');
+    await expect(first.getByText(/To type Amharic, switch the keyboard/)).toBeVisible();
+    await amharic.press('Control+Enter');
+    await expect(editor.locator('.counter')).toContainText('All Amharic captions are checked.');
+    await expect(editor.getByText('Keyboard: in a translation box, press Ctrl+Enter')).toBeVisible();
+    expect(await seriousAxeIssues(page)).toEqual([]);
+  });
+
+  test('caption-report dialog: the correction box is a Fidel field with its hint', async ({ page }) => {
+    await page.goto(`/demo/components.html?lesson=${lessonId}`);
+    await expect(page.locator('#report-player .fidel-panel')).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Report a caption problem' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Report a caption problem' });
+    const correction = dialog.getByRole('textbox', { name: 'Your correction (optional)' });
+    await expect(correction).toBeVisible();
+    await dialog.getByLabel('Caption language').selectOption('am');
+    await expect(correction).toHaveAttribute('lang', 'am');
+    await correction.fill('hello ');
+    await expect(dialog.getByText(/To type Amharic, switch the keyboard/)).toBeVisible();
+    expect(await seriousAxeIssues(page, 'dialog[open]')).toEqual([]);
+  });
 });
