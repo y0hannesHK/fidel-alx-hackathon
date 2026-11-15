@@ -284,3 +284,24 @@ TalkBack) are not done yet; see docs/manual-testing.md.
 | Speech (rule 2) | - | Note | The typing voice and Listen start only by the user's choice; nothing speaks by itself, so screen-reader users do not hear things twice. |
 | Native date field | - | Partially supports | The date picker is the browser's own: its look and its Amharic support vary between browsers and phones. The Ethiopian date under it is always in words. |
 <!-- PACKAGE FORMS END -->
+
+<!-- PACKAGE E START -->
+### Package E: lesson formats, questions and voice notes, callouts, tables, notes, quiz, progress, mark complete, skip link, toggletip, reading font
+
+| Criterion | Level | Support | Notes |
+|---|---|---|---|
+| 1.3.1 Info and Relationships | A | Supports | Format choice is a `<fieldset>`/`<legend>`; quiz questions are fieldsets with legends and native radios/checkboxes; callouts have real headings; `<fidel-table>` keeps the `<table>`, adds `<th scope>` and explicit table roles so card layout stays a table for screen readers. Missing `<caption>` is only warned about, not fixed. |
+| 1.4.1 Use of Color | A | Supports | Callout type is a word ("Warning:") plus border style and background; chosen format, Mark as complete and quiz feedback have a tick/cross and words; the recording banner says "Recording". |
+| 1.4.10 Reflow | AA | Supports | Tested at 320 px / 400% zoom: no sideways scrolling, including `<fidel-table>` (rows become "Header: value" cards) and the question dialog. |
+| 2.1.1 Keyboard | A | Supports | Every control is a native button, link, radio, checkbox or field; e2e tabs through the whole section. Escape closes the question dialog (focus back to its opener), the toggletip and the notes edit form. Table sort buttons stay reachable in card layout. |
+| 2.2.1 Timing Adjustable | A | Supports | `<fidel-quiz>` has no time limit unless `time-limit` is set; then it warns 1 minute before the end, "Add 5 minutes" and "Switch the timer off" are always there, and the timer starts only when the learner enters the quiz. |
+| 2.4.1 Bypass Blocks | A | Supports (when placed first) | `<fidel-skip-link>` moves focus to the lesson. It is the first Tab stop only if the page puts it first in `<body>`; on the shared demo page it is at the top of the Package E section. |
+| 2.4.3 Focus Order | A | Supports | Focus moves to: quiz feedback after "Check answer"; the voice-note step headings; the new note after Save; Undo after Delete; the restored note after Undo; the opener after the dialog closes. |
+| 2.5.8 Target Size (Minimum) | AA | Supports | Buttons, transcript times, note buttons and quiz rows are at least 44 px tall. The inline toggletip button is 44 px tall. |
+| 3.3.1 Error Identification | A | Supports | Question dialog and notes: wrong time ("Use minutes:seconds…", from `<fidel-input format="mmss">`), empty question, "Record your question first" are in words; server 400 reasons are shown. |
+| 3.3.2 Labels or Instructions | A | Supports | Every field has a visible label and hint; the voice note says nothing is recorded or sent until the learner chooses, and that the voice is not turned into text; notes say they stay on this device. |
+| 4.1.2 Name, Role, Value | A | Supports | `aria-pressed` on format buttons and Mark as complete (with `aria-disabled` + a hint before the end, so it stays focusable); `aria-expanded` on the toggletip and "Answer in your own way"; `aria-sort` on sorted columns. |
+| 4.1.3 Status Messages | AA | Supports | Format changes, "Recording", question sent / saved offline / sent later, note added / deleted / restored, sorting, quiz score, timer warning (assertive), "Lesson marked complete" are announced through the shared announcer and are visible. Progress is announced only on request ("Say my progress"). |
+| Microphone and camera (rule 5) | - | Note | Asked for only after "Start recording" / "Start camera", shown while on, turned off as soon as recording stops or the dialog closes. No speech-to-text. |
+| Reading font (E8) | - | Note | Easy-read font is an option only; it does not change Ethiopic text, code or icon fonts. |
+<!-- PACKAGE E END -->

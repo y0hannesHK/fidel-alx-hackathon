@@ -221,3 +221,23 @@ Deaf co-designer:
 - [ ] Listen: on a device with an English voice, "Listen" reads the English box; Escape stops it. With the Toucan voice engine running (`docker compose --profile amharic-voice up -d`), "Listen" appears under the Amharic boxes and reads them.
 - [ ] Studio caption editor: Start/End errors in words on leaving the field; Ctrl+Enter still moves to the next translation; the keyboard-language hint shows in the Amharic box when typing English.
 <!-- PACKAGE FORMS END -->
+
+<!-- PACKAGE E START -->
+### Package E: lesson formats, questions, notes, quiz, callouts, tables, small tags, reading font
+
+Open `demo/components.html?lesson=ID` with a published lesson that has sound and captions.
+
+- [ ] NVDA + Chrome: "How do you want this lesson?" is read as a group; each format is read with "toggle button, pressed / not pressed" and its size; choosing Listen announces "Listen mode: audio and transcript." and the transcript lines are read as "Play from 0:05" buttons followed by the text.
+- [ ] Phone on mobile data (Chrome DevTools or a real phone): choose Listen and reload: no video is downloaded (check the data used).
+- [ ] TalkBack on Android Chrome: "Ask about this moment", the time field, the caption, the three ways (radio buttons), Send; "Saved on this phone…" in flight mode and "Your saved question was sent." after.
+- [ ] Keyboard only: Tab through the Package E section; Escape closes the question dialog (focus back on the button, video plays on if it was playing), the toggletip and a note being edited.
+- [ ] **Blind co-designer** (screen reader on their own phone, over HTTPS): record a voice note in the question dialog: is "Start recording" / "Recording" / "Stop recording" / "Step 3: listen to your voice note" clear; is the size before Send useful; refuse the microphone once and use the phone's recorder through the file picker.
+- [ ] **Deaf co-designer** (EthSL, own phone over HTTPS): ask a question in sign language from the question dialog; choose "Sign language" in the formats and check the signer is large enough; check "Ask about this moment" never needs sound.
+- [ ] Studio, lesson page, "Learner questions": NVDA reads time and kind; "Load the voice note" / "Show the sign-language video" play the recording; "Answered" announces the count left and keeps focus in the list.
+- [ ] Notes with NVDA: "Add a note at 1:23", the note buttons "Play from 1:23: …", "Delete note at 1:23" then Undo (focus on Undo, then on the restored note). Open the downloaded .txt.
+- [ ] Quiz with NVDA: questions read as groups; after "Check answer" the feedback is read; with a time limit the 1-minute warning is announced once; "Add 5 minutes" and "Switch the timer off" work.
+- [ ] Table at 400% zoom and on a phone: each row is a card "Length: 12:30"; NVDA in browse mode at 100% still reads it as a table with column headers; sorting announces "Sorted by …".
+- [ ] Callouts with Windows High Contrast: the border and the word "Warning:" still show the type.
+- [ ] Display settings → Reading font → Easy-read font: English text changes to Atkinson Hyperlegible, Amharic text stays in Noto Sans Ethiopic, code stays monospace, the player's button icons still show.
+- [ ] Amharic reviewer: read every string in `player/i18n/components-e.am.json` in place (`ui-lang="am"`).
+<!-- PACKAGE E END -->

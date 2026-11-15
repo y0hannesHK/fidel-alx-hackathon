@@ -213,3 +213,42 @@ All six components are finished and on `demo/components.html`. Still to do:
 - **Listen with the server voice** needs `voice-api` on each field; it could
   default to the page's Fidel server.
 <!-- PACKAGE FORMS END -->
+
+<!-- PACKAGE E START -->
+- **Package E: all items E1-E8 done** (lesson formats, questions + voice notes
+  with a server endpoint and Studio panel, callouts, tables, notes, quiz,
+  progress, mark complete, skip link, toggletip, reading font).
+- **Package E Amharic text to review** (written by an AI, not a native
+  speaker): `player/i18n/components-e.am.json`. Especially: the format names
+  ("ይመልከቱ / ያዳምጡ / ያንብቡ"), "የተጻፈ ቅጂ" for "transcript", "ስለዚህ ቅጽበት
+  ይጠይቁ" (Ask about this moment), "ከትንሽ ወደ ትልቅ" for "ascending", "ቀልብስ"
+  for "Undo", "ፈተና" for "quiz"
+  (sounds like an exam), and "ለማንበብ ቀላል ፊደል" (Easy-read font).
+- **Question and voice-note storage policy (decision needed):** questions are
+  stored on the Fidel server with no name, account or IP address; recordings
+  in `data/questions/<lesson id>/`, staff-only, deleted when the lesson is
+  deleted. Not decided: how long to keep answered questions and recordings
+  (suggest: delete recordings 90 days after "Answered"), and how a teacher's
+  answer gets back to an anonymous learner (today it does not: the teacher
+  answers in the course forum or the next session).
+- **Answers to questions** are not sent back to the learner (no accounts).
+- **Offline questions with recordings** are kept only up to about 2 MB
+  (localStorage); larger ones say "send it when you are online".
+- **Server error messages** for questions are in English even when the
+  component is in Amharic.
+- **Question abuse limit** is counted in memory (resets on restart, per process).
+- **Quiz "own way" answers** (writing, voice, sign) go to the page as an event;
+  Fidel has no endpoint to store them.
+- **Listen needs the audio-only file** the pipeline makes from lessons with
+  sound (`audio.opus`) and captions for the transcript. The demo page's static
+  player has neither: open it with `?lesson=ID` to see Listen and Read.
+- **Read** links to the lesson document; the document size is not shown
+  (the document endpoints do not answer HEAD requests).
+- **Skip link** is the first Tab stop only when the page puts it first; on the
+  shared demo page it is at the top of the Package E section.
+- **Easy-read font** has only the regular weight (one file, 17.2 KB): bold text
+  is made bold by the browser. Latin subset only (no Ethiopic: Atkinson
+  Hyperlegible has none).
+- **`<fidel-table>`** sorting sorts the first `<tbody>` only; tables with
+  `rowspan` in the body are not supported in card layout.
+<!-- PACKAGE E END -->

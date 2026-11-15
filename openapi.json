@@ -2942,6 +2942,267 @@
         }
       }
     },
+    "/api/v1/lessons/{lesson_id}/questions": {
+      "post": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "Ask Question",
+        "description": "A learner asks about a moment in a lesson. No name or account is needed\nor stored. 400 with a message in words if something is not right; 413 if\nthe recording is too big; 429 after 20 questions from one address in an hour.",
+        "operationId": "ask_question_api_v1_lessons__lesson_id__questions_post",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ask_question_api_v1_lessons__lesson_id__questions_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "List Questions",
+        "description": "Questions for one lesson, in video-time order (staff).",
+        "operationId": "list_questions_api_v1_lessons__lesson_id__questions_get",
+        "parameters": [
+          {
+            "name": "lesson_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "description": "Lesson id",
+              "title": "Lesson Id"
+            },
+            "description": "Lesson id"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "open",
+                    "answered",
+                    "dismissed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only questions with this status",
+              "title": "Status"
+            },
+            "description": "Only questions with this status"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Question"
+                  },
+                  "title": "Response List Questions Api V1 Lessons  Lesson Id  Questions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/{question_id}/media": {
+      "get": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "Question Media",
+        "description": "The voice note or sign-language video of a question (staff only: never public).",
+        "operationId": "question_media_api_v1_questions__question_id__media_get",
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Question Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The recording",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "audio/webm": {},
+              "video/webm": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/{question_id}": {
+      "patch": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "Set Question Status",
+        "description": "Mark a question answered or dismissed, or open again (staff).",
+        "operationId": "set_question_status_api_v1_questions__question_id__patch",
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{12}$",
+              "title": "Question Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Bearer <staff token>",
+              "default": "",
+              "title": "Authorization"
+            },
+            "description": "Bearer <staff token>"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionStatus"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -2969,6 +3230,69 @@
   },
   "components": {
     "schemas": {
+      "Body_ask_question_api_v1_lessons__lesson_id__questions_post": {
+        "properties": {
+          "time": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Time",
+            "description": "Seconds into the video"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "voice",
+              "sign"
+            ],
+            "title": "Kind",
+            "description": "text, voice or sign"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text",
+            "description": "The question in writing (needed for kind=text; up to 2000 letters)"
+          },
+          "caption": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caption",
+            "description": "The caption shown at that moment (optional, up to 500 letters)"
+          },
+          "media": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media",
+            "description": "Voice note (audio/*) for kind=voice, sign video (video/*) for kind=sign"
+          }
+        },
+        "type": "object",
+        "required": [
+          "time",
+          "kind"
+        ],
+        "title": "Body_ask_question_api_v1_lessons__lesson_id__questions_post"
+      },
       "Body_upload_captions_api_v1_lessons__lesson_id__captions_post": {
         "properties": {
           "lang": {
@@ -3891,6 +4215,143 @@
         ],
         "title": "PublishEdit"
       },
+      "Question": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "lesson_id": {
+            "type": "string",
+            "title": "Lesson Id"
+          },
+          "time": {
+            "type": "number",
+            "title": "Time",
+            "description": "Seconds into the video the question is about"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "voice",
+              "sign"
+            ],
+            "title": "Kind",
+            "description": "text, voice (a voice note) or sign (a sign-language video)"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "caption": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caption",
+            "description": "The caption shown at that moment, if any"
+          },
+          "media_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Type",
+            "description": "MIME type of the voice note or sign video"
+          },
+          "media_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Url",
+            "description": "Staff-only address of the voice note or sign video"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "answered",
+              "dismissed"
+            ],
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lesson_id",
+          "time",
+          "kind",
+          "text",
+          "caption",
+          "media_type",
+          "media_url",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Question"
+      },
+      "QuestionCreated": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "QuestionCreated"
+      },
+      "QuestionStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "answered",
+              "dismissed"
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "QuestionStatus"
+      },
       "RebuildRequest": {
         "properties": {
           "steps": {
@@ -4305,7 +4766,8 @@
                 "captions.reviewed",
                 "caption.reported",
                 "certificate.issued",
-                "certificate.revoked"
+                "certificate.revoked",
+                "question.asked"
               ]
             },
             "type": "array",

@@ -880,6 +880,132 @@ and the translation boxes are `<fidel-textarea lang>`; the "Report a caption
 problem" dialog's correction box is a `<fidel-textarea>`.
 <!-- PACKAGE FORMS END -->
 
+<!-- PACKAGE E START -->
+#### More components (Package E): lesson formats, questions, notes, quiz, callouts, tables
+
+Every learner chooses **how** they take part (watching, listening, reading,
+sign language, simple words; asking in writing, by voice or in sign language)
+and is never asked why. All of them are in the "Package E" section of
+[demo/components.html](demo/components.html). Text in English or Amharic
+(`ui-lang="en|am"`); events bubble and carry no personal data.
+
+```html
+<fidel-skip-link target="#lesson"></fidel-skip-link>   <!-- first thing in <body> -->
+<fidel-lesson-formats for="lesson-player"></fidel-lesson-formats>
+<div id="lesson">
+  <fidel-player id="lesson-player" lesson="https://FIDEL-HOST/api/v1/lessons/ID"></fidel-player>
+</div>
+<fidel-question for="lesson-player" api="https://FIDEL-HOST/api/v1"></fidel-question>
+<fidel-notes for="lesson-player" lesson-id="html-basics"></fidel-notes>
+<fidel-progress for="lesson-player" label="Lesson 3"></fidel-progress>
+<fidel-mark-complete for="lesson-player" lesson-id="html-basics"></fidel-mark-complete>
+```
+
+| Tag | Attributes | Events |
+|---|---|---|
+| `<fidel-lesson-formats>` | `for` (player id), `audio` (an audio-only file if the lesson has none), `heading-level`, `ui-lang` | `fidel-lesson-format` `{ format }` |
+| `<fidel-question>` | `for`, `api` (send to the Fidel server; without it the page gets the question), `lesson` (id; default from the player's `lesson` URL), `ui-lang` | `fidel-question-ready` `{ time, kind, text \| blob, mimeType }`, `fidel-question-sent` `{ lessonId, time, kind }` |
+| `<fidel-voice-note>` | `label`, `max-seconds` (default 120), `upload-url` (POST multipart field `audio`), `no-send`, `heading-level`, `ui-lang` | `fidel-voice-note-ready` `{ blob, mimeType, durationSeconds }`, `fidel-voice-note-recorded` `{ mimeType, durationSeconds, size }` |
+| `<fidel-callout>` | `type` (`tip`, `warning`, `example`, `note`), `heading`, `heading-level` (default 3), `ui-lang`; content = the children | none |
+| `<fidel-table>` | `sortable="true"`, `show-warnings` (visible note when the `<caption>` is missing), `ui-lang`; wraps a real `<table>` | `fidel-table-sort` `{ column, direction }` |
+| `<fidel-notes>` | `for`, `lesson-id` (notes are kept per id), `heading-level`, `title-text` (first line of the .txt), `ui-lang` | `fidel-notes-change` `{ count }` |
+| `<fidel-quiz>` | `questions` (JSON) or child markup, `label`, `time-limit` (seconds; none by default), `heading-level`, `ui-lang` | `fidel-quiz-done` `{ score, total }`, `fidel-quiz-own-answer` `{ question, kind, text \| blob, mimeType }` |
+| `<fidel-progress>` | `for`, `label`, `ui-lang` | none (listens to `fidel-progress` and `fidel-complete`) |
+| `<fidel-mark-complete>` | `lesson-id`, `for`, `manual` (usable before the end), `ui-lang` | `fidel-mark-complete` `{ done }` |
+| `<fidel-skip-link>` | `target` (CSS selector, default `#main`), `label` (default "Skip to the lesson") | none |
+| `<fidel-toggletip>` | `label` (the button text); content = the explanation | none |
+
+- **`<fidel-lesson-formats>`**: buttons (`aria-pressed`) for Watch (video and
+  captions), Listen (audio and transcript, low data), Read (the lesson
+  document: web page, PDF, Braille), Sign language (the signer window docked
+  beside the video, large) and Simple words (every `<fidel-simple-mode>` on the
+  page on). Only formats the lesson has are offered: Listen needs the lesson's
+  audio-only file and captions, Read the lesson document, Sign language the
+  sign video, Simple words a `<fidel-simple-mode>`. Each button shows the
+  download size (asked with a HEAD request; nothing is downloaded). In Listen
+  and Read the `<fidel-player>` is taken out of the page (a comment keeps its
+  place), so **no video is downloaded**; it comes back for the other formats.
+  The choice is remembered (`lessonFormat` in the shared preferences) and
+  announced ("Listen mode: audio and transcript.").
+- **`<fidel-question>`**: "Ask about this moment" opens a dialog with the
+  video time (a `<fidel-input format="mmss">`, editable) and the caption shown
+  then. Three ways to ask, chosen with radio buttons: Write
+  (`<fidel-textarea>`), Voice note (`<fidel-voice-note>`) or Sign language
+  (`<fidel-sign-answer>`). The video pauses while the dialog is open and plays
+  on after. Offline: kept on the phone (localStorage `fidel-question-queue`;
+  recordings up to about 2 MB) and sent when the phone is online again.
+- **`<fidel-voice-note>`**: the microphone is asked for only after "Start
+  recording"; a "Recording" banner with the time, Stop, play back, Record
+  again, the size in MB before Send. The microphone goes off when recording
+  stops. **No speech-to-text**: the recording is never sent to a cloud
+  service. No microphone, permission refused or not https: the reason in words
+  and a file picker (`accept="audio/*" capture`) for the phone's own recorder.
+- **`<fidel-callout>`**: a real heading with the type in words before it
+  ("Warning: …"), a decorative icon (`aria-hidden`), and a border style and
+  background per type, so the type never depends on colour.
+- **`<fidel-table>`**: requires a `<caption>` (console warning; visible with
+  `show-warnings`), adds `scope` to every `<th>` and explicit table roles. When
+  the table is narrow (a phone, 400 % zoom; CSS container query) each row is a
+  card of "Header: value" pairs instead of sideways scrolling. Sorting: header
+  buttons, `aria-sort`, "Sorted by Length, ascending." announced.
+- **`<fidel-notes>`**: "Add a note at 1:23" (time filled in, editable), notes
+  as buttons "Play from 1:23: …", Edit, Delete with Undo (no confirm dialog),
+  "Download my notes (.txt)". Kept **only in this browser**
+  (localStorage `fidel-notes:<lesson-id>`).
+- **`<fidel-quiz>`**: each question a `<fieldset>`/`<legend>` with radio
+  buttons (or checkboxes when the answer is a list). "Check answer" shows
+  "Correct." or "Not quite: the answer is …" and the explanation next to the
+  question and moves focus there. Optional `time-limit`: a banner with the time
+  left, a warning 1 minute before the end, "Add 5 minutes" and "Switch the
+  timer off"; the timer starts when the learner enters the quiz. Optional
+  "Answer in your own way" per question (`"ownWay": true` or `data-own-way`):
+  writing, voice note or sign language, sent to the page and not scored. The
+  score in words and as a `<progress>`. Child markup:
+  `<div data-question data-answer="1" data-explanation="…"><p>Question</p><ul><li>A</li><li>B</li></ul></div>`
+  (`data-answer="0,2"` = choose all that apply).
+- **`<fidel-progress>`**: a `<progress>` and "40% watched" from the player's
+  `fidel-progress` events; not announced by itself, "Say my progress"
+  announces it.
+- **`<fidel-mark-complete>`**: a toggle button (`aria-pressed`), usable once
+  the player sends `fidel-complete` (or always with `manual`); remembered in
+  this browser (`fidel-complete:<lesson-id>`); "Lesson marked complete."
+- **`<fidel-skip-link>`**: hidden until focused; moves focus to the target
+  (adds `tabindex="-1"` when needed). Put it first in `<body>`.
+- **`<fidel-toggletip>`**: an info button; the explanation opens on click,
+  tap, Enter or Space (never hover only), is read through a live region, and
+  closes with Escape or a click elsewhere.
+- **Reading font** (E8, in `<fidel-display-prefs>`): "Default font" or
+  "Easy-read font (Atkinson Hyperlegible)" for Latin text; Ethiopic text stays
+  in Noto Sans Ethiopic. The font (17.2 KB, SIL OFL 1.1) is self-hosted next to
+  `fidel.js` and downloaded only when chosen. Remembered in
+  `fidel-display-font`; class `fidel-dp-font-easy`.
+
+Questions REST API (Level 2):
+
+```bash
+# A learner's question (public; lesson must be published). 201 {"id": ...}
+curl -X POST https://FIDEL-HOST/api/v1/lessons/ID/questions \
+  -F time=83.5 -F kind=text -F "text=What does this loop do?"
+curl -X POST https://FIDEL-HOST/api/v1/lessons/ID/questions \
+  -F time=83.5 -F kind=voice -F "media=@question.webm;type=audio/webm"
+# Staff: open questions, a recording (never public), then mark one answered or dismissed
+curl -H "Authorization: Bearer $TOKEN" "https://FIDEL-HOST/api/v1/lessons/ID/questions?status=open"
+curl -H "Authorization: Bearer $TOKEN" -o q.webm https://FIDEL-HOST/api/v1/questions/QUESTION_ID/media
+curl -X PATCH -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"status": "answered"}' https://FIDEL-HOST/api/v1/questions/QUESTION_ID
+```
+
+`kind` is `text` (needs `text`, up to 2000 letters), `voice` (needs `media`,
+an `audio/*` file) or `sign` (needs `media`, a `video/*` file). Recordings up to
+25 MB (`FIDEL_QUESTION_MEDIA_MB`) are kept in `data/questions/<lesson id>/`,
+outside the public `/files/`, and deleted with the lesson. No name, account or
+IP address is stored. Bad input: 400 with the reason in words. Abuse limit: 20
+questions per address per hour (`FIDEL_QUESTIONS_PER_HOUR`), counted in memory.
+Webhook event: `question.asked` `{ lesson_id, question_id, kind, time }`. Staff
+see the questions on the lesson's Studio page under "Learner questions", play
+the recordings, and mark them "Answered" or "Dismiss".
+<!-- PACKAGE E END -->
+
 ## Level 2: REST API
 
 Interactive docs at `/docs` (Swagger UI); the spec is in [openapi.yaml](openapi.yaml) and [openapi.json](openapi.json)
