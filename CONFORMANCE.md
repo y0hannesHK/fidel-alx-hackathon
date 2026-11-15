@@ -158,6 +158,30 @@ depends on what staff add (explained).
 Notes per package, for the WCAG criteria each component touches.
 
 <!-- PACKAGE A START -->
+**Package A: reading and understanding** (`<fidel-code-block>`, `<fidel-code-snapshots>`,
+`<fidel-described-image>`, `<fidel-word>`, `<fidel-read-aloud>`, `<fidel-steps>`,
+`<fidel-simple-mode>`). Automated: axe 0 critical/serious at 100/200/400 % zoom, with
+every dialog and description open and with an Amharic interface; no sideways
+scrolling at 320 px; keyboard path (e2e/tests/components-a.spec.js). Manual
+screen-reader and Braille checks: not yet done.
+
+| Criterion | Status | Notes |
+|---|---|---|
+| 1.1.1 Non-text Content | Supports | `<fidel-described-image>` always has `alt` (empty plus a warning if the author forgot it, never the file name) and a long description in real text. Code is never an image. Line numbers are hidden from screen readers. |
+| 1.3.1 Info and Relationships | Supports | Real `<figure>`/`<figcaption>`, `<details>`, `<pre><code>`, `<ol>`, headings for steps, `<label>` for the checkbox, `<dialog>` named by its heading. |
+| 1.4.1 Use of Color | Supports | Current snapshot: bar + tint + the word "Now". Read-aloud: background + underline. Toggles show On/Off text; disabled buttons are dashed. |
+| 1.4.3 / 1.4.11 Contrast | Supports | Text 4.5:1 or more (accent #0b4f9c 8.3:1); control borders and focus 3:1 or more. |
+| 1.4.4 / 1.4.10 Resize, Reflow | Supports | Sizes in rem; no sideways scrolling at 320 px. Code longer than the screen scrolls inside its own focusable box (code needs two-dimensional layout, an allowed exception). |
+| 1.4.12 Text Spacing | Partially supports | No fixed heights on text; not yet tested with a text-spacing bookmarklet. |
+| 2.1.1 Keyboard / 2.1.2 No Keyboard Trap | Supports | All real buttons, `<details>`, checkbox; line view uses arrow keys (one Tab stop); Escape closes dialogs and stops reading. Tested by e2e. |
+| 2.2.2 Pause, Stop, Hide | Supports | Reading aloud starts only on Listen, and Stop / Escape stop it. |
+| 2.4.3 Focus Order / 2.4.11 Focus Not Obscured | Supports | Focus moves to the step heading on Previous/Next; dialogs return focus to the word; nothing is sticky. |
+| 2.4.7 Focus Visible | Supports | 3 px accent outline plus a white ring. |
+| 2.5.8 Target Size | Supports | Buttons at least 44 × 44 px; the dotted word button is inline text (allowed exception). |
+| 3.1.2 Language of Parts | Supports | `lang="am"` on Amharic meanings, labels and step text; code is `lang="en"`. Amharic interface text needs review by a fluent speaker (BACKLOG). |
+| 3.1.3 / 3.1.5 Unusual Words, Reading Level (AAA, extra) | Partially supports | `<fidel-word>` and `<fidel-simple-mode>` give meanings and simpler text; their content is written by people. |
+| 4.1.2 Name, Role, Value | Supports | `aria-pressed` on toggles, `aria-expanded` on Read line by line, `aria-current="time"` on the current snapshot. |
+| 4.1.3 Status Messages | Supports | Shared announcer: "Copied", "Code for 1:23 is ready" (once per snapshot), steps done count, "Simple version shown". |
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->
