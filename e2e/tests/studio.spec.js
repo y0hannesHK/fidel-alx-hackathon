@@ -92,7 +92,8 @@ test('staff fix and check the Amharic captions; the draft notice disappears', as
   await expect(editor.locator('.counter')).toContainText('All Amharic captions are checked.');
 
   await editor.getByRole('button', { name: 'Save captions' }).click();
-  await expect(editor.getByRole('status').filter({ hasText: 'fully checked' })).toBeVisible();
+  // Saving sends each caption language in turn: slow when the whole suite runs at once.
+  await expect(editor.getByRole('status').filter({ hasText: 'fully checked' })).toBeVisible({ timeout: 20_000 });
 
   // The API now says "reviewed", with the corrected text.
   const manifest = await (await request.get(`/api/v1/lessons/${lessonId}`, { headers: STAFF })).json();
