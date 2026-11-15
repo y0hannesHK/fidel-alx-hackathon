@@ -56,6 +56,25 @@
         chapters="/demo/media/chapters.vtt"
         lang="en">
       </fidel-player>
+      <fidel-code-snapshots for="a-lesson-player">
+        <fidel-code-block at="0:10" language="html" label="Step 1: a heading">
+<pre><code>&lt;h1&gt;My first page&lt;/h1&gt;</code></pre>
+        </fidel-code-block>
+        <fidel-code-block at="0:59" language="html" label="Step 2: a paragraph">
+<pre><code>&lt;h1&gt;My first page&lt;/h1&gt;
+&lt;p&gt;Hello, world.&lt;/p&gt;</code></pre>
+        </fidel-code-block>
+        <fidel-code-block at="2:10" language="html" label="Step 3: an image with alt text">
+<pre><code>&lt;h1&gt;My first page&lt;/h1&gt;
+&lt;p&gt;Hello, world.&lt;/p&gt;
+&lt;img src="map.png" alt="Map of Addis Ababa"&gt;</code></pre>
+        </fidel-code-block>
+      </fidel-code-snapshots>
+      <p>Try it:</p>
+      <ul>
+        <li>Play the video: when it reaches a snapshot's time, that snapshot shows "Now" and a screen reader hears "Code for 0:59 is ready" (once).</li>
+        <li>Press Play from 2:10 on the last snapshot: the video jumps there and that snapshot becomes "Now" (no announcement, because you chose it).</li>
+      </ul>
     </section>
     <!-- PACKAGE A END -->
 

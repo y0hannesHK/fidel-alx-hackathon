@@ -4,9 +4,12 @@
 //   if (!customElements.get('fidel-example')) customElements.define('fidel-example', FidelExample);
 import './components.css';
 import { FidelCodeBlock } from './code-block.js';
+import { FidelCodeSnapshots } from './code-snapshots.js';
 
+// Order matters: code blocks first, so snapshots can move finished blocks.
 const TAGS = [
   ['fidel-code-block', FidelCodeBlock],
+  ['fidel-code-snapshots', FidelCodeSnapshots],
 ];
 
 for (const [name, element] of TAGS) {

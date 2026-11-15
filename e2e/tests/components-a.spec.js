@@ -93,6 +93,33 @@ test('code block: copy, line by line, symbols, play from', async ({ page, contex
   await expect.poll(() => page.evaluate(() => document.querySelector('#a-lesson-player video').currentTime)).toBeGreaterThanOrEqual(83);
 });
 
+test('code snapshots: time order, Now follows the video, announced once, quiet after a seek', async ({ page }) => {
+  await open(page);
+  const snapshots = page.locator('fidel-code-snapshots');
+  const items = snapshots.locator('.fidel-code-snapshots-item');
+  await expect(items).toHaveCount(3);
+  await expect(items.nth(0)).toContainText('Step 1');
+  await expect(page.locator('#a-lesson-player .fidel-panel')).toBeAttached({ timeout: 20_000 });
+
+  // Play from here: jumps, marks "Now", no announcement (the learner chose it).
+  await items.nth(2).getByRole('button', { name: 'Play from 2:10' }).click();
+  await expect(items.nth(2)).toHaveAttribute('aria-current', 'time');
+  await expect(items.nth(2).getByText('Now', { exact: true })).toBeVisible();
+  await expect(items.nth(0).getByText('Now', { exact: true })).toBeHidden();
+
+  // Playing across 0:59 announces "Code for 0:59 is ready".
+  await page.evaluate(() => {
+    const video = document.querySelector('#a-lesson-player video');
+    video.muted = true;
+    video.currentTime = 57.5;
+    return video.play();
+  });
+  const polite = page.locator('.fidel-announcer[aria-live="polite"]');
+  await expect(polite).toHaveText('Code for 0:59 is ready', { timeout: 10_000 });
+  await expect(items.nth(1)).toHaveAttribute('aria-current', 'time');
+  await page.evaluate(() => document.querySelector('#a-lesson-player video').pause());
+});
+
 test('Package A keyboard: Tab reaches every control and never gets stuck', async ({ page }) => {
   await open(page);
   await page.locator('#package-a-title').evaluate((el) => { el.tabIndex = -1; el.focus(); });
