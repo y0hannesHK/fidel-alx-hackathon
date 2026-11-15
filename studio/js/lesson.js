@@ -86,7 +86,9 @@ export async function lessonPage(main, lessonId) {
     refreshPreview();
   }));
   main.append(signSection(lessonId, manifest));
-  heading.focus();
+  // Move focus to the heading when the page is ready, but never take it away
+  // from a field the user is already working in while the page loads.
+  if (!main.contains(document.activeElement) || document.activeElement === main) heading.focus();
 }
 
 // --- Progress and "run again" --------------------------------------------------
