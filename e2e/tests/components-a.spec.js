@@ -187,6 +187,72 @@ test('word: reads the glossary format when there are no attributes', async ({ pa
   await expect(dialog.getByText('የግርጌ ጽሑፍ')).toBeVisible();
 });
 
+// A stand-in for the browser's voices: an English voice only, each sentence takes 400 ms.
+async function fakeSpeech(page) {
+  await page.addInitScript(() => {
+    const timers = [];
+    window.__spoken = [];
+    window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        getVoices: () => [{ lang: 'en-US', name: 'Test voice' }],
+        addEventListener() {}, removeEventListener() {},
+        speak(u) {
+          window.__spoken.push(u.text);
+          timers.push(setTimeout(() => u.onstart?.(), 10));
+          timers.push(setTimeout(() => u.onend?.(), 400));
+        },
+        cancel() { timers.splice(0).forEach(clearTimeout); },
+      },
+    });
+  });
+}
+
+test('read aloud: Listen reads sentence by sentence with a highlight; Escape stops', async ({ page }) => {
+  await fakeSpeech(page);
+  await open(page);
+  const [en, am] = [page.locator('fidel-read-aloud').nth(0), page.locator('fidel-read-aloud').nth(1)];
+  await expect(en.getByText('Computer voice')).toBeVisible();
+  // No Amharic voice: no button, and it says so in words.
+  await expect(am.getByRole('button')).toHaveCount(0);
+  await expect(am.getByText('Listening is not available')).toBeVisible();
+
+  const highlighted = () => page.evaluate(() => {
+    const h = CSS.highlights.get('fidel-read-aloud');
+    return h ? [...h][0].toString() : null;
+  });
+  // Nothing speaks by itself (Able Player's silent " " warm-up does not count).
+  expect(await page.evaluate(() => window.__spoken.filter((t) => t.trim()).length)).toBe(0);
+  await en.getByRole('button', { name: 'Listen' }).click();
+  await expect(en.getByRole('button', { name: 'Stop' })).toBeFocused();
+  await expect.poll(highlighted).toBe('A web page is a document.');
+  await expect.poll(highlighted).toBe('Your browser asks a server for it.');
+  await page.keyboard.press('Escape');
+  await expect(en.getByRole('button', { name: 'Listen' })).toBeVisible();
+  expect(await highlighted()).toBeNull();
+});
+
+test('read aloud: a recording is used when there is no voice, loaded only on Listen', async ({ page }) => {
+  await fakeSpeech(page);
+  const requests = [];
+  page.on('request', (r) => { if (r.url().includes('test-reading.mp3')) requests.push(r.url()); });
+  await open(page);
+  await page.evaluate(() => {
+    const el = document.createElement('fidel-read-aloud');
+    el.setAttribute('lang', 'om');
+    el.setAttribute('audio', '/demo/media/test-reading.mp3');
+    el.innerHTML = '<p lang="om">Akkam jirta?</p>';
+    document.getElementById('a-read-aloud').after(el);
+  });
+  const el = page.locator('fidel-read-aloud[lang="om"]');
+  await expect(el.getByText('Recorded voice')).toBeVisible();
+  await page.waitForTimeout(300);
+  expect(requests).toEqual([]);
+  await el.getByRole('button', { name: 'Listen' }).click();
+  await expect.poll(() => requests.length).toBeGreaterThan(0);
+});
+
 test('Package A keyboard: Tab reaches every control and never gets stuck', async ({ page }) => {
   await open(page);
   await page.locator('#package-a-title').evaluate((el) => { el.tabIndex = -1; el.focus(); });
