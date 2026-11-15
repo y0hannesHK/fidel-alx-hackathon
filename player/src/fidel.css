@@ -2,15 +2,25 @@
    Colours: every text/background pair here is at least 4.5:1, and every
    control border or focus ring at least 3:1 (WCAG 1.4.3 / 1.4.11). */
 
+fidel-player,
+fidel-job-card,
+fidel-session-viewer,
+fidel-certificate {
+  --fidel-ink: #212529;
+  --fidel-paper: #ffffff;
+  --fidel-brand: #db3e3e;
+  --fidel-accent: #af3232;
+  --fidel-accent-hover: #8c2828;
+  --fidel-accent-soft: #f8d8d8;
+  --fidel-border: #5c5c5c;   /* 6.7:1 on white */
+  --fidel-focus: #ffbf47;
+  font-family: "Fidel Poppins", "Segoe UI", sans-serif;
+  color: var(--fidel-ink);
+}
+
 fidel-player {
   display: block;
   max-width: 100%;
-  --fidel-ink: #1a1a1a;
-  --fidel-paper: #ffffff;
-  --fidel-accent: #0b4f9c;   /* 8.3:1 on white */
-  --fidel-border: #5c5c5c;   /* 6.7:1 on white */
-  --fidel-focus: #ffbf47;
-  color: var(--fidel-ink);
 }
 
 .fidel {
@@ -102,12 +112,15 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
 .fidel-panel,
 .fidel-transcript {
   border: 1px solid var(--fidel-border);
-  border-radius: 8px;
+  border-top: 3px solid var(--fidel-brand);
+  border-radius: 6px;
   padding: 0.75rem;
   background: var(--fidel-paper);
 }
 .fidel-heading {
+  color: var(--fidel-accent);
   font-size: 1.25rem;
+  font-weight: 600;
   margin: 0 0 0.75rem;
 }
 .fidel-label {
@@ -132,12 +145,12 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
   font: inherit;
   color: var(--fidel-accent);
   background: var(--fidel-paper);
-  border: 2px solid var(--fidel-accent);
+  border: 2px solid var(--fidel-brand);
   border-radius: 6px;
   cursor: pointer;
 }
 .fidel-button:hover {
-  background: #e8f0fa;
+  background: var(--fidel-accent-soft);
 }
 .fidel-button[aria-pressed="true"] {
   color: var(--fidel-paper);
@@ -198,7 +211,7 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
   width: 1.5rem;
   height: 1.5rem;
   margin: 0 0.5rem 0 0;
-  accent-color: var(--fidel-accent);
+  accent-color: var(--fidel-brand);
   flex: none;
 }
 .fidel-radio label {
@@ -316,9 +329,9 @@ fidel-job-card :focus-visible {
   box-shadow: 0 0 0 5px #1a1a1a;
 }
 .fidel-job {
-  --fidel-accent: #0b4f9c;
   --fidel-paper: #ffffff;
   border: 1px solid #5c5c5c;
+  border-top: 3px solid var(--fidel-brand);
   border-radius: 8px;
   padding: 1rem;
   background: #fff;
@@ -326,8 +339,10 @@ fidel-job-card :focus-visible {
   overflow-wrap: anywhere;   /* long words and emails never force sideways scrolling */
 }
 .fidel-job-title {
+  color: var(--fidel-accent);
   margin: 0 0 0.75rem;
   font-size: 1.4rem;
+  font-weight: 600;
   line-height: 1.25;
 }
 .fidel-job h3, .fidel-job h4, .fidel-job h5 {
@@ -347,7 +362,7 @@ fidel-job-card :focus-visible {
   .fidel-job-facts { grid-template-columns: 1fr; }
   .fidel-job-facts dd { margin-bottom: 0.5rem; }
 }
-.fidel-job a { color: #0b4f9c; }
+.fidel-job a { color: var(--fidel-accent); }
 .fidel-job-accommodations { padding-inline-start: 1.25rem; margin: 0; }
 .fidel-job-accommodations li { margin: 0.25rem 0; }
 .fidel-job-accommodations li::marker { content: "✓  "; font-weight: 700; }
@@ -396,7 +411,7 @@ fidel-session-viewer { display: block; }
 .fidel-chat :focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; box-shadow: 0 0 0 5px #1a1a1a; }
 .fidel-chat-count { margin: 0 0 0.5rem; color: #444; }
 .fidel-check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; margin-bottom: 0.5rem; }
-.fidel-check input { width: 1.5rem; height: 1.5rem; flex: none; accent-color: #0b4f9c; }
+.fidel-check input { width: 1.5rem; height: 1.5rem; flex: none; accent-color: var(--fidel-brand); }
 .fidel-chat-list {
   list-style: none; margin: 0; padding: 0;
   max-height: 32rem; overflow-y: auto;
@@ -405,13 +420,13 @@ fidel-session-viewer { display: block; }
 .fidel-chat-message {
   display: block; width: 100%; min-height: 44px; padding: 0.5rem;
   text-align: start; font: inherit; line-height: 1.45; white-space: pre-line;
-  color: #1a1a1a; background: #fff; border: 1px solid #c4c8cf; border-radius: 6px; cursor: pointer;
+  color: var(--fidel-ink); background: #fff; border: 1px solid #c4c8cf; border-radius: 6px; cursor: pointer;
   overflow-wrap: anywhere;
 }
-.fidel-chat-message:hover { background: #e8f0fa; }
-.fidel-chat-time { font-weight: 700; color: #0b4f9c; }
+.fidel-chat-message:hover { background: var(--fidel-accent-soft); }
+.fidel-chat-time { font-weight: 700; color: var(--fidel-accent); }
 .fidel-chat-name { font-weight: 700; }
-.fidel-chat-past .fidel-chat-message { border-left: 5px solid #0b4f9c; }  /* already said at this point */
+.fidel-chat-past .fidel-chat-message { border-left: 5px solid var(--fidel-brand); }  /* already said at this point */
 .fidel-sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -427,11 +442,11 @@ fidel-certificate :focus-visible { outline: 3px solid #ffbf47; outline-offset: 2
 }
 .fidel-cert-valid { border-color: #1e7b34; }
 .fidel-cert-revoked, .fidel-cert-missing { border-color: #a00020; }
-.fidel-cert-status { margin: 0 0 0.75rem; font-size: 1.2rem; }
+.fidel-cert-status { margin: 0 0 0.75rem; color: var(--fidel-accent); font-size: 1.2rem; font-weight: 600; }
 .fidel-cert-valid .fidel-cert-status { color: #0f4d1f; }
 .fidel-cert-revoked .fidel-cert-status, .fidel-cert-missing .fidel-cert-status { color: #6e0016; }
 .fidel-cert-facts { display: grid; grid-template-columns: minmax(6rem, max-content) 1fr; gap: 0.35rem 1rem; margin: 0 0 0.75rem; }
 .fidel-cert-facts dt { font-weight: 700; }
 .fidel-cert-facts dd { margin: 0; }
 @media (max-width: 24rem) { .fidel-cert-facts { grid-template-columns: 1fr; } }
-.fidel-cert a { color: #0b4f9c; font-weight: 600; }
+.fidel-cert a { color: var(--fidel-accent); font-weight: 600; }

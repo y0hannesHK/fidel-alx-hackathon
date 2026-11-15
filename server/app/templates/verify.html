@@ -7,14 +7,17 @@
 <meta name="robots" content="noindex">
 <title>Certificate check – ALX Digital Bridge</title>
 <style>
+@font-face { font-family: "Fidel Poppins"; src: url("/embed/v1/fonts/poppins-400.woff2") format("woff2"); font-weight: 400; }
+@font-face { font-family: "Fidel Poppins"; src: url("/embed/v1/fonts/poppins-700.woff2") format("woff2"); font-weight: 700; }
 @font-face { font-family: "Fidel Ethiopic"; src: url("/embed/v1/fonts/noto-sans-ethiopic-400.woff2") format("woff2"); unicode-range: U+1200-139F, U+2D80-2DDF, U+AB00-AB2F; }
 * { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 1.05rem; line-height: 1.5; color: #1a1a1a; background: #f5f6f8; }
+:root { --fidel-brand: #db3e3e; --fidel-accent: #af3232; --fidel-accent-hover: #8c2828; }
+body { margin: 0; font-family: "Fidel Poppins", "Segoe UI", sans-serif; font-size: 1.05rem; line-height: 1.5; color: #212529; background: #f8f9fa; }
 :lang(am) { font-family: "Fidel Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif; line-height: 1.7; }
 main { max-width: 40rem; margin: 0 auto; padding: 1rem; }
-.card { background: #fff; border: 1px solid #c4c8cf; border-radius: 8px; padding: 1rem 1.25rem; }
-h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 1rem; }
-h2 { font-size: 1.2rem; margin: 1.5rem 0 0.5rem; }
+.card { background: #fff; border: 1px solid #dee2e6; border-top: 3px solid var(--fidel-brand); border-radius: 6px; padding: 1rem 1.25rem; }
+h1 { color: var(--fidel-accent); font-size: 1.6rem; line-height: 1.25; margin: 0 0 1rem; font-weight: 600; }
+h2 { color: var(--fidel-accent); font-size: 1.2rem; margin: 1.5rem 0 0.5rem; font-weight: 600; }
 .status { padding: 0.75rem 1rem; border-radius: 6px; font-weight: 700; font-size: 1.15rem; border: 3px solid; }
 .status p { margin: 0.2rem 0; }
 .status.ok { background: #e6f4ea; border-color: #1e7b34; color: #0f4d1f; }
@@ -25,9 +28,10 @@ dd { margin: 0; overflow-wrap: anywhere; }
 @media (max-width: 30rem) { dl { grid-template-columns: 1fr; } dd { margin-bottom: 0.5rem; } }
 label { display: block; font-weight: 700; margin-bottom: 0.25rem; }
 input { width: 100%; font: inherit; padding: 0.5rem; min-height: 44px; border: 2px solid #5c5c5c; border-radius: 6px; }
-button { font: inherit; font-weight: 600; min-height: 44px; padding: 0.5rem 1rem; color: #fff; background: #0b4f9c; border: 2px solid #0b4f9c; border-radius: 6px; cursor: pointer; }
-a { color: #0b4f9c; }
-:focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+button { font: inherit; font-weight: 600; min-height: 44px; padding: 0.5rem 1rem; color: #fff; background: var(--fidel-accent); border: 2px solid var(--fidel-brand); border-radius: 6px; cursor: pointer; }
+button:hover { background: var(--fidel-accent-hover); border-color: var(--fidel-accent-hover); }
+a { color: var(--fidel-accent); }
+:focus-visible { outline: 3px solid var(--fidel-brand); outline-offset: 2px; }
 #copied:empty { display: none; }
 </style>
 </head>

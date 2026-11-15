@@ -7,25 +7,12 @@
 
   <!-- Fidel install: these two lines plus the <fidel-player> tag below. -->
   <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <link rel="stylesheet" href="savanna.css">
   <script src="/embed/v1/fidel.js" defer></script>
-
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; color: #1a1a1a; background: #f5f6f8; }
-    a { color: #0b4f9c; }
-    :focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
-    .skip-link { position: absolute; left: 0.5rem; top: -4rem; padding: 0.75rem 1rem; background: #fff; z-index: 10; }
-    .skip-link:focus { top: 0.5rem; }
-    header { background: #0a1f44; color: #fff; padding: 0.75rem 1rem; }
-    header a { color: #fff; font-weight: 700; font-size: 1.25rem; text-decoration: none; }
-    main { max-width: 960px; margin: 0 auto; padding: 1rem; }
-    h1 { font-size: 1.75rem; line-height: 1.25; }
-    .card { background: #fff; border: 1px solid #d0d4da; border-radius: 8px; padding: 1rem; }
-  </style>
 </head>
-<body>
+<body class="mock-shell">
   <a class="skip-link" href="#main">Skip to lesson</a>
-  <header><a href="/demo/savanna-mock/">Savanna <span>(mock)</span></a></header>
+  <header><a class="brand" href="/demo/savanna-mock/">Savanna <span>(mock)</span></a></header>
   <main id="main" tabindex="-1">
     <h1 id="lesson-title">Lesson</h1>
     <section class="card" aria-labelledby="video-heading">

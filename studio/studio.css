@@ -1,48 +1,65 @@
-/* Fidel Studio styles. All text/background pairs are at least 4.5:1,
-   controls and focus rings at least 3:1. */
+/* Fidel Studio styles use the Savanna-inspired palette and keep accessible
+   contrast for text, controls, and focus indicators. */
 
+:root {
+  --fidel-brand: #db3e3e;
+  --fidel-accent: #af3232;
+  --fidel-accent-hover: #8c2828;
+  --fidel-accent-soft: #f8d8d8;
+  --fidel-ink: #212529;
+  --fidel-muted: #565c63;
+  --fidel-line: #dee2e6;
+  --fidel-canvas: #f8f9fa;
+}
 *, *::before, *::after { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Fidel Poppins", "Segoe UI", sans-serif;
   font-size: 1rem;
   line-height: 1.5;
-  color: #1a1a1a;
-  background: #f5f6f8;
+  color: var(--fidel-ink);
+  background: var(--fidel-canvas);
 }
 :lang(am) {
   font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif;
   line-height: 1.6;
 }
-a { color: #0b4f9c; }
-:focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+a { color: var(--fidel-accent); }
+:focus-visible { outline: 3px solid var(--fidel-brand); outline-offset: 2px; }
 main:focus, h1:focus { outline: none; }
 
 .skip-link { position: absolute; left: 0.5rem; top: -4rem; padding: 0.75rem 1rem; background: #fff; z-index: 10; }
 .skip-link:focus { top: 0.5rem; }
 
 .site-header {
+  position: sticky; top: 0; z-index: 10;
   display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
-  padding: 0.5rem 1rem; background: #0a1f44; color: #fff;
+  padding: 0.5rem 1rem; background: #fff; color: var(--fidel-ink);
+  border-bottom: 1px solid var(--fidel-line);
+  box-shadow: 0 2px 8px rgba(33, 37, 41, 0.06);
 }
 .brand { margin: 0; font-weight: 700; font-size: 1.25rem; }
-.site-header .button.secondary { color: #fff; background: transparent; border-color: #fff; }
+.brand :lang(am) { color: var(--fidel-accent); }
 
-main { max-width: 1200px; margin: 0 auto; padding: 1rem; }
-h1 { font-size: 1.75rem; line-height: 1.25; margin: 0.5rem 0 1rem; }
-h2 { font-size: 1.35rem; margin: 0 0 0.75rem; }
+main { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+h1 { color: var(--fidel-accent); font-size: 1.75rem; line-height: 1.25; margin: 0.5rem 0 1rem; }
+h2 { color: var(--fidel-accent); font-size: 1.35rem; margin: 0 0 0.75rem; }
 
-.card { background: #fff; border: 1px solid #c4c8cf; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+.card {
+  background: #fff; border: 1px solid var(--fidel-line); border-top: 3px solid var(--fidel-brand);
+  border-radius: 6px; padding: 1rem; margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(33, 37, 41, 0.04);
+}
 
 .button {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; min-width: 44px; padding: 0.5rem 1rem;
   font: inherit; font-weight: 600; text-decoration: none;
-  color: #fff; background: #0b4f9c; border: 2px solid #0b4f9c; border-radius: 6px; cursor: pointer;
+  color: #fff; background: var(--fidel-accent); border: 2px solid var(--fidel-brand); border-radius: 6px; cursor: pointer;
 }
-.button:hover { background: #083b75; }
-.button.secondary { color: #0b4f9c; background: #fff; }
-.button.secondary:hover { background: #e8f0fa; }
+.button:hover { background: var(--fidel-accent-hover); border-color: var(--fidel-accent-hover); }
+.button.secondary { color: var(--fidel-accent); background: #fff; }
+.button.secondary:hover { background: var(--fidel-accent-soft); }
 .button.small { min-height: 44px; padding: 0.25rem 0.75rem; font-weight: 500; }
 
 .row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
@@ -53,37 +70,37 @@ h2 { font-size: 1.35rem; margin: 0 0 0.75rem; }
 label { font-weight: 600; }
 input[type=text], input:not([type]), input[type=password], select, textarea {
   font: inherit; padding: 0.5rem; min-height: 44px;
-  border: 2px solid #5c5c5c; border-radius: 6px; background: #fff; color: #1a1a1a;
+  border: 2px solid #5c5c5c; border-radius: 6px; background: #fff; color: var(--fidel-ink);
   max-width: 100%;
 }
 textarea { width: 100%; resize: vertical; }
-input[type=checkbox] { width: 1.5rem; height: 1.5rem; accent-color: #0b4f9c; margin: 0; flex: none; }
+input[type=checkbox] { width: 1.5rem; height: 1.5rem; accent-color: var(--fidel-brand); margin: 0; flex: none; }
 .check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; }
 fieldset { border: 1px solid #c4c8cf; border-radius: 6px; margin: 0 0 0.75rem; padding: 0.5rem 0.75rem; min-width: 0; }
 legend { font-weight: 700; padding: 0 0.25rem; }
-progress { width: 100%; max-width: 30rem; height: 1rem; }
+progress { width: 100%; max-width: 30rem; height: 1rem; accent-color: var(--fidel-brand); }
 
 .status:empty, .error:empty { display: none; }
 .status { font-weight: 600; }
 .error { color: #a00020; font-weight: 600; }
-.hint { color: #444; }
+.hint { color: var(--fidel-muted); }
 .counter { font-weight: 700; margin: 0; }
 
 table { border-collapse: collapse; width: 100%; }
-th, td { text-align: start; padding: 0.5rem; border-bottom: 1px solid #c4c8cf; }
+th, td { text-align: start; padding: 0.5rem; border-bottom: 1px solid var(--fidel-line); }
 
 /* Progress steps: state shown by text, not colour alone. */
 .steps { list-style: none; padding: 0; margin: 0 0 0.5rem; }
 .step { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; padding: 0.5rem; border-left: 6px solid #767676; margin-bottom: 0.25rem; background: #fafafa; }
 .step.done { border-color: #1e7b34; }
 .step.failed { border-color: #a00020; }
-.step.running { border-color: #0b4f9c; }
+.step.running { border-color: var(--fidel-brand); }
 .step-name { font-weight: 600; }
 .step-status { font-weight: 700; }
 .step-message { flex-basis: 100%; color: #333; }
 
 /* Caption editor: video beside the list on wide screens, stacked on narrow ones. */
-.toolbar { position: sticky; top: 0; z-index: 2; background: #fff; padding: 0.5rem 0; border-bottom: 1px solid #c4c8cf; }
+.toolbar { position: sticky; top: 4.25rem; z-index: 2; background: #fff; padding: 0.5rem 0; border-bottom: 1px solid var(--fidel-line); }
 .editor { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
 .editor-video-wrap { flex: 1 1 22rem; position: sticky; top: 9rem; min-width: 0; }
 .editor-video { width: 100%; background: #000; }
@@ -94,16 +111,24 @@ th, td { text-align: start; padding: 0.5rem; border-bottom: 1px solid #c4c8cf; }
 @media (max-width: 40rem) {
   .toolbar, .editor-video-wrap { position: static; }
 }
+@media (max-width: 60rem) {
+  .site-header { position: static; }
+  .toolbar { top: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; }
 }
 
 /* Navigation, lists of items, tables on small screens */
 .site-header nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; }
-.site-header nav a { color: #fff; display: inline-block; padding: 0.6rem 0; font-weight: 600; }
-.site-header nav a[aria-current="page"] { text-decoration-thickness: 3px; }
+.site-header nav a {
+  color: var(--fidel-ink); display: inline-flex; align-items: center; min-height: 44px;
+  padding: 0.6rem 0; border-bottom: 3px solid transparent; font-weight: 600; text-decoration: none;
+}
+.site-header nav a:hover { color: var(--fidel-accent); }
+.site-header nav a[aria-current="page"] { color: var(--fidel-accent); border-bottom-color: var(--fidel-brand); }
 .items { list-style: none; padding: 0; margin: 0; }
-.item { border-top: 1px solid #c4c8cf; padding: 0.75rem 0; }
+.item { border-top: 1px solid var(--fidel-line); padding: 0.75rem 0; }
 .item h3 { margin: 0 0 0.25rem; }
 summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 h2.inline { display: inline; margin: 0; }

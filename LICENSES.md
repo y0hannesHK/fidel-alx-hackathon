@@ -10,6 +10,7 @@ non-commercial (NC) licence as a default.
 | [Able Player](https://github.com/ableplayer/ableplayer) | 5.0.0 | MIT | Accessible media player |
 | [jQuery](https://jquery.com/) | 3.x | MIT | Required by Able Player |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | 3.x | Apache-2.0 / MPL-2.0 | Required by Able Player (sanitises caption HTML) |
+| [Poppins](https://fonts.google.com/specimen/Poppins) via [@fontsource/poppins](https://fontsource.org/fonts/poppins) | 5.x | SIL OFL 1.1 (shipped as `fonts/Poppins-OFL.txt`) | Self-hosted Latin UI font |
 | [Noto Sans Ethiopic](https://fonts.google.com/noto/specimen/Noto+Sans+Ethiopic) via [@fontsource/noto-sans-ethiopic](https://fontsource.org/fonts/noto-sans-ethiopic) | 5.x | SIL OFL 1.1 (shipped as `fonts/OFL.txt`) | Self-hosted font for Amharic text |
 
 ## Server

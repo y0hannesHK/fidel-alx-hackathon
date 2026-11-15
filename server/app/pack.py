@@ -2,9 +2,9 @@
 
 offline_page() builds ONE self-contained HTML file: audio (24 kbps Opus),
 transcripts in English and Amharic with read-along highlighting, chapters,
-description text and the Ethiopic font are all inside it. One file is what
-works best on Android: a page that points to a separate audio file next to it
-cannot load it when opened from the phone's Downloads.
+description text and fonts are all inside it. One file is what works best on
+Android: a page that points to a separate audio file next to it cannot load it
+when opened from the phone's Downloads.
 
 pack_zip() puts that page in a .zip together with the caption, description
 and plain-text transcript files.
@@ -64,6 +64,26 @@ def offline_page(lesson: dict, caption_status: dict[str, str], with_video: bool 
         raise FileNotFoundError("This lesson has no audio yet.")
 
     font = settings.embed_dir / "fonts" / "noto-sans-ethiopic-400.woff2"
+    poppins_fonts = {
+        weight: settings.embed_dir / "fonts" / f"poppins-{weight}.woff2"
+        for weight in (400, 600, 700)
+    }
+    font_licenses = []
+    for label, license_file in (
+        ("Poppins", settings.embed_dir / "fonts" / "Poppins-OFL.txt"),
+        ("Noto Sans Ethiopic", settings.embed_dir / "fonts" / "OFL.txt"),
+    ):
+        font_file = settings.embed_dir / "fonts" / (
+            "poppins-400.woff2" if label == "Poppins" else "noto-sans-ethiopic-400.woff2"
+        )
+        if font_file.is_file():
+            license_text = license_file.read_text(encoding="utf-8")
+            font_licenses.append(f"<h3>{label}</h3><pre>{html.escape(license_text)}</pre>")
+    font_licenses_html = (
+        f"<details><summary>Font licences</summary>{''.join(font_licenses)}</details>"
+        if font_licenses else ""
+    )
+
     title = lesson["title"]
     # JSON inside <script>: no "<" at all, so caption text can never end the
     # script or start a new tag. JSON reads "<" back as "<".
@@ -73,13 +93,17 @@ def offline_page(lesson: dict, caption_status: dict[str, str], with_video: bool 
         "{{TITLE}}": f'<span lang="{"am" if ETHIOPIC.search(title) else "en"}">{html.escape(title)}</span>',
         "{{PAGE_LANG}}": data["defaultLang"],
         "{{FONT}}": _data_uri(font, "font/woff2") if font.is_file() else "",
+        "{{POPPINS_400}}": _data_uri(poppins_fonts[400], "font/woff2") if poppins_fonts[400].is_file() else "",
+        "{{POPPINS_600}}": _data_uri(poppins_fonts[600], "font/woff2") if poppins_fonts[600].is_file() else "",
+        "{{POPPINS_700}}": _data_uri(poppins_fonts[700], "font/woff2") if poppins_fonts[700].is_file() else "",
+        "{{FONT_LICENSES}}": font_licenses_html,
         "{{MEDIA}}": media,
         "{{DATA}}": data_json,
     }
     # <title> cannot contain markup: plain escaped text there.
     page = page.replace("<title>{{TITLE}}</title>", f"<title>{html.escape(title)}</title>")
     # One pass, so text inserted for one marker is never searched for another.
-    return re.sub(r"\{\{[A-Z_]+\}\}", lambda m: replacements.get(m.group(0), m.group(0)), page)
+    return re.sub(r"\{\{[A-Z0-9_]+\}\}", lambda m: replacements.get(m.group(0), m.group(0)), page)
 
 
 def transcript_text(data: dict, lang: str) -> str:
@@ -106,5 +130,6 @@ def pack_zip(lesson: dict, caption_status: dict[str, str]) -> bytes:
             "Open index.html in a web browser. It works with no internet.\n"
             "index.html ን በድር አሳሽ ይክፈቱ። ያለ ኢንተርኔት ይሠራል።\n\n"
             "Also inside: captions (.vtt), descriptions (.vtt) and plain-text transcripts (.txt).\n"
+            "Bundled font licence texts, when present, are included in index.html.\n"
         ))
     return buffer.getvalue()

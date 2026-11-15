@@ -25,6 +25,11 @@ def test_offline_page_is_self_contained(lesson):  # noqa: F811
 
     # Audio and font are inside the file; nothing is loaded from elsewhere.
     assert 'src="data:audio/ogg; codecs=opus;base64,' in page
+    assert 'font-family: "Fidel Poppins"' in page
+    assert 'src: url("data:font/woff2;base64,' in page
+    assert "<details><summary>Font licences</summary>" in page
+    assert "{{POPPINS_" not in page
+    assert "{{FONT_LICENSES}}" not in page
     assert not re.search(r'(src|href)="https?://', page)
     data = page_data(page)
     assert data["captions"]["am"][0]["text"] == "[am] Hello learners."

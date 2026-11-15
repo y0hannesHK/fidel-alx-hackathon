@@ -4,7 +4,7 @@
 // <fidel-session-viewer> and <fidel-certificate>.
 import 'ableplayer/build/ableplayer.min.css';
 import './fidel.css';
-import { registerEthiopicFont } from './fonts.js';
+import { registerFidelFonts } from './fonts.js';
 import { FidelPlayer } from './fidel-player.js';
 import { FidelJobCard } from './job-card.js';
 import { FidelSessionViewer } from './session-viewer.js';
@@ -15,7 +15,7 @@ import { VERSION } from './events.js';
 export { VERSION as version };
 
 // document.currentScript is only set while this script first runs.
-registerEthiopicFont(document.currentScript?.src);
+registerFidelFonts(document.currentScript?.src);
 
 if (!customElements.get('fidel-player')) {
   customElements.define('fidel-player', FidelPlayer);

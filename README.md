@@ -310,11 +310,12 @@ reviewed by a person before it counts as final.
 
 | What | Value |
 |---|---|
-| `fidel.js` (Able Player + jQuery + DOMPurify + Fidel), gzipped | 158 KB (Fidel's own code: about 17 KB) |
-| `fidel.css`, gzipped | 6.5 KB |
+| `fidel.js` (Able Player + jQuery + DOMPurify + Fidel), gzipped | 160 KB (Fidel's own code: about 17 KB) |
+| `fidel.css`, gzipped | 6.9 KB |
+| Poppins UI font (4 self-hosted weights; fetched as needed) | about 32 KB total |
 | Ethiopic font (2 weights, loaded only when Amharic text is shown) | 2 × 75 KB |
 | Audio-only lesson (Opus 24 kbps) | 187 KB per minute (2.8 MB per 15 minutes) |
-| Offline one-page lesson (audio + text + font) | 778 KB for 2 min 39 s, about **3.9 MB per 15 minutes** |
+| Offline one-page lesson (audio + text + fonts + font licences) | about 820 KB for 2 min 39 s, about **4.1 MB per 15 minutes** |
 | Offline .zip pack | about 3.3 MB per 15 minutes |
 | Processing, CPU only, Whisper small + MADLAD | about 30 s per minute of video |
 
