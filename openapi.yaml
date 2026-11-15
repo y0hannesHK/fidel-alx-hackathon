@@ -1848,6 +1848,147 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/lessons/{lesson_id}/caption-reports:
+    post:
+      tags:
+      - caption reports
+      summary: Report Caption Problem
+      description: 'A learner reports a caption problem. No name or account is needed
+        or
+
+        stored. 400 with a message in words if something is not right; 429 after
+
+        20 reports from one address in an hour.'
+      operationId: report_caption_problem_api_v1_lessons__lesson_id__caption_reports_post
+      parameters:
+      - name: lesson_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-f0-9]{12}$
+          description: Lesson id
+          title: Lesson Id
+        description: Lesson id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCreated'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - caption reports
+      summary: List Caption Reports
+      description: Reports for one lesson, in video-time order (staff).
+      operationId: list_caption_reports_api_v1_lessons__lesson_id__caption_reports_get
+      parameters:
+      - name: lesson_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-f0-9]{12}$
+          description: Lesson id
+          title: Lesson Id
+        description: Lesson id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - open
+            - resolved
+            - dismissed
+            type: string
+          - type: 'null'
+          description: Only reports with this status
+          title: Status
+        description: Only reports with this status
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          type: string
+          description: Bearer <staff token>
+          default: ''
+          title: Authorization
+        description: Bearer <staff token>
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+                title: Response List Caption Reports Api V1 Lessons  Lesson Id  Caption
+                  Reports Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/caption-reports/{report_id}:
+    patch:
+      tags:
+      - caption reports
+      summary: Set Caption Report Status
+      description: Mark a report resolved (the caption was fixed) or dismissed (nothing
+        to fix), or open again (staff).
+      operationId: set_caption_report_status_api_v1_caption_reports__report_id__patch
+      parameters:
+      - name: report_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-f0-9]{12}$
+          title: Report Id
+      - name: authorization
+        in: header
+        required: false
+        schema:
+          type: string
+          description: Bearer <staff token>
+          default: ''
+          title: Authorization
+        description: Bearer <staff token>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportStatus'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /health:
     get:
       tags:
@@ -2559,6 +2700,132 @@ components:
           description: Steps to run again
       type: object
       title: RebuildRequest
+    Report:
+      properties:
+        id:
+          type: string
+          title: Id
+        lesson_id:
+          type: string
+          title: Lesson Id
+        time:
+          type: number
+          title: Time
+        lang:
+          type: string
+          title: Lang
+        kind:
+          type: string
+          enum:
+          - wrong_words
+          - wrong_time
+          - missing_caption
+          - missing_sound
+          - other
+          title: Kind
+        correction:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Correction
+        caption:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Caption
+        status:
+          type: string
+          enum:
+          - open
+          - resolved
+          - dismissed
+          title: Status
+        created_at:
+          type: string
+          title: Created At
+        updated_at:
+          type: string
+          title: Updated At
+      type: object
+      required:
+      - id
+      - lesson_id
+      - time
+      - lang
+      - kind
+      - correction
+      - caption
+      - status
+      - created_at
+      - updated_at
+      title: Report
+    ReportCreated:
+      properties:
+        id:
+          type: string
+          title: Id
+      type: object
+      required:
+      - id
+      title: ReportCreated
+    ReportIn:
+      properties:
+        time:
+          type: number
+          minimum: 0.0
+          title: Time
+          description: Seconds into the video where the problem is
+        lang:
+          type: string
+          maxLength: 5
+          minLength: 2
+          title: Lang
+          description: Caption language shown (en, am, om)
+        kind:
+          type: string
+          enum:
+          - wrong_words
+          - wrong_time
+          - missing_caption
+          - missing_sound
+          - other
+          title: Kind
+          description: 'What is wrong: wrong_words (Wrong words), wrong_time (Wrong
+            time), missing_caption (Missing caption), missing_sound (Missing sound
+            description), other (Other)'
+        correction:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Correction
+          description: The learner's correction (optional)
+        caption:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Caption
+          description: The caption shown at that moment (optional)
+      type: object
+      required:
+      - time
+      - lang
+      - kind
+      title: ReportIn
+    ReportStatus:
+      properties:
+        status:
+          type: string
+          enum:
+          - resolved
+          - dismissed
+          - open
+          title: Status
+      type: object
+      required:
+      - status
+      title: ReportStatus
     StepStatus:
       properties:
         status:
@@ -2676,6 +2943,7 @@ components:
             - lesson.published
             - lesson.unpublished
             - captions.reviewed
+            - caption.reported
             - certificate.issued
             - certificate.revoked
           type: array

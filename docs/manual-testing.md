@@ -118,4 +118,12 @@ The co-designer should finish this **without help**:
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
+### Package D: report a caption problem, Savanna patch
+
+- [ ] NVDA: "Report a caption problem" is read as a button; in the dialog, the time, language and current caption are read, and "What is wrong?" is read as a group.
+- [ ] TalkBack: the same on Android Chrome; the Amharic caption is read or shown correctly.
+- [ ] Keyboard: Escape closes the dialog and focus returns to the button; the video plays on only if it was playing.
+- [ ] Airplane mode: send a report, see "Saved on this phone", go back online, check that it arrives in Studio.
+- [ ] Studio: "Go to this caption", "Resolved" and "Dismiss" work and are announced.
+- [ ] Savanna lesson page (after `sh scripts/setup-savanna.sh`): the first Tab shows "Skip to the lesson"; at 200% and 400% zoom, Shift+Tab never leaves focus hidden under the fixed bars.
 <!-- PACKAGE D END -->

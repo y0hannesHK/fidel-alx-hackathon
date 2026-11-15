@@ -238,6 +238,68 @@ Live examples of every component: [`demo/components.html`](demo/components.html)
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
+#### Package D: report a caption problem
+
+Learners tell staff when a caption is wrong. The report arrives in Studio, on
+the lesson's page, under "Caption reports".
+
+```html
+<fidel-player id="lesson-player" lesson="https://FIDEL-HOST/api/v1/lessons/ID"></fidel-player>
+<fidel-caption-report for="lesson-player" ui-lang="am"></fidel-caption-report>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `for` | id of the `<fidel-player>` (default: the first one on the page) |
+| `api` | API address (default: taken from the player's `lesson` URL, else `/api/v1`) |
+| `lesson` | lesson id (default: taken from the player's `lesson` URL) |
+| `ui-lang` | `en` or `am` |
+
+- The dialog already holds the current time, the caption language and the
+  caption shown at that moment. The learner picks what is wrong (wrong words,
+  wrong time, missing caption, missing sound description, other) and may type
+  a correction. No name, no account.
+- The video pauses while the dialog is open and plays on afterwards.
+- **Offline:** the report is kept on the phone and sent when the phone is back
+  online.
+- Event: `fidel-caption-report-sent` `{ lessonId, time, lang }`.
+
+REST API (Level 2):
+
+```bash
+# A learner's report (public; lesson must be published). 201 {"id": ...}
+curl -X POST https://FIDEL-HOST/api/v1/lessons/ID/caption-reports \
+  -H "Content-Type: application/json" \
+  -d '{"time": 12.5, "lang": "am", "kind": "wrong_words", "correction": "..."}'
+# Staff: open reports, then mark one resolved or dismissed
+curl -H "Authorization: Bearer $TOKEN" "https://FIDEL-HOST/api/v1/lessons/ID/caption-reports?status=open"
+curl -X PATCH -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"status": "resolved"}' https://FIDEL-HOST/api/v1/caption-reports/REPORT_ID
+```
+
+`kind` is one of `wrong_words`, `wrong_time`, `missing_caption`,
+`missing_sound`, `other`. Bad input gets a 400 with the reason in words. Abuse
+limit: 20 reports per IP address per hour (`FIDEL_CAPTION_REPORTS_PER_HOUR`),
+counted in the server's memory, so it resets when the server restarts. Each
+report also sends the webhook event `caption.reported`.
+
+#### Starter defects we patched (Savanna)
+
+The gate is taken on Savanna's lesson page, so we checked the way to the player
+with the keyboard at 100%, 200% and 400% zoom. Two things got in the way. We
+fixed them in our own script, `integrations/savanna/fidel-savanna-patch.js`,
+which `scripts/setup-savanna.sh` copies next to the page and loads; ALX's
+files are not edited.
+
+1. **No "skip to content" link** (WCAG 2.4.1). A keyboard user pressed Tab 24
+   times before reaching the player. The patch adds "Skip to the lesson" as the
+   first link on the page.
+2. **The fixed header and curriculum bar hid the focused element** when moving
+   back up the page at 200% and 400% zoom (WCAG 2.4.11). The patch sets
+   `scroll-padding-top`, so the browser scrolls focused items out from under
+   the bars.
+
+After pulling this change, run `sh scripts/setup-savanna.sh` again.
 <!-- PACKAGE D END -->
 
 ## Level 2: REST API

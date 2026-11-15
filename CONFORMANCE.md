@@ -167,4 +167,16 @@ Notes per package, for the WCAG criteria each component touches.
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
+### Package D: report a caption problem, Savanna patch
+
+| Criterion | Level | Support | Notes |
+|---|---|---|---|
+| 1.2.2 Captions (Prerecorded) | A | Supports | Learners can report wrong or missing captions and missing sound descriptions; staff see the reports in Studio. |
+| 1.3.1 Info and Relationships | A | Supports | "What is wrong?" is a `<fieldset>` with `<legend>` and radio buttons; every field has a label. |
+| 2.1.1 Keyboard | A | Supports | Button, dialog, radios and Send all work with the keyboard; Escape closes the dialog and returns focus. |
+| 2.4.1 Bypass Blocks | A | Supports (Savanna page, with our patch) | Savanna's starter has no skip link; our patch adds "Skip to the lesson". |
+| 2.4.11 Focus Not Obscured (Minimum) | AA | Supports (Savanna page, with our patch) | The patch keeps the focused element out from under Savanna's fixed bars. |
+| 3.3.1 Error Identification | A | Supports | Bad time or a too-long correction is explained in words, next to the field. |
+| 3.3.2 Labels or Instructions | A | Supports | The dialog says what is sent and that no name is needed. |
+| 4.1.3 Status Messages | AA | Supports | "Thank you. A person will check it." and "Saved on this phone…" are announced. |
 <!-- PACKAGE D END -->

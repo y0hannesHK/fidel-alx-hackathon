@@ -98,4 +98,14 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
+- **Package D: not finished** (stopped by the plan's usage limit on 15 Nov).
+  Done: D1 (Savanna patch) and D2 (report a caption problem, with the Studio
+  panel). Not done: D3 Studio sound-off check (`studio/js/sound-check.js` was
+  started in the `fidel-components-d` folder but is not connected or tested,
+  so it is not committed), D4 Amharic keyboard, D5 event card, D6 answer in
+  sign language, D7 reading guide.
+- **Package D Amharic text to review:** `player/i18n/components-d.am.json`
+  (written by an AI, not a native speaker).
+- **Caption-report abuse limit** is counted in memory: it resets on restart and
+  is per server process.
 <!-- PACKAGE D END -->
