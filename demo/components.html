@@ -72,6 +72,24 @@
           document.getElementById('report-player-slot').replaceWith(player);
         })();
       </script>
+      <h3 id="d-keyboard">Amharic keyboard</h3>
+      <p>Who this helps: refugees and learners on shared or borrowed computers with no Amharic keyboard installed, and anyone who cannot remember the key combinations.</p>
+      <label for="d-answer">Your answer in Amharic</label>
+      <textarea id="d-answer" lang="am" rows="3" style="display: block; box-sizing: border-box; width: 100%; max-width: 30rem; font-size: 1.25rem; line-height: 1.7;"></textarea>
+      <fidel-amharic-keyboard for="d-answer"></fidel-amharic-keyboard>
+      <p id="d-answer-count" aria-live="off">Letters typed: 0</p>
+      <script>
+        // Host page code: the keyboard fires the field's own "input" event.
+        document.getElementById('d-answer').addEventListener('input', (e) => {
+          document.getElementById('d-answer-count').textContent = 'Letters typed: ' + [...e.target.value].length;
+        });
+      </script>
+      <p>Try it:</p>
+      <ul>
+        <li>Press "Show Amharic keyboard". Tab to the letters; arrow keys move between them, Home and End jump to the first and last.</li>
+        <li>Choose ለ, then ሉ: "ሉ" is added at the cursor and you are back at the letters. Escape goes back from the forms to the letters.</li>
+        <li>"Delete one letter" removes one whole letter; "Back to the text" puts you in the text box.</li>
+      </ul>
     </section>
     <!-- PACKAGE D END -->
   </main>

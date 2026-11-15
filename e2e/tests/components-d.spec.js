@@ -116,6 +116,11 @@ for (const zoom of ZOOMS) {
       await page.waitForTimeout(500);
       expect(await seriousAxeIssues(page)).toEqual([]);
       await expectNoSidewaysScroll(page);
+      // Open panels: the Amharic keyboard at step 2.
+      await page.getByRole('button', { name: 'Show Amharic keyboard' }).click();
+      await page.getByRole('button', { name: 'ለ, le' }).click();
+      expect(await seriousAxeIssues(page), 'Amharic keyboard open').toEqual([]);
+      await expectNoSidewaysScroll(page);
       for (const d of DIALOGS) {
         await d.opener(page).click();
         await expect(page.locator('dialog[open]')).toBeVisible();
@@ -258,5 +263,55 @@ test.describe('Studio lesson page with the Package D panels', () => {
     await page.getByRole('link', { name: '← All lessons' }).click();
     const row = page.getByRole('row', { name: /Package D test lesson/ });
     await expect(row.getByRole('cell').last()).toHaveText('Done');
+  });
+});
+
+test.describe('D4: Amharic keyboard', () => {
+  test('ለ then ሉ inserts at the cursor and fires input; arrows, Escape and Delete one letter', async ({ page }) => {
+    await openComponents(page);
+    const field = page.getByLabel('Your answer in Amharic');
+    await field.fill('ሰም');
+    await field.evaluate((box) => box.setSelectionRange(1, 1));
+    const toggle = page.getByRole('button', { name: 'Show Amharic keyboard' });
+    await toggle.click();
+    await expect(page.getByRole('button', { name: 'Hide keyboard' }).first()).toHaveAttribute('aria-expanded', 'true');
+
+    // Arrow keys, Home and End move between the letters (one Tab stop).
+    const first = page.getByRole('button', { name: 'ሀ, he' });
+    await first.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByRole('button', { name: 'ለ, le' })).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(page.getByRole('button', { name: 'ፐ, pe' })).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(first).toBeFocused();
+    expect(await page.locator('.fidel-kb-step1 button[tabindex="0"]').count()).toBe(1);
+
+    // Step 2 and Escape back to step 1.
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('Step 2: choose the form of ለ')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'ለ, le' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByText('Step 1: choose a letter')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'ለ, le' })).toBeFocused();
+
+    // Choose ለ, then ሉ.
+    const inputs = field.evaluate((box) => new Promise((resolve) => box.addEventListener('input', () => resolve(true), { once: true })));
+    await page.getByRole('button', { name: 'ለ, le' }).click();
+    await page.getByRole('button', { name: 'ሉ, lu' }).click();
+    expect(await inputs).toBe(true);
+    await expect(field).toHaveValue('ሰሉም');
+    await expect(page.getByText('Letters typed: 3')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'ለ, le' })).toBeFocused(); // back at step 1
+
+    // Delete one letter removes one syllable before the cursor.
+    await page.getByRole('button', { name: 'Delete one letter' }).click();
+    await expect(field).toHaveValue('ሰም');
+    await page.getByRole('button', { name: '።, Full stop' }).click();
+    await expect(field).toHaveValue('ሰ።ም');
+
+    await page.getByRole('button', { name: 'Back to the text' }).click();
+    await expect(field).toBeFocused();
   });
 });
