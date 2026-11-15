@@ -71,6 +71,7 @@ export async function lessonPage(main, lessonId) {
 
   const captions = await captionEditor(lessonId, manifest);
   main.append(captions);
+  main.append(await (await import('./reports.js')).reportsSection(lessonId)); // Package D: caption reports from learners
   main.addEventListener('captions-saved', async () => {
     manifest = await api(`/api/v1/lessons/${lessonId}`);
     refreshPreview();
