@@ -800,6 +800,7 @@ section of [demo/components.html](demo/components.html).
 | `voice-api` | e.g. `/api/v1`: use the server's voice engine for Listen when the browser has no voice for the language |
 | `speak` | `off`, `words` or `characters`: the typing voice for this field (default: the learner's setting `typingVoice`, off) |
 | `describedby` | ids of your own descriptions, read before ours |
+| `field-class` | your own class names for the inner `<input>`/`<textarea>` |
 
 Properties and methods: `value`, `validity` (`{ valid, message }`),
 `checkValidity()` (checks and shows the error; returns true or false),
