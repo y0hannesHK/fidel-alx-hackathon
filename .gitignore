@@ -7,7 +7,7 @@ data/
 assets/
 
 # ALX's Savanna starter, downloaded by scripts/setup-savanna.sh (not ours to republish)
-savanna/
+/savanna/
 
 # Test output
 e2e/test-results/
