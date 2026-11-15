@@ -1,5 +1,30 @@
 # Manual testing checklists
 
+## The gate (opening presentation, 14 Nov, slide 14)
+
+Pass or fail; a module that does not pass is not scored:
+
+1. A co-designer completes the **main task unaided**, with **NVDA, TalkBack,
+   keyboard only, 200% zoom, and sound off**.
+2. **axe-core is clean**: zero critical and zero serious issues.
+3. A **WCAG 2.2 AA conformance report** is submitted with the code
+   ([CONFORMANCE.md](../CONFORMANCE.md)).
+
+What the machine checks (`e2e/tests/gate.spec.js`, plus the reflow, keyboard
+and offline tests), last run 15 Nov 2026 on the `speech-engines` branch:
+
+| Check | Pages | Result |
+|---|---|---|
+| axe-core, WCAG 2.0–2.2 A/AA | Demo lesson, Amharic lesson (captions and descriptions in English, Amharic and Afaan Oromo), job card, live-session viewer, blank page, lesson document, offline lesson, all 5 Studio pages | **0 critical, 0 serious**, at 100%, 200% and 400% zoom |
+| 200% zoom (640 CSS px) | the same pages | No sideways scrolling |
+| 400% zoom (320 CSS px, WCAG 1.4.10) | the same pages | No sideways scrolling, after two fixes: the transcript toolbar now wraps; Studio's lesson table scrolls inside its own box |
+| Keyboard only | learner pages | Tab reaches every control and never gets stuck; the main task (Amharic captions, bigger, sign language, search) is done with the keyboard in `savanna-mock.spec.js` |
+
+Still to be done by people (a machine cannot judge these): **NVDA**,
+**TalkBack**, **sound off**, and **the co-designer doing the main task
+unaided**. Use the checklists below and write the results in the table at the
+end.
+
 Automated tests (axe, keyboard, reflow) pass, but they cannot tell us whether
 a real person can use Fidel. Run these with **NVDA**, **TalkBack**, the
 **keyboard only**, **200% zoom** and **sound off**, and above all **with our

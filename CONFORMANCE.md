@@ -86,7 +86,7 @@ depends on what staff add (explained).
 | 1.4.3 Contrast (Minimum) | AA | Supports | All Fidel colour pairs ≥ 4.5:1 (axe checked). Caption presets are white/yellow on black and black on white/cream. |
 | 1.4.4 Resize Text | AA | Supports | Caption text 100–250%; pages work at 200% zoom; "Large text" in offline page. |
 | 1.4.5 Images of Text | AA | Supports | No images of text. |
-| 1.4.10 Reflow | AA | Supports | Tested at 320 CSS px and 200% zoom: no horizontal scrolling; player controls wrap; signer moves below the video. |
+| 1.4.10 Reflow | AA | Supports | Tested at 400% zoom (320 CSS px) and 200% zoom on every learner page and every Studio page (`e2e/tests/gate.spec.js`): no horizontal scrolling; player controls and the transcript toolbar wrap; the signer moves below the video; Studio's tables scroll inside their own box (allowed for data tables). |
 | 1.4.11 Non-text Contrast | AA | Supports | Control borders and focus rings ≥ 3:1; focus ring is a two-colour ring visible on light and dark. |
 | 1.4.12 Text Spacing | AA | Supports (manual check pending) | Layouts use flexible sizes; to be confirmed with a text-spacing bookmarklet. |
 | 1.4.13 Content on Hover or Focus | AA | Supports (manual check pending) | Able Player tooltips appear on hover/focus and can be dismissed with Escape; to be confirmed manually. |

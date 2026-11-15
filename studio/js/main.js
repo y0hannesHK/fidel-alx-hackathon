@@ -136,7 +136,8 @@ function lessonList(lessons) {
     section.append(h('p', {}, 'No lessons yet.'));
     return section;
   }
-  section.append(h('table', {},
+  // In its own scroll box: at 400% zoom a wide table scrolls inside it, never the page (WCAG 1.4.10).
+  section.append(h('div', { class: 'table-wrap' }, h('table', {},
     h('thead', {}, h('tr', {},
       h('th', { scope: 'col' }, 'Title'),
       h('th', { scope: 'col' }, 'Added'),
@@ -144,6 +145,6 @@ function lessonList(lessons) {
     h('tbody', {}, lessons.map((lesson) => h('tr', {},
       h('td', {}, h('a', { href: `#/lesson/${lesson.id}` }, lesson.title)),
       h('td', {}, new Date(lesson.created_at).toLocaleString()),
-      h('td', {}, lesson.published ? 'Yes' : 'No'))))));
+      h('td', {}, lesson.published ? 'Yes' : 'No')))))));
   return section;
 }

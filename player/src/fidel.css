@@ -272,6 +272,20 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
   max-height: 20rem;
   overflow-y: auto;
 }
+/* At 400% zoom (320 CSS pixels) "Auto scroll" and the language picker do not
+   fit on one line: let the toolbar wrap instead of scrolling the page sideways
+   (WCAG 1.4.10 reflow). */
+.fidel-transcript-body .able-window-toolbar {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.fidel-transcript-body .able-window-toolbar .transcript-language-select-wrapper {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.fidel-transcript-body .able-window-toolbar select {
+  max-width: 100%;
+}
 
 .fidel-error {
   padding: 1rem;

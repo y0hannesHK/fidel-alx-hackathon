@@ -97,6 +97,22 @@ test('the one-page lesson works with the network switched off', async ({ browser
   await context.close();
 });
 
+// The gate (opening presentation, slide 14): 200% zoom, and 400% (WCAG 1.4.10 reflow).
+for (const [zoom, width, height, scale] of [['200%', 640, 400, 2], ['400%', 320, 200, 4]]) {
+  test(`the one-page lesson at ${zoom} zoom: no sideways scrolling, axe clean`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale });
+    const tab = await context.newPage();
+    await tab.goto(`/api/v1/lessons/${lessonId}/offline.html?inline=true`);
+    await expect(tab.locator('main')).toBeVisible();
+    await tab.getByRole('button', { name: /Large text/ }).click();
+    const sideways = await tab.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(sideways).toBeLessThanOrEqual(1);
+    const results = await new AxeBuilder({ page: tab }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+    expect(results.violations.filter((v) => ['critical', 'serious'].includes(v.impact)).map((v) => v.id)).toEqual([]);
+    await context.close();
+  });
+}
+
 test('the player offers downloads and a low-data mode', async ({ page }) => {
   await page.goto(`/demo/savanna-mock/lesson.html?id=${lessonId}`);
   const panel = page.locator('fidel-player .fidel-panel');
