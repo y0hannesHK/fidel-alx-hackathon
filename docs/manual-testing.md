@@ -20,6 +20,10 @@ and offline tests), last run 15 Nov 2026 on the `speech-engines` branch:
 | 400% zoom (320 CSS px, WCAG 1.4.10) | the same pages | No sideways scrolling, after two fixes: the transcript toolbar now wraps; Studio's lesson table scrolls inside its own box |
 | Keyboard only | learner pages | Tab reaches every control and never gets stuck; the main task (Amharic captions, bigger, sign language, search) is done with the keyboard in `savanna-mock.spec.js` |
 
+**Recording a screen-reader demo:** `e2e/narrator-tour.mjs` does the main task by
+keyboard in a visible browser while Narrator reads it (instructions at the top of
+the file). Use it to record the pitch video or to hear what learners hear.
+
 Still to be done by people (a machine cannot judge these): **NVDA**,
 **TalkBack**, **sound off**, and **the co-designer doing the main task
 unaided**. Use the checklists below and write the results in the table at the
