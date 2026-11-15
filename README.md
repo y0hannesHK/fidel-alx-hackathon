@@ -237,6 +237,9 @@ Live examples of every component: [`demo/components.html`](demo/components.html)
 <!-- PACKAGE C START -->
 <!-- PACKAGE C END -->
 
+<!-- PACKAGE D START -->
+<!-- PACKAGE D END -->
+
 ## Level 2: REST API
 
 Interactive docs at `/docs` (Swagger UI); the spec is in [openapi.yaml](openapi.yaml) and [openapi.json](openapi.json)

@@ -14,6 +14,7 @@ import { VERSION } from './events.js';
 import './components/a/register.js'; // Package A: reading and understanding
 import './components/b/register.js'; // Package B: data, offline, dates and language
 import './components/c/register.js'; // Package C: Deaf learners, motor access, navigation, help
+import './components/d/register.js'; // Package D: Amharic keyboard, sign answers, live events, caption reports
 
 // window.Fidel.version tells a page which Fidel it has loaded.
 export { VERSION as version };
