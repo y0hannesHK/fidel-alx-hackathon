@@ -124,6 +124,13 @@ for (const zoom of ZOOMS) {
       await page.getByRole('button', { name: 'ለ, le' }).click();
       expect(await seriousAxeIssues(page), 'Amharic keyboard open').toEqual([]);
       await expectNoSidewaysScroll(page);
+      // The reading guide on, dimming the rest.
+      await page.getByRole('button', { name: 'Reading guide' }).click();
+      await page.getByLabel('Dim the rest').check();
+      await page.getByRole('button', { name: 'Next line' }).click();
+      expect(await seriousAxeIssues(page), 'reading guide on').toEqual([]);
+      await expectNoSidewaysScroll(page);
+      await page.getByRole('button', { name: 'Reading guide' }).click();
       for (const d of DIALOGS) {
         await d.opener(page).click();
         await expect(page.locator('dialog[open]')).toBeVisible();
@@ -427,5 +434,101 @@ test.describe('D6: answer in sign language (fake camera)', () => {
     await picker.setInputFiles(VIDEO);
     await expect(answer.getByRole('heading', { name: 'Step 3: watch your answer' })).toBeFocused();
     await expect(answer.getByRole('button', { name: /^Send \(\d+\.\d MB\)$/ })).toBeVisible();
+  });
+});
+
+test.describe('D7: reading guide', () => {
+  test('toggling marks the focused block; Next line moves it; the choice is remembered', async ({ page }) => {
+    await openComponents(page);
+    const toggle = page.getByRole('button', { name: 'Reading guide' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('.fidel-guide-box')).toBeHidden(); // off by default
+    // Focus the link in the third list item, then switch the guide on.
+    const link = page.getByRole('link', { name: 'another place' });
+    await link.focus();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    const boxAround = async (locator) => {
+      const [box, block] = await Promise.all([page.locator('.fidel-guide-box').boundingBox(), locator.boundingBox()]);
+      return box && block && box.y <= block.y && box.y + box.height >= block.y + block.height - 1;
+    };
+    const item = page.locator('#d-reading-text li').nth(2);
+    await link.focus();
+    expect(await boxAround(item)).toBe(true);
+    // The overlay never takes clicks.
+    expect(await page.locator('.fidel-guide-box').evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+
+    await page.getByRole('button', { name: 'Next line' }).click();
+    const amharic = page.locator('#d-reading-text p[lang="am"]');
+    await expect.poll(() => boxAround(amharic)).toBe(true);
+    await page.getByRole('button', { name: 'Next line' }).click();
+    await expect(page.locator('fidel-reading-guide .fidel-d-status')).toHaveText('This is the last line.');
+    await page.getByRole('button', { name: 'Previous line' }).click();
+    await expect.poll(() => boxAround(item)).toBe(true);
+
+    await page.getByLabel('Dim the rest').check();
+    await expect(page.locator('.fidel-guide-veil:not([hidden])').first()).toBeVisible();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fidel-prefs')).readingGuide)).toEqual({ on: true, mode: 'dim' });
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Reading guide' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByLabel('Dim the rest')).toBeChecked();
+    // The block under the pointer is highlighted.
+    const firstParagraph = page.locator('#d-reading-text p').first();
+    await firstParagraph.scrollIntoViewIfNeeded();
+    await page.mouse.move(5, 5);
+    await firstParagraph.hover({ position: { x: 20, y: 5 } });
+    await expect.poll(() => boxAround(firstParagraph)).toBe(true);
+  });
+});
+
+test.describe('Package D in Amharic (ui-lang="am")', () => {
+  test('axe clean with each component and dialog in Amharic', async ({ page }) => {
+    await openComponents(page);
+    await page.evaluate(() => {
+      const section = document.createElement('section');
+      section.setAttribute('aria-label', 'Amharic');
+      const start = new Date(Date.now() + 86400000);
+      section.innerHTML = `
+        <fidel-caption-report for="report-player" ui-lang="am"></fidel-caption-report>
+        <label for="am-answer">መልስ</label><textarea id="am-answer" lang="am"></textarea>
+        <fidel-amharic-keyboard for="am-answer" ui-lang="am"></fidel-amharic-keyboard>
+        <fidel-event-card ui-lang="am" title="የቢሮ ሰዓት" event-id="am-demo" start="${start.toISOString()}"
+          end="${new Date(start.getTime() + 3600000).toISOString()}" captions="yes" sign-language="on-request" languages="am" heading-level="3"></fidel-event-card>
+        <fidel-sign-answer ui-lang="am" label="ጥያቄዎን በምልክት ቋንቋ ይጠይቁ" heading-level="3"></fidel-sign-answer>
+        <fidel-reading-guide ui-lang="am" target="#d-reading-text"></fidel-reading-guide>`;
+      document.querySelector('main').append(section);
+    });
+    const am = page.getByRole('region', { name: 'Amharic' });
+    await am.getByRole('button', { name: 'የአማርኛ ቁልፍ ሰሌዳ አሳይ' }).click();
+    await am.getByRole('button', { name: 'የንባብ መመሪያ' }).click();
+    expect(await seriousAxeIssues(page)).toEqual([]);
+    await expectNoSidewaysScroll(page);
+    for (const name of ['የግርጌ ጽሑፍ ችግር ያሳውቁ', 'የተደራሽነት ድጋፍ ይጠይቁ']) {
+      const opener = am.getByRole('button', { name });
+      await opener.click();
+      await expect(page.locator('dialog[open]')).toBeVisible();
+      expect(await seriousAxeIssues(page), name).toEqual([]);
+      await page.keyboard.press('Escape');
+      await expect(opener).toBeFocused();
+    }
+  });
+});
+
+test.describe('D1: Savanna lesson page patch', () => {
+  test('"Skip to the lesson" is the first Tab stop and leads to the player', async ({ page, request }) => {
+    const patched = await request.get('/savanna/fidel/fidel-savanna-patch.js');
+    test.skip(!patched.ok(), 'Run sh scripts/setup-savanna.sh to add the Savanna patch.');
+    await page.goto('/savanna/pages/concept-with-navigation.html');
+    await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 20_000 });
+    await page.keyboard.press('Tab');
+    const skip = page.getByRole('link', { name: 'Skip to the lesson' });
+    await expect(skip).toBeFocused();
+    await expect(skip).toBeInViewport();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#curriculum_navigation_content')).toBeFocused();
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => Boolean(document.activeElement.closest('fidel-player')))).toBe(true);
+    // The fixed bars are allowed for: scroll-padding-top covers their height.
+    expect(await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop))).toBeGreaterThan(100);
   });
 });

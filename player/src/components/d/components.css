@@ -266,6 +266,24 @@ a.fidel-d-button { text-decoration: underline; }
 .fidel-sign-status { font-weight: 600; margin: 0.75rem 0 0; }
 .fidel-sign-file { display: block; max-inline-size: 100%; min-block-size: 2.75rem; }
 
+/* ---------- D7: <fidel-reading-guide> ------------------------------------------- */
+.fidel-guide-controls { margin-block-start: 0.5rem; }
+.fidel-guide-box,
+.fidel-guide-veil {
+  position: fixed;
+  pointer-events: none;      /* never in the way of clicks or selection */
+  z-index: 900;
+  box-sizing: border-box;
+}
+.fidel-guide-box {
+  border: 4px solid var(--fidel-accent);
+  border-radius: 0.25rem;
+  background: rgb(255 191 71 / 0.3);   /* light amber tint ... */
+  mix-blend-mode: multiply;            /* ... that keeps dark text dark */
+}
+.fidel-guide-veil { background: rgb(255 255 255 / 0.35); }   /* #1a1a1a text stays above 5:1 */
+.fidel-guide-box[hidden], .fidel-guide-veil[hidden] { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   :is(fidel-caption-report, fidel-amharic-keyboard, fidel-event-card, fidel-sign-answer, fidel-reading-guide) * {
     transition: none !important;
@@ -282,4 +300,6 @@ a.fidel-d-button { text-decoration: underline; }
   :is(fidel-caption-report, fidel-amharic-keyboard, fidel-event-card, fidel-sign-answer, fidel-reading-guide) :focus-visible {
     outline: 3px solid Highlight;
   }
+  .fidel-guide-box { border-color: Highlight; background: transparent; mix-blend-mode: normal; }
+  .fidel-guide-veil { display: none; }
 }
