@@ -29,6 +29,34 @@
     <p><a href="/demo/blank.html">Back to the player on a blank page</a></p>
 
     <!-- PACKAGE A START -->
+    <section id="package-a" aria-labelledby="package-a-title">
+      <h2 id="package-a-title">Reading and understanding</h2>
+      <p>For blind, low-vision and low-literacy learners, and for coding lessons.</p>
+
+      <h3 id="a-code-block">Code block</h3>
+      <p>Who this helps: blind learners and coders. Speech mangles symbols and Python indentation; a Braille display needs real text.</p>
+      <fidel-code-block language="python" label="Example: a loop (Python)" at="1:23" for="a-lesson-player">
+<pre><code>for i in range(3):
+    print(i)</code></pre>
+      </fidel-code-block>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Tab to the code block, then use the Copy button.</li>
+        <li>Press Read line by line, then use the Up and Down arrow keys: each line is read with its indent.</li>
+        <li>Press Symbols as words to switch between "open bracket" and "(".</li>
+        <li>Press Play from 1:23 to start the lesson video (in the next example) at that point.</li>
+      </ul>
+
+      <h3 id="a-code-snapshots">Code in sync with the video</h3>
+      <p>Who this helps: blind learners following a coding video where the teacher types code on screen.</p>
+      <fidel-player id="a-lesson-player"
+        src="/media/lesson.mp4"
+        src-webm="/media/lesson.webm"
+        captions-en="/demo/media/en.vtt"
+        chapters="/demo/media/chapters.vtt"
+        lang="en">
+      </fidel-player>
+    </section>
     <!-- PACKAGE A END -->
 
     <!-- PACKAGE B START -->
