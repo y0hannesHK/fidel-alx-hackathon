@@ -46,10 +46,13 @@
     link.textContent = 'Skip to the lesson';
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      // Focusable only from script, so Tab continues from the lesson.
-      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-      target.focus();
-      target.scrollIntoView({ block: 'start' });
+      // Land on the lesson's first heading, not the whole lesson: focusing a big
+      // container makes Narrator read everything in it at once (Narrator test,
+      // 15 Nov 2026). Focusable only from script, so Tab continues from there.
+      const place = target.querySelector('h1, h2, h3') || target;
+      if (!place.hasAttribute('tabindex')) place.setAttribute('tabindex', '-1');
+      place.focus();
+      place.scrollIntoView({ block: 'start' });
     });
     document.body.prepend(link);
   }

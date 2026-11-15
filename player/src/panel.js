@@ -14,6 +14,11 @@ import { emit } from './events.js';
 import { openKeyboardHelp } from './keyboard.js';
 
 const LANGUAGE_NAMES = { en: 'English', am: 'አማርኛ', om: 'Afaan Oromoo' };
+// Screen readers with no Amharic voice say nothing for "አማርኛ" (Narrator test,
+// 15 Nov 2026), so learners could not tell which option is Amharic. After a
+// name in Ethiopic letters, add its name in the interface language, for
+// screen readers only. The visible name stays in its own language.
+const SPOKEN_NAMES = { en: { am: 'Amharic' } };
 
 /**
  * options: {
@@ -27,6 +32,10 @@ const LANGUAGE_NAMES = { en: 'English', am: 'አማርኛ', om: 'Afaan Oromoo' }
 export function buildPanel(options) {
   const { lang, idPrefix, headingLevel, prefs, on } = options;
   const tr = (key, values) => t(lang, key, values);
+  const spokenName = (code, label) => {
+    const extra = SPOKEN_NAMES[lang]?.[code];
+    return extra ? [label, h('span', { class: 'fidel-sr-only', lang }, ` (${extra})`)] : label;
+  };
   const name = (part) => `${idPrefix}-${part}`; // radio group names, unique per player
   const headingId = `${idPrefix}-settings-heading`;
 
@@ -42,7 +51,7 @@ export function buildPanel(options) {
         'data-fidel-ui-lang': code,
         onclick: () => code !== lang && on.uiLang(code),
       },
-      label
+      spokenName(code, label)
     )
   );
 
@@ -66,7 +75,7 @@ export function buildPanel(options) {
     name: name('caption-lang'),
     options: [
       { value: 'off', label: tr('off') },
-      ...options.captionLangs.map((code) => ({ value: code, label: LANGUAGE_NAMES[code] || code, lang: code })),
+      ...options.captionLangs.map((code) => ({ value: code, label: spokenName(code, LANGUAGE_NAMES[code] || code), lang: code })),
     ],
     checked: options.captionLang,
     onChange: on.captionLang,

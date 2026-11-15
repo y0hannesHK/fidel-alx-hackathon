@@ -32,6 +32,7 @@
 // jQuery and looks up its elements in the normal document.
 import AblePlayer from './able-extensions.js';
 import { h } from './dom.js';
+import { spokenTime } from './spoken-time.js';
 import { t } from './strings.js';
 import { loadPrefs, savePrefs, clampCaptionSize } from './prefs.js';
 import { captionCssVars } from './caption-style.js';
@@ -287,6 +288,31 @@ export class FidelPlayer extends HTMLElement {
     }
   }
 
+  /** Able Player's "0:00 / 2:39" in the status bar: Narrator read it as
+   *  "midnight slash 239" (Narrator test, 15 Nov 2026). Keep it on screen, but
+   *  give screen readers the time in words instead: "1 minute 3 seconds of
+   *  2 minutes 39 seconds". Not a live region, so it is never announced by
+   *  itself; it is read when the learner reaches it. Safe to call again. */
+  speakTimer() {
+    const timer = this.querySelector('.able-timer');
+    const media = this.querySelector('.able-media-container video, .able-media-container audio');
+    if (!timer || !media || timer.dataset.fidelSpoken) return;
+    timer.dataset.fidelSpoken = 'yes';
+    timer.setAttribute('aria-hidden', 'true');
+    const spoken = h('span', { class: 'fidel-sr-only fidel-spoken-timer' });
+    timer.after(spoken);
+    let shown = '';
+    const update = () => {
+      const lang = this.uiLang === 'am' ? 'am' : 'en';
+      const now = spokenTime(media.currentTime, lang);
+      const total = Number.isFinite(media.duration) ? spokenTime(media.duration, lang) : '';
+      const text = !total ? now : lang === 'am' ? `ከ${total} ${now}` : `${now} of ${total}`;
+      if (text !== shown) spoken.textContent = shown = text;
+    };
+    for (const type of ['timeupdate', 'durationchange', 'seeked', 'loadedmetadata']) media.addEventListener(type, update);
+    update();
+  }
+
   markChapterLanguages() {
     const player = this.ablePlayer;
     if (!player?.chapters?.length) return;
@@ -389,10 +415,12 @@ export class FidelPlayer extends HTMLElement {
     // trigger this observer, so it cannot loop).
     this.markChapterLanguages();
     this.markTranscriptButtons();
+    this.speakTimer();
     this.chapterObserver?.disconnect();
     this.chapterObserver = new MutationObserver(() => {
       this.markChapterLanguages();
       this.markTranscriptButtons();
+      this.speakTimer();
     });
     this.chapterObserver.observe(this, { childList: true, subtree: true });
 

@@ -525,7 +525,12 @@ test.describe('D1: Savanna lesson page patch', () => {
     await expect(skip).toBeFocused();
     await expect(skip).toBeInViewport();
     await page.keyboard.press('Enter');
-    await expect(page.locator('#curriculum_navigation_content')).toBeFocused();
+    // Focus lands on the lesson's first heading (inside the lesson), not the
+    // whole container: Narrator would read the entire lesson at once.
+    expect(await page.evaluate(() => {
+      const el = document.activeElement;
+      return Boolean(el.closest('#curriculum_navigation_content')) && /^H[1-3]$/.test(el.tagName);
+    })).toBe(true);
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => Boolean(document.activeElement.closest('fidel-player')))).toBe(true);
     // The fixed bars are allowed for: scroll-padding-top covers their height.

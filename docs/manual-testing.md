@@ -106,6 +106,7 @@ The co-designer should finish this **without help**:
 |---|---|---|---|---|---|---|
 | 15 Nov 2026 | Team member | Windows 11, Brave, Narrator (scan mode), 80 s screen recording | Components page: headings, links, first code block | Headings, landmark and links read correctly | Narrator read video times such as "1:23" as a number ("one hundred twenty-three") | Yes: times now also read in words, e.g. "Play from 1:23 (1 minute 23 seconds)" |
 | 15 Nov 2026 | Automated walk-through (Chrome accessibility tree, 471 Tab stops) | Lesson, job card, components, forms pages | Every Tab stop: name, role, state, focus ring | All named, no traps, focus visible | Transcript chapter titles were focusable but had no role | Yes: now buttons |
+| 15 Nov 2026 | Team member recording; keyboard tour driven by script | Windows 11, Edge, Narrator, 110 s screen recording | Main task on the lesson page | Player controls and caption settings read clearly | (1) "Skip to lesson" focused the whole page, so Narrator read everything at once; (2) "0:00 / 2:39" read as "midnight slash 239"; (3) "አማርኛ" silent with no Amharic voice | Yes: skip links land on the page heading (also the Savanna patch); the time is given in words; language options also say "(Amharic)" for screen readers |
 | | | | | | | |
 
 ## Component library (`demo/components.html`): NVDA, TalkBack, Braille display, keyboard

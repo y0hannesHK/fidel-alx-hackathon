@@ -309,3 +309,18 @@ test('transcript chapter titles are announced as buttons (they jump to the chapt
   await expect(titles.first()).toHaveAttribute('role', 'button');
   await expect(page.locator('fidel-player').getByRole('button', { name: 'Tech education as an equalizer' })).toBeVisible();
 });
+
+// From a Narrator test (15 Nov 2026): what a screen reader hears.
+test('screen readers: skip link lands on the heading, time in words, Amharic option named', async ({ page }) => {
+  await openLesson(page);
+  // The skip link goes to the lesson heading, not the whole page (Narrator read everything).
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  // "0:00 / 2:39" was read as "midnight slash 239": the time is given in words instead.
+  await expect(page.locator('fidel-player .able-timer')).toHaveAttribute('aria-hidden', 'true');
+  await expect(page.locator('fidel-player .fidel-spoken-timer')).toHaveText(/^0 seconds of 2 minutes 3\d seconds$/);
+  // "አማርኛ" was silent without an Amharic voice: its name also says "Amharic".
+  await expect(page.locator('.fidel-panel').getByRole('radio', { name: 'አማርኛ (Amharic)' })).toBeVisible();
+  await expect(page.locator('.fidel-panel').getByRole('button', { name: 'አማርኛ (Amharic)' })).toBeVisible();
+});

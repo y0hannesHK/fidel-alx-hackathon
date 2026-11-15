@@ -15,6 +15,9 @@ const STEP_LABELS = {
 const STATUS_LABELS = { pending: 'Waiting', running: 'Running…', done: 'Done', failed: 'Failed', skipped: 'Skipped' };
 
 export async function lessonPage(main, lessonId) {
+  userActed = false;
+  document.addEventListener('keydown', noteUserAction, true);
+  document.addEventListener('pointerdown', noteUserAction, true);
   let manifest = await api(`/api/v1/lessons/${lessonId}`);
   document.title = `${manifest.title} – Fidel Studio`;
 
@@ -88,9 +91,24 @@ export async function lessonPage(main, lessonId) {
     refreshPreview();
   }));
   main.append(signSection(lessonId, manifest));
-  // Move focus to the heading when the page is ready, but never take it away
-  // from a field the user is already working in while the page loads.
-  if (!main.contains(document.activeElement) || document.activeElement === main) heading.focus();
+  // Move focus to the heading when the page is ready, unless the user has
+  // already started (pressed a key or clicked) while it was loading: then
+  // never take focus away from what they are doing.
+  document.removeEventListener('keydown', noteUserAction, true);
+  document.removeEventListener('pointerdown', noteUserAction, true);
+  // A section may also have moved focus to its own heading on purpose (the
+  // sound-off check does, after it redraws the page): leave that too.
+  setTimeout(() => {
+    const placed = document.activeElement !== heading && main.contains(document.activeElement)
+      && document.activeElement.matches('h1, h2, h3, h4, h5, h6');
+    if (!userActed && !placed) heading.focus();
+  }, 0);
+}
+
+// Set while a lesson page loads: did the user press a key or click meanwhile?
+let userActed = false;
+function noteUserAction() {
+  userActed = true;
 }
 
 // --- Progress and "run again" --------------------------------------------------
