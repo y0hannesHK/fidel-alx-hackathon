@@ -97,6 +97,7 @@ const LEARNER_PAGES = [
   { name: 'job card', url: () => `/demo/savanna-mock/jobs.html?id=${jobId}`, ready: 'fidel-job-card article' },
   { name: 'live-session viewer', url: () => '/demo/savanna-mock/session.html', ready: 'fidel-session-viewer' },
   { name: 'blank page', url: () => '/demo/blank.html', ready: 'body' },
+  { name: 'components page', url: () => '/demo/components.html', ready: 'main' },
   { name: 'lesson document (Amharic)', url: () => `/api/v1/lessons/${lessonId}/document.html?lang=am`, ready: 'main' },
 ];
 const STUDIO_PAGES = [
@@ -183,7 +184,7 @@ test.describe('keyboard only', () => {
       // (The browser's own <audio> controls are about 6 Tab stops in one element.)
       const stuck = seen.some((s, i) => i >= 9 && seen.slice(i - 9, i + 1).every((x) => x === s && x !== 'body'));
       expect(stuck, `focus order: ${seen.slice(0, 25).join(' > ')}`).toBe(false);
-      expect(new Set(seen).size, 'different things reached with Tab').toBeGreaterThan(['blank page', 'lesson document (Amharic)'].includes(p.name) ? 0 : 3);
+      expect(new Set(seen).size, 'different things reached with Tab').toBeGreaterThan(['blank page', 'lesson document (Amharic)', 'components page'].includes(p.name) ? 0 : 3);
     });
   }
 });

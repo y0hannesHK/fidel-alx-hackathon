@@ -105,3 +105,14 @@ The co-designer should finish this **without help**:
 | Date | Tester (with consent) | Setup | Task step | Result | Problem found | Fixed? |
 |---|---|---|---|---|---|---|
 | | | | | | | |
+
+## Component library (`demo/components.html`): NVDA, TalkBack, Braille display, keyboard
+
+<!-- PACKAGE A START -->
+<!-- PACKAGE A END -->
+
+<!-- PACKAGE B START -->
+<!-- PACKAGE B END -->
+
+<!-- PACKAGE C START -->
+<!-- PACKAGE C END -->

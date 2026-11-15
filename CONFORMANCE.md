@@ -152,3 +152,16 @@ depends on what staff add (explained).
   captions; the player says clearly when Amharic captions are not yet checked.
 - **Amharic speech**: phones rarely have an Amharic voice, so Amharic audio
   description and job summaries need recordings made by staff.
+
+## Component library (`demo/components.html`)
+
+Notes per package, for the WCAG criteria each component touches.
+
+<!-- PACKAGE A START -->
+<!-- PACKAGE A END -->
+
+<!-- PACKAGE B START -->
+<!-- PACKAGE B END -->
+
+<!-- PACKAGE C START -->
+<!-- PACKAGE C END -->

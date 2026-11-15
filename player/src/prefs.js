@@ -15,6 +15,8 @@ export const DEFAULT_PREFS = {
   signCorner: 'bottom-right',
   playbackRate: 1,
   lowData: false, // true = play the small video rendition
+  simpleWords: false, // <fidel-simple-mode>: show the simple version (Package A)
+  sectionLanguage: null, // <fidel-lang>: last chosen section language (Package B)
 };
 
 export const CAPTION_SIZE = { min: 100, max: 250, step: 25 };

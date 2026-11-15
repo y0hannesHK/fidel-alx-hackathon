@@ -85,3 +85,14 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 - Amharic chapter titles (`chapters-am`) and `lang="en"` on English chapter
   titles inside an Amharic transcript (Phase 4).
+
+## Component library: not finished, Amharic to review, placeholders
+
+<!-- PACKAGE A START -->
+<!-- PACKAGE A END -->
+
+<!-- PACKAGE B START -->
+<!-- PACKAGE B END -->
+
+<!-- PACKAGE C START -->
+<!-- PACKAGE C END -->

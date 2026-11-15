@@ -224,6 +224,19 @@ page goes to a new `/embed/v2/`, and `v1` stays available. `/embed/` (no
 version) always serves the latest, for testing only. `window.Fidel.version`
 says which version a page has loaded.
 
+### More components
+
+Live examples of every component: [`demo/components.html`](demo/components.html).
+
+<!-- PACKAGE A START -->
+<!-- PACKAGE A END -->
+
+<!-- PACKAGE B START -->
+<!-- PACKAGE B END -->
+
+<!-- PACKAGE C START -->
+<!-- PACKAGE C END -->
+
 ## Level 2: REST API
 
 Interactive docs at `/docs` (Swagger UI); the spec is in [openapi.yaml](openapi.yaml) and [openapi.json](openapi.json)

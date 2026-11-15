@@ -10,6 +10,10 @@ import { FidelJobCard } from './job-card.js';
 import { FidelSessionViewer } from './session-viewer.js';
 import { FidelCertificate } from './certificate-card.js';
 import { VERSION } from './events.js';
+// Component library (assets/AGENT_TASK_fidel_components.md): one line per package.
+import './components/a/register.js'; // Package A: reading and understanding
+import './components/b/register.js'; // Package B: data, offline, dates and language
+import './components/c/register.js'; // Package C: Deaf learners, motor access, navigation, help
 
 // window.Fidel.version tells a page which Fidel it has loaded.
 export { VERSION as version };
