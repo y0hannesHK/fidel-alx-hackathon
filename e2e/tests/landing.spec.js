@@ -10,8 +10,7 @@ const ZOOMS = [
   { name: '200%', viewport: { width: 640, height: 400 }, deviceScaleFactor: 2 },
   { name: '400%', viewport: { width: 320, height: 200 }, deviceScaleFactor: 4 },
 ];
-// Built by another branch: answers 404 until that branch is merged.
-const NOT_YET_MERGED = ['/demo/savanna-rebuild/'];
+const NOT_YET_MERGED = []; // the Savanna rebuild is merged: every link is checked
 
 const serious = (results) => results.violations.filter((v) => ['critical', 'serious'].includes(v.impact))
   .map((v) => `${v.impact} ${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')}`);
