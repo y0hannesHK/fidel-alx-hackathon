@@ -5,11 +5,13 @@
 import './components.css';
 import { FidelCodeBlock } from './code-block.js';
 import { FidelCodeSnapshots } from './code-snapshots.js';
+import { FidelDescribedImage } from './described-image.js';
 
 // Order matters: code blocks first, so snapshots can move finished blocks.
 const TAGS = [
   ['fidel-code-block', FidelCodeBlock],
   ['fidel-code-snapshots', FidelCodeSnapshots],
+  ['fidel-described-image', FidelDescribedImage],
 ];
 
 for (const [name, element] of TAGS) {

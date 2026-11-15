@@ -47,6 +47,7 @@ for (const zoom of ZOOMS) {
     expect(await seriousAxeIssues(page)).toEqual([]);
     // Open everything that opens, then check again.
     await codeBlock(page).getByRole('button', { name: 'Read line by line' }).click();
+    await page.locator('#package-a details').evaluateAll((all) => all.forEach((d) => { d.open = true; }));
     expect(await seriousAxeIssues(page)).toEqual([]);
     const { pixels, outermost } = await sidewaysScroll(page);
     expect(pixels, `sideways scrolling; sticking out: ${outermost.join(', ')}`).toBeLessThanOrEqual(1);
@@ -118,6 +119,24 @@ test('code snapshots: time order, Now follows the video, announced once, quiet a
   await expect(polite).toHaveText('Code for 0:59 is ready', { timeout: 10_000 });
   await expect(items.nth(1)).toHaveAttribute('aria-current', 'time');
   await page.evaluate(() => document.querySelector('#a-lesson-player video').pause());
+});
+
+test('described image: figure, alt, caption, lazy, full description in details', async ({ page }) => {
+  await open(page);
+  const figure = page.locator('fidel-described-image').first().getByRole('figure');
+  await expect(figure).toBeVisible();
+  const img = figure.getByRole('img', { name: /how a web request travels/i });
+  await expect(img).toHaveAttribute('loading', 'lazy');
+  await expect(figure.locator('figcaption')).toHaveText('How a web request travels');
+  const description = figure.getByText('The browser sends a request to the server');
+  await expect(description).toBeHidden();
+  await figure.getByText('Full description').click();
+  await expect(description).toBeVisible();
+  await expect(figure.locator('[id]')).toHaveCount(0); // no copied ids
+  // Missing alt: alt="" (not the file name) and a visible warning on the demo.
+  const bad = page.locator('fidel-described-image').nth(1);
+  await expect(bad.locator('img')).toHaveAttribute('alt', '');
+  await expect(bad.getByText(/no alt text/)).toBeVisible();
 });
 
 test('Package A keyboard: Tab reaches every control and never gets stuck', async ({ page }) => {
