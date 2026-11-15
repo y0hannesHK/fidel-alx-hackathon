@@ -11,6 +11,7 @@ non-commercial (NC) licence as a default.
 | [jQuery](https://jquery.com/) | 3.x | MIT | Required by Able Player |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | 3.x | Apache-2.0 / MPL-2.0 | Required by Able Player (sanitises caption HTML) |
 | [Noto Sans Ethiopic](https://fonts.google.com/noto/specimen/Noto+Sans+Ethiopic) via [@fontsource/noto-sans-ethiopic](https://fontsource.org/fonts/noto-sans-ethiopic) | 5.x | SIL OFL 1.1 (shipped as `fonts/OFL.txt`) | Self-hosted font for Amharic text |
+| [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) (Braille Institute of America), regular weight, Latin subset WOFF2 from [@fontsource/atkinson-hyperlegible](https://fontsource.org/fonts/atkinson-hyperlegible) (one file, 17.2 KB, copied into `player/src/fonts/`; no npm dependency) | 5.x | SIL OFL 1.1 (full text in `player/src/fonts/OFL-atkinson-hyperlegible.txt`, shipped as `fonts/OFL-atkinson-hyperlegible.txt`) | "Easy-read font" option of `<fidel-display-prefs>` (Package E, E8), Latin text only; downloaded only when a learner chooses it |
 
 ## Server
 

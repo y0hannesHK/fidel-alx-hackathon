@@ -31,6 +31,11 @@ function copyEthiopicFonts() {
         fileName: 'fonts/OFL.txt',
         source: readFileSync(require.resolve('@fontsource/noto-sans-ethiopic/LICENSE')),
       });
+      // Package E (E8): the easy-read font for Latin text (Atkinson Hyperlegible,
+      // SIL OFL 1.1), kept in src/fonts/ (no npm package), with its licence.
+      for (const file of ['atkinson-hyperlegible-400.woff2', 'OFL-atkinson-hyperlegible.txt']) {
+        this.emitFile({ type: 'asset', fileName: `fonts/${file}`, source: readFileSync(new URL(`./src/fonts/${file}`, import.meta.url)) });
+      }
     },
   };
 }

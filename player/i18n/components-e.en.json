@@ -190,5 +190,10 @@
   },
   "toggletip": {
     "label": "More information"
+  },
+  "font": {
+    "legend": "Reading font",
+    "default": "Default font",
+    "easy": "Easy-read font (Atkinson Hyperlegible)"
   }
 }

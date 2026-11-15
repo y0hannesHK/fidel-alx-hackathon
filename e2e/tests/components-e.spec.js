@@ -687,3 +687,39 @@ test('Studio: staff see a learner question, play a voice note and mark it answer
   const answered = (await questionsOf(request)).find((q) => q.text === 'Studio test question');
   expect(answered.status).toBe('answered');
 });
+
+// --- E8: "Reading font" in <fidel-display-prefs> -----------------------------------------
+
+test('E8: Easy-read font: Atkinson Hyperlegible for Latin text, Ethiopic stays Noto Sans Ethiopic', async ({ page }) => {
+  await openPage(page, { lesson: false });
+  const fontLoaded = page.waitForResponse((r) => r.url().endsWith('/fonts/atkinson-hyperlegible-400.woff2') && r.status() === 200);
+  await page.getByRole('button', { name: 'Display settings' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Display settings' });
+  const group = dialog.getByRole('group', { name: 'Reading font' });
+  await expect(group.getByRole('radio', { name: 'Default font' })).toBeChecked();
+  await group.getByRole('radio', { name: 'Easy-read font (Atkinson Hyperlegible)' }).check();
+  expect(await seriousAxeIssues(page, 'fidel-display-prefs')).toEqual([]);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#demo-b-lesson')).toHaveClass(/fidel-dp-font-easy/);
+  const callout = section(page).locator('fidel-callout').first();
+  await expect(callout).toHaveClass(/fidel-dp-font-easy/);
+  const family = (selector) => page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
+  expect(await family('#package-e fidel-callout .fidel-callout-heading')).toMatch(/^"Fidel Atkinson Hyperlegible"/);
+  await fontLoaded;
+  // Ethiopic text in a component keeps its Ethiopic font.
+  await page.evaluate(() => {
+    const p = document.createElement('p');
+    p.lang = 'am';
+    p.id = 'e8-amharic';
+    p.textContent = 'ሰላም';
+    document.querySelector('#package-e fidel-callout .fidel-callout-body').append(p);
+  });
+  expect(await family('#e8-amharic')).toMatch(/^"Fidel Noto Sans Ethiopic"/);
+  expect(await page.evaluate(() => localStorage.getItem('fidel-display-font'))).toBe('easy');
+  await page.reload();
+  await expect(section(page).locator('fidel-callout').first()).toHaveClass(/fidel-dp-font-easy/);
+  await page.getByRole('button', { name: 'Display settings' }).click();
+  await page.getByRole('button', { name: 'Reset' }).click();
+  await expect(section(page).locator('fidel-callout').first()).not.toHaveClass(/fidel-dp-font-easy/);
+  expect(await page.evaluate(() => localStorage.getItem('fidel-display-font'))).toBeNull();
+});

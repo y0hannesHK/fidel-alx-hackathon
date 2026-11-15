@@ -503,3 +503,11 @@ fidel-table { container-type: inline-size; }
   .fidel-callout, .fidel-quiz-feedback, .fidel-voice-banner, .fidel-quiz-timer { border-color: CanvasText; }
   .fidel-toggletip-icon { forced-color-adjust: none; color: Canvas; background: CanvasText; }
 }
+
+/* ---------- E8: "Easy-read font" in <fidel-display-prefs> (class fidel-dp-font-easy) ---------
+   Latin text in Atkinson Hyperlegible (self-hosted, SIL OFL 1.1). Ethiopic text
+   keeps Noto Sans Ethiopic; code stays monospace; icon fonts are left alone. */
+.fidel-dp-font-easy,
+.fidel-dp-font-easy :not(:lang(am), :lang(ti), code, pre, kbd, samp, code *, pre *, [class*="icon"]) {
+  font-family: "Fidel Atkinson Hyperlegible", "Atkinson Hyperlegible", "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", system-ui, sans-serif !important;
+}

@@ -190,5 +190,10 @@
   },
   "toggletip": {
     "label": "ተጨማሪ መረጃ"
+  },
+  "font": {
+    "legend": "የንባብ ፊደል",
+    "default": "መደበኛ ፊደል",
+    "easy": "ለማንበብ ቀላል ፊደል (Atkinson Hyperlegible፣ ለላቲን ፊደላት)"
   }
 }

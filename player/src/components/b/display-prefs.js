@@ -15,8 +15,31 @@ import { h, radioGroup, uid } from '../../dom.js';
 import { emit } from '../../events.js';
 import { TEXT_SIZES, cleanDisplay, displayClasses } from './logic.js';
 import { langOf, translator } from './strings.js';
+import { text as textE } from '../e/common.js'; // Package E (E8): reading font
 
 const KEY = 'fidel-display-prefs';
+
+// --- Package E (E8) START: "Reading font" (Default / Easy-read font) ---------------
+// Atkinson Hyperlegible (SIL OFL 1.1, self-hosted in fonts/, see fonts.js) for
+// Latin text; Ethiopic text stays in Noto Sans Ethiopic. Kept under its own
+// key so the other settings are unchanged. Class: fidel-dp-font-easy.
+const FONT_KEY = 'fidel-display-font';
+function loadFont() {
+  try {
+    return localStorage.getItem(FONT_KEY) === 'easy' ? 'easy' : 'default';
+  } catch {
+    return 'default';
+  }
+}
+function saveFont(font) {
+  try {
+    if (font === 'easy') localStorage.setItem(FONT_KEY, 'easy');
+    else localStorage.removeItem(FONT_KEY);
+  } catch {
+    // Not remembered next time; still applied now.
+  }
+}
+// --- Package E (E8) END ------------------------------------------------------------
 
 function loadDisplay() {
   try {
@@ -37,6 +60,7 @@ export class FidelDisplayPrefs extends HTMLElement {
   connectedCallback() {
     if (this.dialog) return;
     this.settings = loadDisplay();
+    this.font = loadFont(); // Package E (E8)
     this.applied = new Set();
     this.build();
     this.apply();
@@ -68,6 +92,7 @@ export class FidelDisplayPrefs extends HTMLElement {
     this.applied = new Set(this.targets());
     for (const el of this.applied) {
       el.classList.add(...classes);
+      if (this.font === 'easy') el.classList.add('fidel-dp-font-easy'); // Package E (E8)
       if (this.settings.still) {
         el.querySelectorAll('video').forEach((v) => { if (!v.paused && (v.autoplay || v.loop)) v.pause(); });
       }
@@ -110,6 +135,17 @@ export class FidelDisplayPrefs extends HTMLElement {
       }),
       check('still', tr('stopMotion')),
       check('focus', tr('thickFocus')),
+      // Package E (E8): reading font.
+      radioGroup({
+        legend: textE(lang, 'font', 'legend'), name: uid('fidel-dp-font'), checked: this.font,
+        options: [{ value: 'default', label: textE(lang, 'font', 'default') }, { value: 'easy', label: textE(lang, 'font', 'easy') }],
+        onChange: (v) => {
+          this.font = v === 'easy' ? 'easy' : 'default';
+          saveFont(this.font);
+          this.apply();
+          emit(this, 'fidel-display-prefs-change', { ...this.settings, font: this.font });
+        },
+      }),
     ];
     const controls = h('div', {}, body());
     const opener = h('button', {
@@ -126,6 +162,8 @@ export class FidelDisplayPrefs extends HTMLElement {
           onclick: () => {
             this.settings = cleanDisplay({});
             saveDisplay(this.settings);
+            this.font = 'default'; // Package E (E8)
+            saveFont(this.font);
             this.apply();
             controls.replaceChildren(...body());
             emit(this, 'fidel-display-prefs-change', { ...this.settings });
