@@ -115,6 +115,25 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->
+### Package B (data, offline, dates, language)
+
+All six components are finished and on `demo/components.html`. Still to do:
+
+- **Amharic to review** by an Amharic speaker: every string in
+  `player/i18n/components-b.am.json`, the Amharic weekday names in
+  `player/src/components/b/logic.js`, and the demo's Amharic sentences.
+- **Afaan Oromo and Arabic** demo sentences in `<fidel-lang>` (demo page)
+  were written by the agent: check with speakers. Tigrinya and Somali names are
+  built in but not demonstrated.
+- **Download later demo** uses a small demo file, not a real lesson
+  (`/demo/media/chapters.vtt`): only one-page lessons are served offline by
+  `/fidel-sw.js`. Try it with a published lesson's `offline.html`.
+- **"Only on Wi-Fi"** cannot be tested on a desktop (no `navigator.connection.type`).
+- **Display settings**: text size only grows text sized in `em`/`%`; "Stop
+  motion" cannot stop GIFs. The high-contrast modes override every colour in
+  the target (including the player's controls).
+- **Job card** still shows both calendars itself (not `<fidel-ethiopian-date>`); fine as it is.
+- Manual tests (NVDA, TalkBack, Braille) not yet done.
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->

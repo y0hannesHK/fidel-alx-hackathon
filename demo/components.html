@@ -178,6 +178,85 @@
     <!-- PACKAGE A END -->
 
     <!-- PACKAGE B START -->
+    <section aria-labelledby="pkg-b" class="demo-b">
+      <h2 id="pkg-b">Data, offline, dates and language</h2>
+      <p>For learners on cheap phones and expensive data.</p>
+
+      <h3>Data saver: know the size before you download</h3>
+      <p>Who this helps: learners who pay for every megabyte of data.</p>
+      <fidel-data-saver href="/media/lesson.mp4" captions="/demo/media/en.vtt"
+                        alt-href="/demo/media/en.vtt" alt-label="text-only version (the captions)"></fidel-data-saver>
+      <p>Try it:</p>
+      <ul>
+        <li>Read the size first: nothing is downloaded yet (this example asks the server for the size).</li>
+        <li>Press Tab to "Load it", then Enter: only now does the video load.</li>
+        <li>Or choose the text-only version, which is much smaller.</li>
+      </ul>
+
+      <h3>Offline status: online or not, and what still works</h3>
+      <p>Who this helps: learners whose connection comes and goes.</p>
+      <fidel-offline-status></fidel-offline-status>
+      <p>Try it:</p>
+      <ul>
+        <li>Turn off Wi-Fi or mobile data (or use airplane mode): the line changes to "You are offline" and says how many lessons are saved. A screen reader reads it once.</li>
+        <li>Save something with the next example, then open "Saved lessons".</li>
+      </ul>
+
+      <h3>Download later: download when you are online</h3>
+      <p>Who this helps: learners who are offline now, or on expensive mobile data.</p>
+      <fidel-download-later href="/demo/media/chapters.vtt" label="Lesson 3 (demo file)" size="196"></fidel-download-later>
+      <p>Try it:</p>
+      <ul>
+        <li>Turn off the connection, then press "Download when I'm online": it waits in the queue.</li>
+        <li>Turn the connection back on: it downloads and says "Lesson 3 (demo file) is ready offline".</li>
+        <li>Use "Remove … from the queue" to cancel. On Android Chrome there is also "Only on Wi-Fi".</li>
+      </ul>
+
+      <h3>Ethiopian date: every date in both calendars</h3>
+      <p>Who this helps: every Ethiopian learner and employer.</p>
+      <ul class="demo-b-dates">
+        <li>Applications close on <fidel-ethiopian-date datetime="2026-11-15"></fidel-ethiopian-date>.</li>
+        <li>Amharic order: <fidel-ethiopian-date datetime="2026-11-15" ui-lang="am"></fidel-ethiopian-date></li>
+        <li>Long format: <fidel-ethiopian-date datetime="2026-11-15" format="long"></fidel-ethiopian-date></li>
+        <li>A Pagume (13th month) date: <fidel-ethiopian-date datetime="2026-09-10"></fidel-ethiopian-date></li>
+      </ul>
+      <p>Try it:</p>
+      <ul>
+        <li>Listen with a screen reader: each calendar is read in its own language.</li>
+        <li>The browser and translation tools see a real date (<code>&lt;time datetime&gt;</code>).</li>
+      </ul>
+
+      <h3>Section language: switch language for one section</h3>
+      <p>Who this helps: learners who mix Amharic and English; Afaan Oromo and Arabic readers.</p>
+      <fidel-lang label="Lesson summary">
+        <div lang="en"><p>In this lesson you build one simple web page and check it with a screen reader.</p></div>
+        <div lang="am"><p>በዚህ ትምህርት አንድ ቀላል ድረ-ገጽ ትሠራላችሁ፤ ከዚያም በስክሪን አንባቢ ትፈትሹታላችሁ።</p></div>
+        <div lang="om"><p>Barnoota kana keessatti fuula weebii salphaa tokko ijaartee, dubbisaa iskiriinii (screen reader) tiin ni qorta.</p></div>
+        <div lang="ar"><p>في هذا الدرس تبني صفحة ويب بسيطة وتختبرها باستخدام قارئ الشاشة.</p></div>
+      </fidel-lang>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Tab to the language buttons; each is written in its own language. Press Enter on "አማርኛ": only the Amharic version is shown, and a screen reader hears "Showing Amharic".</li>
+        <li>Choose "العربية": the text runs right to left.</li>
+        <li>Reload the page: your choice is remembered.</li>
+      </ul>
+
+      <h3>Display settings: make the page work for you</h3>
+      <p>Who this helps: low-vision learners, learners with dyslexia, people sensitive to motion.</p>
+      <fidel-display-prefs target="#demo-b-lesson"></fidel-display-prefs>
+      <div id="demo-b-lesson" class="demo-b-lesson" style="border: 1px solid #5c5c5c; border-radius: 8px; padding: 0 1rem; margin-block: 1rem;">
+        <h4>Example lesson text</h4>
+        <p>A web page is a document that a browser shows. Headings help screen-reader users jump to the part they need.</p>
+        <p lang="am">ድረ-ገጽ አሳሽ የሚያሳየው ሰነድ ነው። ርዕሶች የስክሪን አንባቢ ተጠቃሚዎች ወደሚፈልጉት ክፍል እንዲዘሉ ይረዳሉ።</p>
+        <p><a href="#pkg-b">A link inside the lesson</a></p>
+      </div>
+      <p>Try it:</p>
+      <ul>
+        <li>Press "Display settings": a dialog opens. Choose 150 %, "Wide" and "Yellow on black": only the example lesson text and the Fidel components change, not this page.</li>
+        <li>Press Escape: the dialog closes and focus goes back to the button. Reload: the settings are remembered.</li>
+        <li>Use "Reset" to go back to normal.</li>
+      </ul>
+    </section>
     <!-- PACKAGE B END -->
 
     <!-- PACKAGE C START -->

@@ -137,6 +137,26 @@ Look and zoom:
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->
+### Package B: data, offline, dates and language
+
+Keyboard only (no mouse):
+- [ ] Tab reaches "Load it", the smaller-version link, "Download when I'm online", the four language buttons, "Display settings" and the link in the example lesson, in that order, with a visible focus ring.
+- [ ] "Display settings": Enter opens the dialog; Tab stays inside it; Escape closes it and focus is back on the button.
+
+NVDA (Firefox or Chrome) and TalkBack (Android Chrome):
+- [ ] Data saver: the size is read before the buttons; "Load it (2.2 MB)" is announced as a button; after pressing it, the video is focused and "Loading the video" is heard.
+- [ ] Offline status: turn on airplane mode: "You are offline…" is heard **once**; turn it off: "Online." is heard once. Nothing is read at page load.
+- [ ] Download later: airplane mode on, press the button: "… will download when you are online"; airplane mode off: "… is ready offline" is heard once.
+- [ ] Ethiopian date: the English date is read with the English voice, the Ethiopian date with the Amharic voice (if one is installed).
+- [ ] Section language: buttons are read as "English, button, current" / "አማርኛ, button"; pressing አማርኛ says "Showing Amharic" and the summary is read in Amharic.
+- [ ] Display settings: the dialog is announced with its name; each group (Text size, Line spacing, Colours) is announced with its legend.
+- [ ] TalkBack on Android Chrome: "Only on Wi-Fi" appears, and with it checked, mobile data does not start the download.
+
+Braille display (NVDA):
+- [ ] Short messages ("Online.", "Showing Amharic", "Lesson 3 (demo file) is ready offline.") are shown in full on the display.
+
+Low vision / zoom:
+- [ ] At 400 % browser zoom and with 200 % text + wide spacing + yellow on black from the settings, nothing scrolls sideways and the Amharic text is readable.
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->
