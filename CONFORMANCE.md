@@ -167,7 +167,7 @@ Notes per package, for the WCAG criteria each component touches.
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
-### Package D: report a caption problem, Savanna patch
+### Package D: caption reports, sound-off check, Amharic keyboard, event card, sign answers, reading guide, Savanna patch
 
 | Criterion | Level | Support | Notes |
 |---|---|---|---|
@@ -179,4 +179,14 @@ Notes per package, for the WCAG criteria each component touches.
 | 3.3.1 Error Identification | A | Supports | Bad time or a too-long correction is explained in words, next to the field. |
 | 3.3.2 Labels or Instructions | A | Supports | The dialog says what is sent and that no name is needed. |
 | 4.1.3 Status Messages | AA | Supports | "Thank you. A person will check it." and "Saved on this phone…" are announced. |
+| 1.2.2 Captions (Prerecorded), sound descriptions | A | Supports (Studio tool) | Studio's sound-off check lists silent gaps over 3 s and adds [sound] captions in every caption language; a person still has to watch with the sound off. |
+| 1.3.1 Info and Relationships (D4-D7) | A | Supports | Keyboard steps, event access needs and reading-guide modes are labelled groups; the event card is a heading plus a description list. |
+| 1.4.1 Use of Color | A | Supports | Pressed buttons show a check mark; the reading guide uses a thick outline, not colour alone; "Recording" is written in words. |
+| 1.4.10 Reflow | AA | Supports | All Package D parts and dialogs fit 320 px (tested at 400% zoom); the keyboard grid wraps. |
+| 2.1.1 Keyboard (D4-D7) | A | Supports | Amharic keyboard: one Tab stop, arrows/Home/End, Enter/Space, Escape; reading guide has Next/Previous line buttons for keyboard and switch users. |
+| 2.4.3 Focus Order | A | Supports | Sign-answer steps move focus to each step's heading; dialogs return focus to their opener; the keyboard returns to the letters after each letter. |
+| 2.5.8 Target Size (Minimum) | AA | Supports | Every Package D button is at least 44 x 44 px. |
+| 3.1.2 Language of Parts | AA | Supports | Ethiopic letters, Amharic captions and dates carry `lang="am"`; each letter button's name adds a Latin reading. |
+| 4.1.2 Name, Role, Value | A | Supports | Toggles use `aria-expanded` / `aria-pressed`; all controls are native buttons, links, radios and checkboxes. |
+| Camera (rule 5) | - | Note | The camera and recording start only when the learner presses a button, are shown while on ("Camera on", "Recording") and have Stop buttons. |
 <!-- PACKAGE D END -->

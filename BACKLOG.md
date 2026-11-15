@@ -98,12 +98,30 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
-- **Package D: not finished** (stopped by the plan's usage limit on 15 Nov).
-  Done: D1 (Savanna patch) and D2 (report a caption problem, with the Studio
-  panel). Not done: D3 Studio sound-off check (`studio/js/sound-check.js` was
-  started in the `fidel-components-d` folder but is not connected or tested,
-  so it is not committed), D4 Amharic keyboard, D5 event card, D6 answer in
-  sign language, D7 reading guide.
+- **Package D: all items D1-D7 done** (resumed after the usage limit).
+- **Studio caption editor shows empty text boxes** (found while testing D2/D3,
+  not fixed: `studio/js/util.js` `h()` sets a `<textarea>`'s `value` with
+  `setAttribute`, which a textarea ignores). Staff see blank caption boxes; the
+  saved text is unchanged unless they type. Fix: set `el.value` for
+  textareas in `h()` (or in caption-editor.js).
+- **Caption reports from other websites:** the server's CORS rule allows only
+  GET, so a player embedded on another domain cannot POST a report (it is
+  kept on the device and never sent). Allow POST for `/caption-reports` if needed.
+- **"Sound-off check done"** is remembered per browser (localStorage), not on
+  the server.
+- **Sign-language answers storage policy:** Fidel has no endpoint for them;
+  the host decides. If we add one: store like lesson files, no personal data,
+  delete after the course, document in OpenAPI.
+- **Tigrinya keyboard layout** (`layout="tigrinya"` on
+  `<fidel-amharic-keyboard>`: the ቐ row and Tigrinya punctuation) not done.
+- **Savanna starter defects not patched** (they do not block the player): the
+  menu button is a `<div>` with a click handler (sidebar unreachable by
+  keyboard when collapsed at 200%/400%), the logo link and several image links
+  have no accessible name, some images use a file name as alt text.
+- **Event card times** are shown in the learner's time zone; the Ethiopian
+  date is the Addis Ababa date; Ethiopian clock time (6-hour offset) is not shown.
+- **Server error messages** for caption reports are in English even when the
+  component's interface is Amharic.
 - **Package D Amharic text to review:** `player/i18n/components-d.am.json`
   (written by an AI, not a native speaker).
 - **Caption-report abuse limit** is counted in memory: it resets on restart and

@@ -118,7 +118,7 @@ The co-designer should finish this **without help**:
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
-### Package D: report a caption problem, Savanna patch
+### Package D: caption reports, sound-off check, keyboard, event card, sign answer, reading guide, Savanna patch
 
 - [ ] NVDA: "Report a caption problem" is read as a button; in the dialog, the time, language and current caption are read, and "What is wrong?" is read as a group.
 - [ ] TalkBack: the same on Android Chrome; the Amharic caption is read or shown correctly.
@@ -126,4 +126,10 @@ The co-designer should finish this **without help**:
 - [ ] Airplane mode: send a report, see "Saved on this phone", go back online, check that it arrives in Studio.
 - [ ] Studio: "Go to this caption", "Resolved" and "Dismiss" work and are announced.
 - [ ] Savanna lesson page (after `sh scripts/setup-savanna.sh`): the first Tab shows "Skip to the lesson"; at 200% and 400% zoom, Shift+Tab never leaves focus hidden under the fixed bars.
+- [ ] Studio sound-off check: the gaps are read with their times; "Add a sound caption here" expands (aria-expanded), saving announces the result and focus lands on the "Sound-off check" heading.
+- [ ] Amharic keyboard with NVDA (no Amharic voice): letters are read with their Latin reading ("ለ, le"); arrows move, Enter types, the added letter is announced; Escape goes back to the letters.
+- [ ] Amharic keyboard on a phone with TalkBack: 44 px keys, the grid wraps, no sideways scrolling.
+- [ ] Event card with NVDA: heading, both dates and the access line are read as text; the request dialog asks only which support; Escape returns focus to "Request access support". Open the downloaded .ics in a calendar app.
+- [ ] Sign answer: a **Deaf co-designer on their own phone over HTTPS** (a tunnel, see the Technical Guide section 2) records, watches at 0.5x and sends; also refuse the camera once and use the phone's camera app instead.
+- [ ] Reading guide at 200% and 400% zoom: Next/Previous line keep the block in view; Dim the rest stays readable; with Windows High Contrast the outline still shows.
 <!-- PACKAGE D END -->

@@ -176,7 +176,7 @@ test.describe('D2: report a caption problem', () => {
     await dialog.getByLabel('Wrong words').check();
     await dialog.getByLabel('Your correction (optional)').fill('Welcome to this lesson.');
     await dialog.getByRole('button', { name: 'Send' }).click();
-    await expect(page.locator('.fidel-report-message')).toHaveText('Thank you. A person will check it.');
+    await expect(page.locator('fidel-caption-report .fidel-report-message')).toHaveText('Thank you. A person will check it.');
     await expect(dialog).toBeHidden();
     await expect(opener).toBeFocused();
     expect(await sent).toEqual({ lessonId, time: 1, lang });
@@ -194,10 +194,10 @@ test.describe('D2: report a caption problem', () => {
     const dialog = page.getByRole('dialog', { name: 'Report a caption problem' });
     await dialog.getByLabel('Missing sound description').check();
     await dialog.getByRole('button', { name: 'Send' }).click();
-    await expect(page.locator('.fidel-report-message')).toHaveText('Saved on this phone. It will be sent when you are online.');
+    await expect(page.locator('fidel-caption-report .fidel-report-message')).toHaveText('Saved on this phone. It will be sent when you are online.');
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fidel-caption-report-queue')).length)).toBe(1);
     await context.setOffline(false);
-    await expect(page.locator('.fidel-report-message')).toHaveText('Your saved report was sent. Thank you.');
+    await expect(page.locator('fidel-caption-report .fidel-report-message')).toHaveText('Your saved report was sent. Thank you.');
     expect(await page.evaluate(() => localStorage.getItem('fidel-caption-report-queue'))).toBeNull();
     expect((await reports(request)).length).toBe(before + 1);
   });
