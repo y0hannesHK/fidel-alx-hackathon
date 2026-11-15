@@ -109,6 +109,31 @@ The co-designer should finish this **without help**:
 ## Component library (`demo/components.html`): NVDA, TalkBack, Braille display, keyboard
 
 <!-- PACKAGE A START -->
+**Package A: reading and understanding** (section "Reading and understanding").
+
+Keyboard only (no mouse):
+- [ ] Tab moves through every button in order and leaves the section; focus is always visible.
+- [ ] Code block: Copy says "Copied"; Read line by line opens the list and focus lands on line 1; Up/Down/Home/End move between lines; Tab leaves the list in one press.
+- [ ] Word: Enter opens the meaning window; Tab stays inside it; Escape closes it and focus is back on the word.
+- [ ] Steps: Next and Previous put focus on "Step N of 5"; Space ticks "I did this step"; reload keeps the place.
+- [ ] Read aloud: Listen starts, Escape stops.
+
+NVDA (Windows, Chrome or Firefox) and TalkBack (Android, Chrome):
+- [ ] Code block: browse mode reads the code without line numbers; the line view reads "Line 2 of 2, indent 4 spaces: print open bracket i close bracket"; Symbols as words is read as a toggle button, pressed / not pressed.
+- [ ] Code snapshots: play the video past 0:59: "Code for 0:59 is ready" is heard once; "Now" is read before the current snapshot. Pressing "Play from 2:10" does not announce.
+- [ ] Image: read as the alt text, then the caption; "Full description" is a collapsed/expanded control and the description is a normal list.
+- [ ] Word: the word is read as a button; the window is read as a dialog named by the word; the Amharic meaning is read with an Amharic voice if one is installed (lang="am").
+- [ ] Read aloud: with NVDA running, pressing Listen gives two voices at once: check this is understandable, or that NVDA users simply do not press it (it never speaks by itself).
+- [ ] Simple words: read as a toggle button; pressing it says "Simple version shown".
+- [ ] Amharic interface ("ፋይል አስቀምጥ" steps, the word "accessible"): labels are read in Amharic.
+
+Braille display (NVDA + a display):
+- [ ] The code shows as real text, line by line, with its indentation; the line view gives the indent in words.
+- [ ] Short messages ("Copied", "Code for 0:59 is ready") appear briefly and are readable.
+
+Look and zoom:
+- [ ] 200 % and 400 % browser zoom, and a 320 px wide phone: nothing scrolls sideways (long code scrolls inside its box).
+- [ ] Windows High Contrast: buttons, the pressed state, the "Now" label and the reading highlight are visible.
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->

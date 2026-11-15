@@ -229,6 +229,134 @@ says which version a page has loaded.
 Live examples of every component: [`demo/components.html`](demo/components.html).
 
 <!-- PACKAGE A START -->
+#### Reading and understanding (Package A)
+
+Every tag below also takes `ui-lang="en|am"` (default: the page's `lang`, else
+English). Text is in `player/i18n/components-a.en.json` and `.am.json`.
+
+**`<fidel-code-block>`**: code that a screen reader and a Braille display can
+read. The code stays real text; Copy, Read line by line ("Line 2 of 3, indent 4
+spaces: print open bracket i close bracket"), Symbols as words on/off, and
+"Play from 1:23" when a player is on the page.
+
+```html
+<fidel-code-block language="python" label="Example: a loop" at="1:23" for="lesson-player">
+<pre><code>for i in range(3):
+    print(i)</code></pre>
+</fidel-code-block>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `label` | Visible name of the code (default: "*language* code"). |
+| `language` | Programming language, e.g. `python`, `html`. |
+| `at` | Time in the video (`m:ss`): shows "From the video at 1:23" and a "Play from" button. |
+| `for` | Id of the `<fidel-player>` (or `<video>`) to play; default: the first `<fidel-player>`. |
+| `symbols` | `off` to start with symbols shown as symbols in the line view (default: words). |
+
+Events: `fidel-code-block-copy` `{}`, `fidel-code-block-play` `{ seconds }`.
+
+**`<fidel-code-snapshots>`**: code in sync with a coding video. Lists
+`<fidel-code-block at="…">` in time order; while the video plays, the current
+one shows "Now" and is announced once ("Code for 1:23 is ready"), never while
+the learner seeks.
+
+```html
+<fidel-code-snapshots for="lesson-player">
+  <fidel-code-block at="0:45" language="html" label="Step 1">…</fidel-code-block>
+  <fidel-code-block at="1:23" language="html" label="Step 2">…</fidel-code-block>
+</fidel-code-snapshots>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `for` | Id of the player to follow; default: the first `<fidel-player>`. |
+
+Events: `fidel-code-snapshots-change` `{ index, seconds }`.
+
+**`<fidel-described-image>`**: a diagram with a real description: `<figure>`,
+`<img alt>` (lazy-loaded), `<figcaption>`, and a "Full description" `<details>`.
+
+```html
+<fidel-described-image src="request-flow.png" alt="How a web request travels"
+                       long-description-id="flow-desc"></fidel-described-image>
+<div id="flow-desc" hidden><p>The browser sends a request to the server…</p></div>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `src`, `alt` | The image and its short text alternative (required; missing alt gives a console warning). |
+| `caption` | Visible caption (default: the alt text). |
+| `long-description-id` | Id of an element (usually `hidden`) whose content is the full description. |
+| `description` | Or: the full description as plain text. |
+| `width`, `height` | Image size (avoids the page jumping while it loads). |
+| `show-warnings` | Show a visible "no alt text" warning (for demo and authoring pages). |
+
+**`<fidel-word>`**: tap a hard word for its meaning. The word becomes a button
+that opens a small dialog: the term, a plain English meaning, the Amharic
+meaning, and Listen buttons only if the device has a voice. Escape closes and
+returns to the word.
+
+```html
+<p>We use <fidel-word term="server" meaning-en="A computer that stores websites…"
+   meaning-am="ድረ-ገጾችን የሚያስቀምጥ…">server</fidel-word> software.</p>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `term` | The word to explain (default: the text inside). |
+| `meaning-en`, `meaning-am` | The meanings (main way: works with no server). |
+| `glossary` | Optional URL of a glossary in the `/api/v1/glossary` format (`{ terms: [{ en, am, note }] }`), used only for missing meanings. That endpoint needs the staff token, so learner pages should use the attributes. |
+
+Events: `fidel-word-open` `{ term }`.
+
+**`<fidel-read-aloud>`**: a Listen / Stop button for a paragraph. Uses the
+device's voice for the text's language ("Computer voice" is shown), else the
+recording in `audio`, else no button (it says listening is not available). The
+sentence being read is highlighted and underlined. Escape stops. Nothing speaks
+until the learner presses Listen.
+
+```html
+<fidel-read-aloud lang="am" audio="/media/summary-am.mp3"><p lang="am">…</p></fidel-read-aloud>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `lang` | Language of the text (default: the content's `lang`, else the page's). |
+| `audio` | A recording to play when the device has no voice for that language (loaded only on Listen). |
+
+Events: `fidel-read-aloud-start` `{ lang, voice: "computer" \| "recorded" }`, `fidel-read-aloud-stop` `{}`.
+
+**`<fidel-steps>`**: instructions one step at a time: "Step 2 of 5", Previous
+/ Next, "I did this step", and "Show all steps". Focus moves to the step's
+heading on each change. Progress is remembered in this browser. Without
+JavaScript, the plain list shows.
+
+```html
+<fidel-steps label="Install VS Code">
+  <ol><li>Open the website…</li><li>Download…</li><li>Run the installer…</li></ol>
+</fidel-steps>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `label` | Title of the instructions; also the key under which progress is remembered. |
+| `heading-level` | Level of the title heading (2–5, default 3); each step's heading is one level lower. |
+
+Events: `fidel-steps-change` `{ step, total, done }`.
+
+**`<fidel-simple-mode>`**: a "Simple words" switch between the full text and a
+simpler, hand-written version. The choice is remembered (shared preference
+`simpleWords`) and every copy on the page follows it.
+
+```html
+<fidel-simple-mode>
+  <div data-version="full">…original lesson text…</div>
+  <div data-version="simple">…short sentences, one idea each…</div>
+</fidel-simple-mode>
+```
+
+Events: `fidel-simple-mode-change` `{ simple }`.
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->

@@ -29,6 +29,152 @@
     <p><a href="/demo/blank.html">Back to the player on a blank page</a></p>
 
     <!-- PACKAGE A START -->
+    <section id="package-a" aria-labelledby="package-a-title">
+      <h2 id="package-a-title">Reading and understanding</h2>
+      <p>For blind, low-vision and low-literacy learners, and for coding lessons.</p>
+
+      <h3 id="a-code-block">Code block</h3>
+      <p>Who this helps: blind learners and coders. Speech mangles symbols and Python indentation; a Braille display needs real text.</p>
+      <fidel-code-block language="python" label="Example: a loop (Python)" at="1:23" for="a-lesson-player">
+<pre><code>for i in range(3):
+    print(i)</code></pre>
+      </fidel-code-block>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Tab to the code block, then use the Copy button.</li>
+        <li>Press Read line by line, then use the Up and Down arrow keys: each line is read with its indent.</li>
+        <li>Press Symbols as words to switch between "open bracket" and "(".</li>
+        <li>Press Play from 1:23 to start the lesson video (in the next example) at that point.</li>
+      </ul>
+
+      <h3 id="a-code-snapshots">Code in sync with the video</h3>
+      <p>Who this helps: blind learners following a coding video where the teacher types code on screen.</p>
+      <fidel-player id="a-lesson-player"
+        src="/media/lesson.mp4"
+        src-webm="/media/lesson.webm"
+        captions-en="/demo/media/en.vtt"
+        chapters="/demo/media/chapters.vtt"
+        lang="en">
+      </fidel-player>
+      <fidel-code-snapshots for="a-lesson-player">
+        <fidel-code-block at="0:10" language="html" label="Step 1: a heading">
+<pre><code>&lt;h1&gt;My first page&lt;/h1&gt;</code></pre>
+        </fidel-code-block>
+        <fidel-code-block at="0:59" language="html" label="Step 2: a paragraph">
+<pre><code>&lt;h1&gt;My first page&lt;/h1&gt;
+&lt;p&gt;Hello, world.&lt;/p&gt;</code></pre>
+        </fidel-code-block>
+        <fidel-code-block at="2:10" language="html" label="Step 3: an image with alt text">
+<pre><code>&lt;h1&gt;My first page&lt;/h1&gt;
+&lt;p&gt;Hello, world.&lt;/p&gt;
+&lt;img src="map.png" alt="Map of Addis Ababa"&gt;</code></pre>
+        </fidel-code-block>
+      </fidel-code-snapshots>
+      <p>Try it:</p>
+      <ul>
+        <li>Play the video: when it reaches a snapshot's time, that snapshot shows "Now" and a screen reader hears "Code for 0:59 is ready" (once).</li>
+        <li>Press Play from 2:10 on the last snapshot: the video jumps there and that snapshot becomes "Now" (no announcement, because you chose it).</li>
+      </ul>
+
+      <h3 id="a-described-image">Diagram with a full description</h3>
+      <p>Who this helps: blind learners, and anyone who finds a diagram hard to read.</p>
+      <fidel-described-image width="600" height="160"
+        src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 160' font-family='sans-serif' font-size='22'&gt;&lt;rect width='600' height='160' fill='white'/&gt;&lt;g fill='%23eef3fa' stroke='%230b4f9c' stroke-width='3'&gt;&lt;rect x='10' y='45' width='150' height='70' rx='8'/&gt;&lt;rect x='225' y='45' width='150' height='70' rx='8'/&gt;&lt;rect x='440' y='45' width='150' height='70' rx='8'/&gt;&lt;/g&gt;&lt;g fill='%231a1a1a' text-anchor='middle'&gt;&lt;text x='85' y='87'&gt;Browser&lt;/text&gt;&lt;text x='300' y='87'&gt;Server&lt;/text&gt;&lt;text x='515' y='87'&gt;Database&lt;/text&gt;&lt;/g&gt;&lt;g stroke='%231a1a1a' stroke-width='3'&gt;&lt;path d='M162 70h58M220 70l-10-7M220 70l-10 7'/&gt;&lt;path d='M377 70h58M435 70l-10-7M435 70l-10 7'/&gt;&lt;path d='M438 95h-58M380 95l10-7M380 95l10 7'/&gt;&lt;path d='M223 95h-58M165 95l10-7M165 95l10 7'/&gt;&lt;/g&gt;&lt;/svg&gt;"
+        alt="Diagram: how a web request travels from the browser to the server and the database, and back."
+        caption="How a web request travels"
+        long-description-id="a-flow-desc"></fidel-described-image>
+      <div id="a-flow-desc" hidden>
+        <p>Three boxes in a row, joined by arrows: Browser, Server, Database.</p>
+        <ol>
+          <li>The browser sends a request to the server (arrow to the right).</li>
+          <li>The server asks the database for the data it needs (arrow to the right).</li>
+          <li>The database sends the data back to the server (arrow to the left).</li>
+          <li>The server sends a web page back to the browser (arrow to the left).</li>
+        </ol>
+      </div>
+      <p>An image without alt text shows a warning on demo pages (the attribute <code>show-warnings</code>), so authors notice:</p>
+      <fidel-described-image show-warnings width="120" height="40"
+        src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40'&gt;&lt;rect width='120' height='40' fill='%23eef3fa' stroke='%230b4f9c' stroke-width='3'/&gt;&lt;/svg&gt;"></fidel-described-image>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Tab to "Full description" and press Enter (or tap it) to open the description under the image.</li>
+        <li>With a screen reader, the image is read by its alt text and the caption; the full description is real text with a list.</li>
+      </ul>
+
+      <h3 id="a-word">Tap a hard word for its meaning</h3>
+      <p>Who this helps: learners who read with difficulty, and Deaf learners whose first language is sign language.</p>
+      <p>Your <fidel-word term="browser"
+          meaning-en="The app you use to open websites, for example Chrome or Firefox."
+          meaning-am="ድረ-ገጾችን ለመክፈት የሚጠቀሙበት መተግበሪያ፤ ለምሳሌ Chrome ወይም Firefox።">browser</fidel-word>
+        asks a <fidel-word term="server"
+          meaning-en="A computer that stores websites and sends them to other computers when they ask."
+          meaning-am="ድረ-ገጾችን የሚያስቀምጥ እና ሌሎች ኮምፒውተሮች ሲጠይቁት የሚልክ ኮምፒውተር።">server</fidel-word>
+        for the page. Good pages are <fidel-word term="accessible" ui-lang="am"
+          meaning-en="Easy for everyone to use, including people with disabilities."
+          meaning-am="አካል ጉዳተኞችን ጨምሮ ለሁሉም ሰው ለመጠቀም ቀላል።">accessible</fidel-word>
+        (this last word shows its window in Amharic).</p>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Tab to a dotted-underlined word and press Enter (or tap it): a small window shows its meaning in English and Amharic.</li>
+        <li>Press Escape (or Close): the window closes and you are back on the word.</li>
+        <li>A Listen button appears only if your device has a voice for that language.</li>
+      </ul>
+
+      <h3 id="a-read-aloud">Listen to a paragraph</h3>
+      <p>Who this helps: learners who read with difficulty, and low-vision learners who do not use a screen reader.</p>
+      <fidel-read-aloud lang="en">
+        <p>A web page is a document. Your browser asks a server for it. Then the browser shows it on your screen.</p>
+      </fidel-read-aloud>
+      <fidel-read-aloud lang="am">
+        <p lang="am">ድረ-ገጽ ሰነድ ነው። አሳሽዎ ከአገልጋይ ይጠይቀዋል። ከዚያም አሳሹ በስክሪንዎ ላይ ያሳየዋል።</p>
+      </fidel-read-aloud>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Listen: the paragraph is read aloud and the sentence being read is highlighted and underlined. Press Stop or Escape to stop.</li>
+        <li>"Computer voice" tells you the voice is your device's, not a person's. If your device has no voice for a language (often Amharic), the paragraph says so instead of showing a button.</li>
+      </ul>
+
+      <h3 id="a-steps">Instructions one step at a time</h3>
+      <p>Who this helps: learners new to computers, and anyone overwhelmed by a wall of text.</p>
+      <fidel-steps label="Install VS Code" heading-level="4">
+        <ol>
+          <li>Open the website code.visualstudio.com in your browser.</li>
+          <li>Press the big Download button for your computer (Windows, Mac or Linux).</li>
+          <li>Open the file you downloaded. It is usually in your Downloads folder.</li>
+          <li>Follow the installer: press Next on each screen, then Install.</li>
+          <li>Open VS Code from your Start menu or Applications folder.</li>
+        </ol>
+      </fidel-steps>
+      <fidel-steps label="ፋይል አስቀምጥ" heading-level="4" ui-lang="am" lang="am">
+        <ol>
+          <li>በቪኤስ ኮድ ውስጥ አዲስ ፋይል ይክፈቱ።</li>
+          <li>Ctrl እና S ቁልፎችን አንድ ላይ ይጫኑ።</li>
+          <li>ለፋይሉ ስም ይጻፉ፤ ከዚያ አስቀምጥ የሚለውን ይጫኑ።</li>
+        </ol>
+      </fidel-steps>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Next: focus moves to the "Step 2 of 5" heading, so a screen reader reads where you are.</li>
+        <li>Tick "I did this step", then reload the page: your place and ticks are remembered in this browser.</li>
+        <li>Press Show all steps to see the whole list at once.</li>
+      </ul>
+
+      <h3 id="a-simple-mode">A simpler version of the same text</h3>
+      <p>Who this helps: learners who read with difficulty, and learners reading in a second language.</p>
+      <fidel-simple-mode>
+        <div data-version="full">
+          <p>When a user requests a web page, the browser transmits an HTTP request to the server, which processes it, retrieves any required resources, and returns an HTML document that the browser subsequently renders on the screen.</p>
+        </div>
+        <div data-version="simple">
+          <p>You ask for a web page. Your browser sends a message to a server. The server sends the page back. Your browser shows the page.</p>
+        </div>
+      </fidel-simple-mode>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Simple words: the same text appears in short sentences, one idea each. A screen reader hears "Simple version shown".</li>
+        <li>Reload the page: your choice is remembered in this browser.</li>
+      </ul>
+    </section>
     <!-- PACKAGE A END -->
 
     <!-- PACKAGE B START -->

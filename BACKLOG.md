@@ -89,6 +89,29 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 ## Component library: not finished, Amharic to review, placeholders
 
 <!-- PACKAGE A START -->
+**Package A (reading and understanding)**: all seven components are finished and on the demo page.
+
+- **Amharic to review by a fluent speaker:** every string in
+  `player/i18n/components-a.am.json` (interface text and the code-symbol words,
+  e.g. "የመክፈቻ ቅንፍ" for "("), plus the Amharic demo text in
+  `demo/components.html` (word meanings, the read-aloud paragraph, the
+  "ፋይል አስቀምጥ" steps). Written by the developer, not yet checked.
+- **`<fidel-word>` on narrow screens** always opens a small `<dialog>`; the task
+  also allowed a disclosure under the text. Test with learners which they prefer.
+- **`<fidel-word>` glossary:** `/api/v1/glossary` needs the staff token, so
+  learner pages use the `meaning-en`/`meaning-am` attributes. A public,
+  read-only glossary endpoint (with an English meaning field, not only `note`)
+  would let one glossary feed every page.
+- **`<fidel-read-aloud>`:** most phones have no Amharic voice, so Amharic needs a
+  recording (`audio`); recordings play without the sentence highlight. The
+  highlight uses the CSS Custom Highlight API (Chrome/Edge, Safari 17.2+,
+  Firefox 140+); older browsers read without the highlight.
+- **Digits in Amharic text** (e.g. "ደረጃ 1 ከ3") use Noto Sans Ethiopic's Latin
+  digits, which look small; check with learners.
+- **`<fidel-code-snapshots>`** demo uses the general lesson video (not a real
+  coding lesson): record a short coding clip for the pitch.
+- **Not yet tested by people:** NVDA, TalkBack and a Braille display on
+  `demo/components.html` (see docs/manual-testing.md).
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->
