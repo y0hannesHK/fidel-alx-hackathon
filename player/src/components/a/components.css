@@ -330,6 +330,32 @@ fidel-steps {
 .fidel-steps-list li { margin-block-end: 0.4rem; }
 .fidel-steps-done { font-weight: 700; }
 
+/* ---------- A7 <fidel-simple-mode> ------------------------------------------------ */
+.fidel-simple-mode-bar { margin-block-end: 0.5rem; }
+/* A switch look; the state is also the On/Off word, not only the thumb position. */
+.fidel-simple-mode-track {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  inline-size: 2.5rem;
+  block-size: 1.375rem;
+  border: 2px solid currentColor;
+  border-radius: 1rem;
+  box-sizing: border-box;
+}
+.fidel-simple-mode-thumb {
+  position: absolute;
+  inset-block-start: 0.125rem;
+  inset-inline-start: 0.125rem;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  border-radius: 50%;
+  background: currentColor;
+  transition: inset-inline-start 0.15s;
+}
+.fidel-simple-mode-switch[aria-pressed="true"] .fidel-simple-mode-thumb { inset-inline-start: 1.25rem; }
+fidel-simple-mode > [hidden] { display: none; }
+
 /* ---------- Windows high contrast / forced colours, reduced motion ---------------- */
 @media (forced-colors: active) {
   .fidel-a-button { border: 2px solid ButtonText; }

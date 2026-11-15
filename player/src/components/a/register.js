@@ -9,6 +9,7 @@ import { FidelDescribedImage } from './described-image.js';
 import { FidelWord } from './word.js';
 import { FidelReadAloud } from './read-aloud.js';
 import { FidelSteps } from './steps.js';
+import { FidelSimpleMode } from './simple-mode.js';
 
 // Order matters: code blocks first, so snapshots can move finished blocks.
 const TAGS = [
@@ -18,6 +19,7 @@ const TAGS = [
   ['fidel-word', FidelWord],
   ['fidel-read-aloud', FidelReadAloud],
   ['fidel-steps', FidelSteps],
+  ['fidel-simple-mode', FidelSimpleMode],
 ];
 
 for (const [name, element] of TAGS) {

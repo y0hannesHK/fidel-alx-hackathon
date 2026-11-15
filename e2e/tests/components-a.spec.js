@@ -287,18 +287,60 @@ test('steps: Next moves focus to the step heading; progress is remembered; show 
 
 test('Package A keyboard: Tab reaches every control and never gets stuck', async ({ page }) => {
   await open(page);
+  await expect(page.locator('#a-lesson-player .fidel-panel')).toBeAttached({ timeout: 20_000 });
   await page.locator('#package-a-title').evaluate((el) => { el.tabIndex = -1; el.focus(); });
-  const seen = new Set();
-  for (let i = 0; i < 200; i += 1) {
+  let left = false;
+  for (let i = 0; i < 400; i += 1) {
     await page.keyboard.press('Tab');
     const inside = await page.evaluate(() => {
       const el = document.activeElement;
-      const a = document.getElementById('package-a');
-      return a.contains(el) ? `${el.tagName}:${el.textContent.slice(0, 40)}:${el.className}` : null;
+      if (!document.getElementById('package-a').contains(el)) return false;
+      el.dataset.tabbed = '1';
+      return true;
     });
-    if (!inside) break;
-    seen.add(inside);
+    if (!inside) { left = true; break; }
   }
-  const expected = await section(page).locator('fidel-code-block button').count();
-  expect(seen.size).toBeGreaterThanOrEqual(expected);
+  expect(left, 'Tab must leave Package A (never stuck)').toBe(true);
+  // Every control of our components (not the player's own) was reached.
+  const missed = await page.evaluate(() => [...document.querySelectorAll(
+    '#package-a :is(fidel-code-block, fidel-described-image, fidel-word, fidel-read-aloud, fidel-steps, fidel-simple-mode) :is(button:not([disabled]), summary, input, [tabindex="0"])',
+  )].filter((el) => el.checkVisibility() && !el.dataset.tabbed).map((el) => el.outerHTML.slice(0, 80)));
+  expect(missed).toEqual([]);
+});
+
+test('simple mode: switch shows the simple version, announces, is remembered', async ({ page }) => {
+  await open(page);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const simple = page.locator('fidel-simple-mode');
+  const button = simple.getByRole('button', { name: 'Simple words' });
+  await expect(button).toHaveAttribute('aria-pressed', 'false');
+  await expect(simple.getByText('Your browser sends a message')).toBeHidden();
+  await expect(simple.getByText('transmits an HTTP request')).toBeVisible();
+  await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  await expect(simple.getByText('Your browser sends a message')).toBeVisible();
+  await expect(simple.getByText('transmits an HTTP request')).toBeHidden();
+  await expect(page.locator('.fidel-announcer[aria-live="polite"]')).toHaveText('Simple version shown');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fidel-prefs')).simpleWords)).toBe(true);
+  await page.reload();
+  await expect(simple.getByRole('button', { name: 'Simple words' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(simple.getByText('Your browser sends a message')).toBeVisible();
+});
+
+test('Package A with an Amharic interface (page lang="am"): axe clean, dialog included', async ({ page }) => {
+  await page.route('**/demo/components.html', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace('<html lang="en">', '<html lang="am">');
+    await route.fulfill({ response, body });
+  });
+  await open(page);
+  await expect(codeBlock(page).getByRole('button', { name: 'ቅዳ' })).toBeVisible();
+  await codeBlock(page).getByRole('button', { name: 'መስመር በመስመር አንብብ' }).click();
+  await expect(codeBlock(page).locator('.fidel-code-block-line').nth(1)).toHaveText('መስመር 2 ከ2, 4 ክፍተት ገብ: print የመክፈቻ ቅንፍ i የመዝጊያ ቅንፍ');
+  await page.locator('#package-a details').evaluateAll((all) => all.forEach((d) => { d.open = true; }));
+  expect(await seriousAxeIssues(page)).toEqual([]);
+  await page.locator('fidel-word').getByRole('button', { name: 'server' }).click();
+  await expect(page.getByRole('dialog', { name: 'server' }).getByRole('button', { name: 'ዝጋ' })).toBeVisible();
+  expect(await seriousAxeIssues(page)).toEqual([]);
 });
