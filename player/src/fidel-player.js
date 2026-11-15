@@ -280,7 +280,9 @@ export class FidelPlayer extends HTMLElement {
    *  them with Enter and Space. (Real <button>s would break Able Player's
    *  highlighting and click handling: see player/patches/README.md.) */
   markTranscriptButtons() {
-    for (const line of this.querySelectorAll('.able-transcript-caption, .able-transcript-desc .able-transcript-seekpoint')) {
+    // Also the chapter titles in the transcript: they are focusable and jump to
+    // the chapter, but had no role, so screen readers read them as plain text.
+    for (const line of this.querySelectorAll('.able-transcript-caption, .able-transcript-desc .able-transcript-seekpoint, .able-transcript-chapter-heading .able-transcript-seekpoint')) {
       if (line.getAttribute('role') !== 'button') line.setAttribute('role', 'button');
     }
   }

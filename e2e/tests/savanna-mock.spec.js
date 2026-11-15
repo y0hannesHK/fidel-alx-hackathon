@@ -302,3 +302,10 @@ test('progress, prefs and complete events reach the host; transcript lines are b
   await page.keyboard.press('Enter');
   await expect.poll(() => video.evaluate((v) => v.currentTime)).toBeLessThan(20); // jumped back to line 3
 });
+
+test('transcript chapter titles are announced as buttons (they jump to the chapter)', async ({ page }) => {
+  await openLesson(page);
+  const titles = page.locator('fidel-player .able-transcript-chapter-heading .able-transcript-seekpoint');
+  await expect(titles.first()).toHaveAttribute('role', 'button');
+  await expect(page.locator('fidel-player').getByRole('button', { name: 'Tech education as an equalizer' })).toBeVisible();
+});
