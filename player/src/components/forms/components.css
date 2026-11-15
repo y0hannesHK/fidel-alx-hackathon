@@ -1,0 +1,264 @@
+/* Fidel form components. Scoped to the form tags and fidel-field-* / fidel-form-*
+   classes only. Colours: text 4.5:1 or more, borders and focus 3:1 or more.
+   Sizes in rem, logical properties (works right-to-left), 44 px targets. */
+
+:is(fidel-input, fidel-textarea, fidel-choice, fidel-select, fidel-file, fidel-date, fidel-error-summary, fidel-form) {
+  display: block;
+  max-inline-size: 100%;
+  --fidel-ink: #1a1a1a;
+  --fidel-paper: #ffffff;
+  --fidel-accent: #0b4f9c;   /* 8.3:1 on white */
+  --fidel-border: #5c5c5c;   /* 6.7:1 on white */
+  --fidel-focus: #ffbf47;
+  --fidel-error: #b00020;    /* 6.9:1 on white */
+  --fidel-note-bg: #fff4d6;  /* ink on it: 15:1 */
+  color: var(--fidel-ink);
+}
+
+/* hidden always wins over our display rules. */
+:is(fidel-input, fidel-textarea, fidel-choice, fidel-select, fidel-file, fidel-date, fidel-error-summary, fidel-form) [hidden] {
+  display: none !important;
+}
+
+/* Focus: 3px outline in the accent colour plus a light ring (WCAG 2.4.7, 2.4.13). */
+:is(fidel-input, fidel-textarea, fidel-choice, fidel-select, fidel-file, fidel-date, fidel-error-summary, fidel-form) :focus-visible {
+  outline: 3px solid var(--fidel-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--fidel-focus);
+}
+
+/* Ethiopic: Noto Sans Ethiopic, line height 1.7, never letter-spacing. */
+:is(fidel-input, fidel-textarea, fidel-choice, fidel-select, fidel-file, fidel-date, fidel-error-summary, fidel-form) :lang(am),
+:is(fidel-input, fidel-textarea, fidel-choice, fidel-select, fidel-file, fidel-date, fidel-error-summary, fidel-form) :lang(ti) {
+  font-family: "Fidel Noto Sans Ethiopic", "Noto Sans Ethiopic", "Nyala", "Abyssinica SIL", sans-serif;
+  line-height: 1.7;
+  letter-spacing: normal;
+}
+
+/* Host CSS (e.g. Bootstrap) reaches our light-DOM parts: reset what it changes. */
+.fidel-field :is(label, legend, p) {
+  float: none;
+  inline-size: auto;
+  max-inline-size: 100%;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.fidel-field :is(input, select, textarea, button),
+.fidel-form-bar button,
+.fidel-error-summary a {
+  font-family: inherit;
+  font-size: 1rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ---------- One field: label -> hint -> field -> messages -> buttons ---------- */
+.fidel-field {
+  margin-block: 0 1.25rem;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.fidel-field-label,
+.fidel-field-legend {
+  display: block;
+  margin: 0 0 0.25rem;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.fidel-field-required {
+  font-weight: 400;
+}
+.fidel-field-hint {
+  margin: 0 0 0.375rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #4a4a4a;            /* 8.9:1 on white */
+}
+.fidel-field-control {
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 36rem;
+  min-block-size: 2.75rem;   /* 44px target (WCAG 2.5.8) */
+  margin: 0;
+  padding: 0.5rem 0.625rem;
+  font: inherit;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--fidel-ink);
+  background: var(--fidel-paper);
+  border: 2px solid var(--fidel-border);
+  border-radius: 0.25rem;
+}
+textarea.fidel-field-control { resize: vertical; }
+.fidel-field-control:lang(am),
+.fidel-field-control:lang(ti) { line-height: 1.7; }
+.fidel-field-control[aria-invalid="true"] {
+  border-color: var(--fidel-error);
+  border-inline-start-width: 0.375rem;
+}
+.fidel-field-control:disabled { background: #f0f0f0; color: #4a4a4a; }
+
+/* Messages: the error first, then hints. Words always; colour only adds. */
+.fidel-field-error {
+  margin: 0.375rem 0 0;
+  font-weight: 600;
+  color: var(--fidel-error);
+}
+.fidel-field-note {
+  margin: 0.375rem 0 0;
+  padding: 0.375rem 0.625rem;
+  max-inline-size: 36rem;
+  box-sizing: border-box;
+  background: var(--fidel-note-bg);
+  border-inline-start: 0.25rem solid #8a6100; /* 5.0:1 on the note */
+}
+.fidel-field-note p { margin: 0 0 0.375rem; }
+.fidel-field-note p:last-child { margin: 0; }
+.fidel-field-status { background: #eef3fa; border-color: var(--fidel-accent); }
+.fidel-field-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-block-start: 0.5rem;
+}
+.fidel-field-voice { font-size: 0.95rem; color: #4a4a4a; }
+
+.fidel-field-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  box-sizing: border-box;
+  font: inherit;
+  line-height: 1.3;
+  color: var(--fidel-accent);
+  background: var(--fidel-paper);
+  border: 2px solid var(--fidel-accent);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.fidel-field-button:hover { background: #e8f0fa; }
+.fidel-field-note .fidel-field-button { min-block-size: 2.75rem; }
+
+/* Hidden but read by screen readers. */
+.fidel-field-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Choices (radio buttons and checkboxes) ---------- */
+fieldset.fidel-field {
+  margin-inline: 0;
+  padding: 0;
+  border: 0;
+}
+.fidel-field-options {
+  display: grid;
+  gap: 0.25rem;
+}
+.fidel-field-option {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-block-size: 2.75rem;   /* the whole row is the target */
+}
+.fidel-field-option input {
+  flex: none;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  margin: 0;
+  accent-color: var(--fidel-accent);
+}
+.fidel-field-option label {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding-block: 0.5rem;
+  cursor: pointer;
+}
+.fidel-field-option input[aria-invalid="true"] { outline: 2px solid var(--fidel-error); outline-offset: 2px; }
+
+/* ---------- Select with search ---------- */
+.fidel-field-search { margin-block-end: 0.5rem; }
+.fidel-field-search label { font-weight: 400; }
+.fidel-field-count { margin: 0.25rem 0 0.5rem; font-size: 0.95rem; color: #4a4a4a; }
+
+/* ---------- File ---------- */
+input[type="file"].fidel-field-control { padding: 0.375rem; }
+.fidel-field-chosen { margin: 0.375rem 0 0; font-weight: 600; }
+
+/* ---------- Date with the Ethiopian calendar ---------- */
+input[type="date"].fidel-field-control { max-inline-size: 16rem; }
+.fidel-field-ethiopian { margin: 0.375rem 0 0; }
+
+/* ---------- Error summary ---------- */
+.fidel-error-summary {
+  margin-block: 0 1.25rem;
+  padding: 0.75rem 1rem;
+  border: 3px solid var(--fidel-error);
+  border-inline-start-width: 0.5rem;
+  background: var(--fidel-paper);
+  overflow-wrap: anywhere;
+}
+.fidel-error-summary-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  color: var(--fidel-error);
+}
+.fidel-error-summary-list { margin: 0; padding-inline-start: 1.25rem; }
+.fidel-error-summary-list li { margin-block: 0.25rem; }
+.fidel-error-summary-list a {
+  display: inline-block;
+  padding-block: 0.625rem;   /* 44px tall link */
+  color: var(--fidel-accent);
+  text-decoration: underline;
+}
+
+/* ---------- Form messages and buttons ---------- */
+.fidel-form-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-block: 0.75rem;
+}
+.fidel-form-bar p { margin: 0; }
+.fidel-form-status { font-weight: 600; }
+.fidel-form-private { font-size: 0.95rem; color: #4a4a4a; }
+fidel-form [aria-disabled="true"] { cursor: progress; opacity: 0.8; }
+
+@media (prefers-reduced-motion: reduce) {
+  :is(fidel-input, fidel-textarea, fidel-choice, fidel-select, fidel-file, fidel-date, fidel-error-summary, fidel-form) * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Windows High Contrast and other forced colours: keep borders and focus visible. */
+@media (forced-colors: active) {
+  .fidel-field-control,
+  .fidel-field-button,
+  .fidel-field-note,
+  .fidel-error-summary { border-color: CanvasText; }
+  .fidel-field-control[aria-invalid="true"] { border-color: Mark; }
+  :is(fidel-input, fidel-textarea, fidel-choice, fidel-select, fidel-file, fidel-date, fidel-error-summary, fidel-form) :focus-visible {
+    outline-color: Highlight;
+    box-shadow: none;
+  }
+  .fidel-field-error, .fidel-error-summary-title { color: CanvasText; }
+}

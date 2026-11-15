@@ -1,0 +1,91 @@
+{
+  "field": {
+    "required": "(required)",
+    "fixed": "Fixed",
+    "errorIn": "{label}: {message}",
+    "errors": {
+      "required": "Fill in this field.",
+      "mmss": "Use minutes:seconds, for example 1:23.5",
+      "phone": "Use an Ethiopian mobile number, for example 0911 234567",
+      "email": "Use an email address, for example name@example.com",
+      "pattern": "Check what you typed: it is not in the expected form.",
+      "tooLong": "Use at most {max} characters."
+    }
+  },
+  "keyboard": {
+    "am": "You are typing English letters. To type Amharic, switch the keyboard: Windows + Space.",
+    "ti": "You are typing English letters. To type Tigrinya, switch the keyboard: Windows + Space.",
+    "en": "You are typing Amharic letters. To type English, switch the keyboard: Windows + Space.",
+    "dontRemind": "Don't remind me in this field",
+    "willNotRemind": "No more reminders in this field."
+  },
+  "caps": {
+    "on": "Caps Lock is on",
+    "off": "Caps Lock is off"
+  },
+  "listen": {
+    "listen": "Listen",
+    "stop": "Stop",
+    "computerVoice": "Computer voice",
+    "empty": "The field is empty",
+    "reading": "Reading aloud",
+    "stopped": "Stopped",
+    "failed": "The voice could not read this."
+  },
+  "summary": {
+    "one": "1 field needs fixing",
+    "many": "{count} fields need fixing"
+  },
+  "form": {
+    "draftSaved": "Draft saved",
+    "draftRestored": "Your draft was restored.",
+    "clearDraft": "Clear draft",
+    "draftCleared": "Draft cleared",
+    "privateNote": "Private answers are not saved in the draft.",
+    "noStorage": "This device could not save a draft.",
+    "sending": "Sending…",
+    "sent": "Sent. Thank you.",
+    "offline": "Saved on this phone. It will be sent when you are online.",
+    "sentLater": "Your saved form was sent.",
+    "failed": "Not sent: the server answered {status}. Your answers are kept; try again.",
+    "offlineFile": "You are offline. A file cannot wait on this phone: send again when you are online."
+  },
+  "choice": {
+    "radio": "Choose one option.",
+    "checkbox": "Choose at least one option."
+  },
+  "select": {
+    "required": "Choose an option from the list.",
+    "search": "Search the list",
+    "choose": "Choose…",
+    "one": "1 option matches",
+    "many": "{count} options match",
+    "none": "No options match. Try fewer letters."
+  },
+  "file": {
+    "kinds": {
+      "video": "Video",
+      "audio": "Sound recording",
+      "image": "Picture",
+      "pdf": "PDF",
+      "word": "Word document",
+      "text": "Text file"
+    },
+    "or": "or",
+    "anyFile": "Any file",
+    "upTo": "{types}, up to {size}",
+    "chosen": "Chosen: {name}, {size}",
+    "remove": "Remove",
+    "removed": "File removed",
+    "required": "Choose a file.",
+    "tooBig": "This file is {size}. Choose a file up to {max}.",
+    "wrongType": "This is a {ext} file. Choose: {types}."
+  },
+  "date": {
+    "required": "Enter a date.",
+    "badInput": "Enter a full date: day, month and year.",
+    "tooEarly": "Choose {min} or later.",
+    "tooLate": "Choose {max} or earlier.",
+    "ethiopian": "In the Ethiopian calendar:"
+  }
+}

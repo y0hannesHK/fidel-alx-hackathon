@@ -481,6 +481,34 @@
       </ul>
     </section>
     <!-- PACKAGE D END -->
+
+    <!-- PACKAGE FORMS START -->
+    <section id="package-forms" aria-labelledby="package-forms-title">
+      <h2 id="package-forms-title">Form fields</h2>
+      <p>Real labels and fields, hints, and errors in words that say how to fix them. Every field and the whole form are on <a href="/demo/inputs.html">the form fields page</a>.</p>
+      <h3 id="forms-example">A short form</h3>
+      <p>Who this helps: screen-reader and Braille users (every message is shown and said), people typing Amharic on an English keyboard, and anyone whose session times out (a draft is kept).</p>
+      <fidel-form id="forms-demo" ui-lang="en">
+        <form id="forms-demo-form">
+          <fidel-input id="forms-phone" label="Phone number" name="phone" format="phone-et" required hint="For example 0911 234567"></fidel-input>
+          <fidel-input id="forms-name-am" label="Your name in Amharic" name="nameAm" lang="am"></fidel-input>
+          <fidel-select id="forms-language" label="Language you prefer" name="language" placeholder
+            options='[{"value":"am","label":"አማርኛ","lang":"am"},{"value":"om","label":"Afaan Oromoo","lang":"om"},{"value":"ti","label":"ትግርኛ","lang":"ti"},{"value":"so","label":"Soomaali","lang":"so"},{"value":"en","label":"English"}]'></fidel-select>
+          <fidel-choice id="forms-contact" type="radio" label="How should we contact you?" name="contact" required
+            options='[{"value":"sms","label":"Text message"},{"value":"call","label":"Phone call"},{"value":"email","label":"Email"}]'></fidel-choice>
+          <fidel-date id="forms-date" label="Date you can start" name="start"></fidel-date>
+          <button type="submit" style="min-height: 2.75rem; padding: 0.5rem 1rem; font: inherit;">Send</button>
+        </form>
+      </fidel-form>
+      <p>Try it:</p>
+      <ul>
+        <li>Press Send with nothing filled in: the list of fields to fix gets focus, and each link puts you in its field.</li>
+        <li>Type 0911 234567 and press Tab: it becomes +251911234567. Type 12345: the error says how to fix it.</li>
+        <li>In the Amharic name field, type "selam" and a space on an English keyboard: a hint says how to switch the keyboard.</li>
+        <li>Choose a date: the same date in the Ethiopian calendar appears under it.</li>
+      </ul>
+    </section>
+    <!-- PACKAGE FORMS END -->
   </main>
 </body>
 </html>

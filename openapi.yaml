@@ -1989,6 +1989,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/speak:
+    get:
+      tags:
+      - voice
+      summary: Voices
+      operationId: voices_api_v1_speak_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Voices'
+    post:
+      tags:
+      - voice
+      summary: Speak
+      operationId: speak_api_v1_speak_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpeakRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            audio/wav: {}
+        '409':
+          description: No voice for this language
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /health:
     get:
       tags:
@@ -2826,6 +2863,25 @@ components:
       required:
       - status
       title: ReportStatus
+    SpeakRequest:
+      properties:
+        text:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Text
+          description: What to read (at most 500 characters)
+        lang:
+          type: string
+          maxLength: 8
+          minLength: 2
+          title: Lang
+          description: Language code, e.g. am
+      type: object
+      required:
+      - text
+      - lang
+      title: SpeakRequest
     StepStatus:
       properties:
         status:
@@ -2901,6 +2957,18 @@ components:
       - msg
       - type
       title: ValidationError
+    Voices:
+      properties:
+        languages:
+          items:
+            type: string
+          type: array
+          title: Languages
+          description: Languages the voice engine reads; empty when there is none
+      type: object
+      required:
+      - languages
+      title: Voices
     Webhook:
       properties:
         id:
