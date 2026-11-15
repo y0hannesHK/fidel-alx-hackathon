@@ -113,7 +113,9 @@ td .button { margin: 0.25rem 0.25rem 0.25rem 0; }
 /* WCAG 2.4.11: the sticky caption toolbar must not cover the field that has
    focus. Scrolling to a focused field leaves room for the toolbar. */
 @media (min-width: 40rem) {
-  html { scroll-padding-top: 11rem; }
+  /* The toolbar's real height (set by caption-editor.js, it can wrap onto
+     more lines), plus a margin; 11rem until it is measured. */
+  html { scroll-padding-top: calc(var(--studio-toolbar-height, 10rem) + 1rem); }
 }
 
 .keyframe { margin: 0.5rem 0; }

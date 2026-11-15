@@ -261,10 +261,11 @@ export async function captionEditor(lessonId, manifest) {
       },
     }),
     h('label', { for: onlyId }, `Show only captions with glossary words (${glossaryCount})`));
+  let toolbar;
   section.append(
     h('p', { class: 'hint' }, 'Keyboard: in a translation box, press Ctrl+Enter for "Checked, go to next". Times are minutes:seconds, for example 1:23.5. Captions with glossary words (words machines often get wrong) are marked: check those first.'),
     h('p', { class: 'hint' }, 'Sound-off check: speech-to-text writes only words. Watch with sound and add every sound that carries meaning in square brackets, for example [music], [laughter], [phone rings], [door closes], so Deaf learners get it too.'),
-    h('div', { class: 'toolbar' },
+    toolbar = h('div', { class: 'toolbar' },
       counter,
       h('div', { class: 'row' },
         h('button', { type: 'button', class: 'button', onclick: save }, 'Save captions'),
@@ -278,7 +279,24 @@ export async function captionEditor(lessonId, manifest) {
     h('div', { class: 'editor' }, h('div', { class: 'editor-video-wrap' }, video), list),
     h('details', {}, h('summary', {}, 'Upload a caption file instead'), uploadForm(lessonId, section))
   );
+  keepFocusBelow(toolbar, section);
   return section;
+}
+
+/** WCAG 2.4.11: the sticky toolbar must never cover the field with focus.
+ *  Its height can change (it wraps on narrow screens), so it is measured and
+ *  given to the CSS (scroll-padding-top), and a field that still ends up
+ *  under it (e.g. with Shift+Tab) is scrolled down into view. */
+function keepFocusBelow(toolbar, section) {
+  const measure = () => document.documentElement.style.setProperty('--studio-toolbar-height', `${toolbar.offsetHeight}px`);
+  new ResizeObserver(measure).observe(toolbar);
+  measure();
+  section.addEventListener('focusin', (event) => {
+    if (getComputedStyle(toolbar).position !== 'sticky' || toolbar.contains(event.target)) return;
+    const bar = toolbar.getBoundingClientRect();
+    const field = event.target.getBoundingClientRect();
+    if (field.top < bar.bottom + 8) window.scrollBy({ top: field.top - bar.bottom - 16 });
+  });
 }
 
 /** Upload a WebVTT file for one language (replaces that language's captions,

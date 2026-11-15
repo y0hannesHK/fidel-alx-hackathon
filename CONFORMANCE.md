@@ -1,6 +1,6 @@
 # Fidel: WCAG 2.2 AA conformance report
 
-Product: **Fidel 0.8**: player, job card, offline lesson page, certificate check page, Fidel Studio.
+Product: **Fidel 1.0.0** (released 16 November 2026): the player, job card, session viewer, certificate card and check page, offline lesson page, the component library (43 tags: Packages A–E and form fields), Fidel Studio, the landing page, and the Savanna rebuild demo.
 
 ## Conformance claim
 
@@ -9,10 +9,10 @@ The parts below are the ones WCAG requires in a conformance claim
 
 | | |
 |---|---|
-| **1. Date** | 14 November 2026 |
+| **1. Date** | 16 November 2026 |
 | **2. Guidelines** | Web Content Accessibility Guidelines 2.2, https://www.w3.org/TR/WCAG22/ . WCAG 2.2 includes every WCAG 2.0 and 2.1 success criterion at levels A and AA (except 4.1.1 Parsing, which 2.2 made obsolete; we report it below for WCAG 2.0 readers: https://www.w3.org/TR/2008/REC-WCAG20-20081211/ ). |
-| **3. Level** | AA (target). **Status: draft**: automated testing is complete and passing; manual testing with NVDA, TalkBack and our co-designer is not yet done. Until it is, this is a self-assessment, not a final claim. |
-| **4. Pages covered** | Fidel is a product installed on a partner's server and embedded in their pages, so most of it has no fixed address. As WCAG allows for such products, we state that these parts **would conform when installed**: the player (`<fidel-player>`), the job card (`<fidel-job-card>`), the offline lesson page (`/api/v1/lessons/{id}/offline.html`), the certificate check page (`/verify/{id}`) and Fidel Studio (`/studio/`). Tested on our demo install: `/demo/savanna-mock/`, `/demo/savanna-mock/lesson.html`, `/demo/savanna-mock/jobs.html`, `/verify/{id}`, `/studio/`. The host page around Fidel is not covered. |
+| **3. Level** | AA (target). **Status: draft**. Automated testing is complete and passing, and a team member has tested with Windows Narrator (problems found were fixed, see below). Testing with NVDA, TalkBack and our co-designer is not yet done. Until it is, this is a self-assessment, not a final claim. |
+| **4. Pages covered** | Fidel is a product installed on a partner's server and embedded in their pages, so most of it has no fixed address. As WCAG allows for such products, we state that these parts **would conform when installed**: the player (`<fidel-player>`), the job card (`<fidel-job-card>`), the offline lesson page (`/api/v1/lessons/{id}/offline.html`), the certificate check page (`/verify/{id}`) and Fidel Studio (`/studio/`). The component library (`<fidel-…>` tags) is covered the same way. Tested on our demo install: the landing page `/demo/`; the Savanna rebuild `/demo/savanna-rebuild/` (paced and self-paced homepages, lesson, jobs); `/demo/savanna-mock/` (lesson, `lesson.html`, `jobs.html`, `session.html`); `/demo/blank.html`; `/demo/components.html`; `/demo/inputs.html`; ALX's Savanna lesson page with our patch; `/verify/{id}`; `/studio/`. The host page around Fidel is not covered. |
 | **5. Technologies relied upon** | HTML, CSS, JavaScript, WAI-ARIA, SVG (icons), WebVTT (captions, descriptions, chapters), HTML audio/video. |
 
 **Used but not relied upon** (everything still works without them): service
@@ -21,8 +21,9 @@ speech synthesis (text descriptions and summaries are always shown as text and
 reach screen readers), the Clipboard API (the link is also in a text field).
 
 **Tested with**: Chromium (Playwright 1.65) and axe-core 4.14 on Windows,
-desktop and mobile (touch, 360 px) emulation. Manual tests with NVDA, TalkBack
-and Chrome on Android: pending.
+desktop and mobile (touch, 360 px) emulation; Windows Narrator with Edge and
+Brave (team member, 15 November). Manual tests with NVDA, TalkBack and Chrome on
+Android: pending.
 
 ### Statement of partial conformance: content added after installation
 
@@ -47,12 +48,16 @@ buttons, on touch screens).
 
 | Method | What it covers | Result |
 |---|---|---|
-| **axe-core 4.14** (via Playwright), WCAG 2.0/2.1/2.2 A and AA rules | Mock lesson page (default, every feature switched on, Amharic interface), lesson page from the API, jobs page with job card, certificate check page, offline lesson page, Studio (sign-in and lesson editor) | **0 critical, 0 serious issues** on every page and state tested |
-| **Keyboard tests** (Playwright, keyboard only) | Main task: Amharic captions on, bigger captions, sign-language window, transcript search and jump, playback; caption review in Studio (Ctrl+Enter flow) | Pass |
-| **Reflow tests** | 320 CSS px wide; 200% zoom on a 1280 px screen; job card at 360 px with 200% zoom (180 CSS px) | No horizontal scrolling |
+| **axe-core 4.14** (via Playwright), WCAG 2.0/2.1/2.2 A and AA rules | Every learner page (landing page, Savanna rebuild, lesson demo pages, blank page, components and form pages, offline lesson, lesson document, certificate check) and every Studio page; at 100%, 200% and 400% zoom; with each dialog open; in English and in Amharic | **0 critical, 0 serious issues** on every page and state tested |
+| **Gate checks** (`e2e/tests/gate.spec.js`) | The hackathon gate's machine-checkable parts on every page above | axe clean, no sideways scrolling at 200% and 400%, Tab never gets stuck |
+| **Keyboard tests** (Playwright, keyboard only) | Main task: Amharic captions on, bigger captions, sign-language window, transcript search and jump, offline download, job card summary; caption review in Studio (Ctrl+Enter flow); every component's controls | Pass |
+| **Reflow tests** | 320 CSS px wide; 200% and 400% zoom on a 1280 px screen; job card at 360 px with 200% zoom (180 CSS px) | No horizontal scrolling |
+| **Text spacing, hover/focus content, focus not obscured** (`e2e/tests/wcag-checks.spec.js`) | WCAG 1.4.12 spacing applied to five pages; player tooltips; Tab and Shift+Tab with the floating sign window and Studio's sticky toolbar | Pass (see 1.4.12, 1.4.13, 2.4.11) |
+| **Screen-reader walk-through** (Chrome's accessibility tree) | 471 Tab stops on the lesson, job card, components and form pages: what a screen reader announces at each (name, role, state) and whether focus is visible | All named, no traps; one problem found and fixed (transcript chapter titles had no role) |
+| **Windows Narrator** (team member, two screen recordings, 15 November) | The components page, and the main task on the lesson page | Four problems found and fixed; see "Narrator findings" below |
 | **Target size tests** | All Fidel buttons; all player controls on a touch phone | ≥ 44 × 44 px |
 | **Offline test** | Offline page opened with the network switched off | Works; zero network requests |
-| **Unit tests** | Caption, search, preference, calendar logic | 16 + 43 tests pass |
+| **Automated test suites** | Browser tests (Playwright), player unit tests, server tests | 262 + 97 + 81 tests pass |
 | **Manual: NVDA (Windows), TalkBack (Android), 200% zoom, sound off, co-designer** | Everything | **Not yet done**: see [docs/manual-testing.md](docs/manual-testing.md) |
 
 Automated tools find only part of all accessibility problems. Criteria marked
@@ -88,8 +93,8 @@ depends on what staff add (explained).
 | 1.4.5 Images of Text | AA | Supports | No images of text. |
 | 1.4.10 Reflow | AA | Supports | Tested at 400% zoom (320 CSS px) and 200% zoom on every learner page and every Studio page (`e2e/tests/gate.spec.js`): no horizontal scrolling; player controls and the transcript toolbar wrap; the signer moves below the video; Studio's tables scroll inside their own box (allowed for data tables). |
 | 1.4.11 Non-text Contrast | AA | Supports | Control borders and focus rings ≥ 3:1; focus ring is a two-colour ring visible on light and dark. |
-| 1.4.12 Text Spacing | AA | Supports (manual check pending) | Layouts use flexible sizes; to be confirmed with a text-spacing bookmarklet. |
-| 1.4.13 Content on Hover or Focus | AA | Supports (manual check pending) | Able Player tooltips appear on hover/focus and can be dismissed with Escape; to be confirmed manually. |
+| 1.4.12 Text Spacing | AA | Supports | With the WCAG test spacing applied (line height 1.5, letter 0.12em, word 0.16em, paragraph 2em) on the landing page, lesson pages, components and form pages, no text is cut off and nothing scrolls sideways (automated, `wcag-checks.spec.js`). A person's check with a text-spacing bookmarklet is still planned. |
+| 1.4.13 Content on Hover or Focus | AA | Supports | Player tooltips appear on focus and hover, can be dismissed with Escape without moving focus, and stay while the pointer is on them (automated, `wcag-checks.spec.js`). Fidel's toggletip opens on click or Enter only, not on hover. |
 
 ### 2. Operable
 
@@ -101,14 +106,14 @@ depends on what staff add (explained).
 | 2.2.1 Timing Adjustable | A | Supports | No time limits. |
 | 2.2.2 Pause, Stop, Hide | A | Supports | Transcript "Follow along" scrolling can be switched off (and switches off when a keyboard user enters the transcript). Studio progress updates stop when processing ends. |
 | 2.3.1 Three Flashes | A | Supports | No flashing content; `prefers-reduced-motion` respected. |
-| 2.4.1 Bypass Blocks | A | Supports | Skip links on the demo pages and Studio; landmarks (`main`, `nav`, labelled sections) and headings on every page. |
+| 2.4.1 Bypass Blocks | A | Supports | Skip links on every demo page, the landing page, the Savanna rebuild and Studio; they land on the page's heading, so screen readers read only the heading (not the whole page). Landmarks (`main`, `nav`, labelled sections) and headings on every page. On ALX's Savanna page, our patch adds the missing skip link. |
 | 2.4.2 Page Titled | A | Supports | Every page and Studio view has a descriptive title. |
 | 2.4.3 Focus Order | A | Supports | Focus moves in reading order; after switching language or low-data mode, focus returns to the button used; Studio views focus their heading. |
 | 2.4.4 Link Purpose (In Context) | A | Supports | Links say where they go (e.g. "Download lesson for offline use (sound and text)"). |
-| 2.4.5 Multiple Ways | AA | Not applicable | Fidel provides components inside the host platform's pages; the platform provides navigation. |
+| 2.4.5 Multiple Ways | AA | Supports (full pages); not applicable (components) | Components sit inside the host's pages, which provide navigation. Fidel's own full pages give more than one way: the landing page has section links and a list of every demo; the Savanna rebuild has a main menu on every page, course contents and previous/next links. |
 | 2.4.6 Headings and Labels | AA | Supports | Descriptive headings; every field has a visible label. |
 | 2.4.7 Focus Visible | AA | Supports | Strong two-colour focus ring on all controls. |
-| 2.4.11 Focus Not Obscured (Minimum) | AA | Supports (manual check pending) | Studio's sticky caption toolbar leaves room with `scroll-padding-top`; floating sign window can be docked instead. To be confirmed manually. |
+| 2.4.11 Focus Not Obscured (Minimum) | AA | Supports | Tabbing with the sign window floating over the video: no focused control is fully hidden. Studio measures its sticky caption toolbar and scrolls a focused field below it, so it is not even partly covered, also with Shift+Tab (automated, `wcag-checks.spec.js`). The Savanna rebuild has no fixed or sticky bars; on ALX's Savanna page, our patch adds `scroll-padding-top`. |
 | 2.5.1 Pointer Gestures | A | Supports | No path-based or multi-point gestures. |
 | 2.5.2 Pointer Cancellation | A | Supports | Native buttons act on release. |
 | 2.5.3 Label in Name | A | Supports | Accessible names contain the visible text. |
@@ -121,12 +126,12 @@ depends on what staff add (explained).
 | Criterion | Level | Result | Notes |
 |---|---|---|---|
 | 3.1.1 Language of Page | A | Supports | `lang` on every page; the player's own `lang` follows the chosen interface language. |
-| 3.1.2 Language of Parts | AA | Supports | `lang="am"`/`lang="en"` on captions, transcripts, summaries, language names and chapter titles (English chapter titles inside Amharic transcripts are marked English). |
+| 3.1.2 Language of Parts | AA | Supports | `lang="am"`/`lang="en"` on captions, transcripts, summaries, language names and chapter titles (English chapter titles inside Amharic transcripts are marked English). Language names in Ethiopic letters also carry a hidden name in the interface language ("አማርኛ (Amharic)"), because screen readers with no Amharic voice say nothing for them. |
 | 3.2.1 On Focus | A | Supports | Focus never triggers a change of context (it only switches off "Follow along", which the learner can switch back on). |
 | 3.2.2 On Input | A | Supports | Changing an option changes only that setting; switching interface language is a button. |
 | 3.2.3 Consistent Navigation | AA | Supports | Studio navigation is the same on every view. |
 | 3.2.4 Consistent Identification | AA | Supports | Same names for the same functions throughout. |
-| 3.2.6 Consistent Help | A | Not applicable | No help mechanism yet. |
+| 3.2.6 Consistent Help | A | Supports | `<fidel-help>` lists the help routes the host gives (text chat first, phone last). The Savanna rebuild has it in the footer of every page. Hosts must put it in the same place on each page. |
 | 3.3.1 Error Identification | A | Supports | Errors are described in words (e.g. "Not saved: Chapter 2 has a time that is not valid. Use minutes:seconds, like 1:30."). |
 | 3.3.2 Labels or Instructions | A | Supports | Visible labels and short hints on all fields. |
 | 3.3.3 Error Suggestion | AA | Supports | Error messages say how to fix the problem. |
@@ -139,19 +144,42 @@ depends on what staff add (explained).
 | Criterion | Level | Result | Notes |
 |---|---|---|---|
 | 4.1.1 Parsing (WCAG 2.0 / 2.1 only; obsolete in 2.2) | A | Supports | Pages are generated by the browser's DOM APIs and checked by axe; no duplicate IDs (each element gets a unique id). W3C made this criterion obsolete in WCAG 2.2 because browsers now repair markup consistently. |
-| 4.1.2 Name, Role, Value | A | Supports | Native controls where possible; toggle buttons expose `aria-pressed`. All player controls are native `<button>` elements (Able Player patched at build time; see `player/patches/`). To be confirmed with NVDA/TalkBack. |
+| 4.1.2 Name, Role, Value | A | Supports | Native controls where possible; toggle buttons expose `aria-pressed`. All player controls are native `<button>` elements (Able Player patched at build time; see `player/patches/`). Checked with an accessibility-tree walk-through (471 Tab stops) and Windows Narrator; transcript chapter titles now have the button role. NVDA and TalkBack checks pending. |
 | 4.1.3 Status Messages | AA | Supports | Search results count, saving, upload progress, pipeline changes, the draft-caption notice and "Saved for offline" are announced through `role="status"` without moving focus. |
 
 ## Known limitations
 
-- **Manual screen reader testing not yet done** (NVDA, TalkBack). Planned with
-  our co-designer; see [docs/manual-testing.md](docs/manual-testing.md).
+- **Manual testing not finished.** Windows Narrator: done by a team member,
+  problems fixed. NVDA, TalkBack and the co-designer doing the main task unaided:
+  not yet done; see [docs/manual-testing.md](docs/manual-testing.md).
+- **No real Ethiopian Sign Language clip yet.** The sign window works, but the
+  demo uses a placeholder clip until an interpreter's recording is added.
+- **Amharic and Afaan Oromo interface text** was written with machine help and
+  still needs review by fluent speakers (list in BACKLOG.md).
+- **Machine-read description audio is not labelled in the player.** Studio
+  marks it and the job card says when a summary is a computer voice, but the
+  player does not yet tell learners.
 - **Sign-language window on iPhone/iPad**: iOS does not allow two videos to play
   at once, so Able Player does not offer the sign window there.
 - **Machine captions are drafts.** Lessons meet 1.2.2 only after staff check the
   captions; the player says clearly when Amharic captions are not yet checked.
 - **Amharic speech**: phones rarely have an Amharic voice, so Amharic audio
   description and job summaries need recordings made by staff.
+
+## Narrator findings (15 November 2026)
+
+A team member tested with Windows Narrator and recorded the screen. What
+Narrator did wrong, and what we changed:
+
+| Narrator said | Cause | Fix |
+|---|---|---|
+| "Play from one hundred twenty-three" for "1:23" | Screen readers read video times as numbers | Times stay on screen; screen readers also hear them in words, e.g. "Play from 1:23 (1 minute 23 seconds)" |
+| The whole page at once, after "Skip to lesson" | The skip link moved focus to `<main>`, and Narrator reads a focused container in full | Skip links land on the page's heading (also our Savanna patch) |
+| "Midnight slash 239" for the player's "0:00 / 2:39" | The time display looked like a clock time | On screen as before; screen readers get "0 seconds of 2 minutes 39 seconds" |
+| Nothing for "አማርኛ" | Windows has no Amharic voice | Language options and buttons also have "(Amharic)" for screen readers |
+
+The walk-through of the accessibility tree also found transcript chapter titles
+that could be focused but had no role; they are buttons now.
 
 ## Component library (`demo/components.html`)
 
@@ -172,7 +200,7 @@ screen-reader and Braille checks: not yet done.
 | 1.4.1 Use of Color | Supports | Current snapshot: bar + tint + the word "Now". Read-aloud: background + underline. Toggles show On/Off text; disabled buttons are dashed. |
 | 1.4.3 / 1.4.11 Contrast | Supports | Text 4.5:1 or more (accent #0b4f9c 8.3:1); control borders and focus 3:1 or more. |
 | 1.4.4 / 1.4.10 Resize, Reflow | Supports | Sizes in rem; no sideways scrolling at 320 px. Code longer than the screen scrolls inside its own focusable box (code needs two-dimensional layout, an allowed exception). |
-| 1.4.12 Text Spacing | Partially supports | No fixed heights on text; not yet tested with a text-spacing bookmarklet. |
+| 1.4.12 Text Spacing | Supports | No fixed heights on text. With the WCAG test spacing applied to `demo/components.html`, no text is cut off and nothing scrolls sideways (automated, `wcag-checks.spec.js`). |
 | 2.1.1 Keyboard / 2.1.2 No Keyboard Trap | Supports | All real buttons, `<details>`, checkbox; line view uses arrow keys (one Tab stop); Escape closes dialogs and stops reading. Tested by e2e. |
 | 2.2.2 Pause, Stop, Hide | Supports | Reading aloud starts only on Listen, and Stop / Escape stop it. |
 | 2.4.3 Focus Order / 2.4.11 Focus Not Obscured | Supports | Focus moves to the step heading on Previous/Next; dialogs return focus to the word; nothing is sticky. |
@@ -225,7 +253,7 @@ TalkBack) are not done yet; see docs/manual-testing.md.
 | 1.4.1 Use of colour | Supports | Pressed buttons show ✓; alert banners have an icon, a thick border and text. |
 | 1.4.3 / 1.4.11 Contrast | Supports | Text is at least 4.5:1; borders and focus outlines are at least 3:1 (axe finds no issues). |
 | 1.4.4 / 1.4.10 Resize and reflow | Supports | Sizes in `rem`; no sideways scrolling at 320 px (tested at 200 % and 400 %). |
-| 1.4.12 Text spacing | Supports (not machine-tested) | No fixed heights on text; Amharic line-height 1.7. |
+| 1.4.12 Text spacing | Supports | No fixed heights on text; Amharic line-height 1.7. Checked with the WCAG test spacing on `demo/components.html` (automated, `wcag-checks.spec.js`). |
 | 2.1.1 / 2.1.2 Keyboard, no trap | Supports | Only native buttons, links and checkboxes; Escape closes every dialog. A Tab-through test checks this. |
 | 2.2.1 Timing adjustable | Supports | `<fidel-session-keeper>` warns at least 20 s before the time-out, focuses "Yes, more time", allows at least 10 extensions, and offers "Never time me out". Alerts stay until closed by default. The host must still extend its own session when it receives `fidel-session-extend`. |
 | 2.2.2 Pause, stop, hide | Supports | The looping sign clip has a Pause button. It does not start by itself when the learner prefers reduced motion. |
