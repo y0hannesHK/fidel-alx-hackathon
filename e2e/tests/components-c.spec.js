@@ -142,12 +142,15 @@ test('keyboard: Tab reaches every Package C control and never gets stuck', async
 });
 
 test('<fidel-sign-term>: the sign loads only when opened; Escape returns focus; no sign says so', async ({ page }) => {
-  const videoRequests = [];
-  page.on('request', (request) => { if (request.url().includes('/media/sign.webm')) videoRequests.push(request.url()); });
   await open(page);
   const s = section(page);
   await page.waitForTimeout(500);
-  expect(videoRequests, 'nothing heavy before the learner asks').toEqual([]);
+  // Nothing heavy before the learner asks: the sign-terms have no video with a
+  // source yet. (Checked in the DOM, not the network: other packages' players
+  // on the same page may load the same test clip for their own sign window.)
+  const loadedEarly = await s.locator('fidel-sign-term').evaluateAll((terms) =>
+    terms.flatMap((t) => [...t.querySelectorAll('video')]).filter((v) => v.getAttribute('src') || v.currentSrc).length);
+  expect(loadedEarly, 'nothing heavy before the learner asks').toBe(0);
 
   const word = s.getByRole('button', { name: 'log in (sign and meaning)' });
   await word.click();
