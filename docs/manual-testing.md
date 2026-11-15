@@ -160,6 +160,32 @@ Low vision / zoom:
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->
+**Package C** (section "Deaf learners, motor access, navigation and help"):
+
+Keyboard only:
+- [ ] Tab to "log in", press Enter: the dialog opens and focus is inside. Tab through Pause, Slower and Close; Escape closes and focus is back on "log in".
+- [ ] "server": the dialog says "No sign recorded yet for this word" (no broken player).
+- [ ] "Show a test alert": the banner shows; Tab to "Close alert", press Enter; focus does not jump to the top of the page.
+- [ ] Previous / Next links: easy to hit with a mouse held in the wrong hand, or with one finger on a phone.
+- [ ] "Start a 40-second test session": after 10 s the dialog opens with "Yes, more time" focused; Enter extends. Try ten times in a row.
+- [ ] Lesson map: each jump link moves to that part; "Play from 0:59" plays the video from there.
+- [ ] "Get help": text chat first, phone last; Escape returns to "Get help".
+
+NVDA (Firefox or Chrome) and TalkBack (Chrome on Android):
+- [ ] "log in" is read as "log in (sign and meaning), button"; the dialog title "log in" is read when it opens.
+- [ ] An alert is read once, politely ("Alert: Your lesson finished downloading"); it is not read twice.
+- [ ] Landmarks list (NVDA+F7 / TalkBack landmarks) has "Lesson" and "This lesson" navigation.
+- [ ] The session dialog reads "Do you need more time?" and the time left; nothing counts down out loud every second.
+- [ ] Lesson map: "You have watched …" is not read by itself while the video plays; "Where am I?" says the percentage and chapter.
+- [ ] With `ui-lang="am"` (the Amharic "Get help"): the Amharic voice (or Braille) reads the Amharic text.
+
+Braille display:
+- [ ] The alert message and "Time extended" appear briefly and are short enough to read.
+- [ ] The meanings in the sign-term dialog are real text, line by line.
+
+Deaf co-designer:
+- [ ] Is the sign dialog clear without sound? Is "Slower" useful? Which tech words need signs first?
+- [ ] Do the visual alerts get noticed? Should "Keep alerts until I close them" stay on by default?
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->

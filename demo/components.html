@@ -260,6 +260,118 @@
     <!-- PACKAGE B END -->
 
     <!-- PACKAGE C START -->
+    <section id="package-c" aria-labelledby="package-c-title">
+      <h2 id="package-c-title">Deaf learners, motor access, navigation and help</h2>
+
+      <h3 id="c-sign-term">A tech word with its sign: &lt;fidel-sign-term&gt;</h3>
+      <p>Who this helps: Deaf learners, for whom written English or Amharic is often a second language.</p>
+      <p>
+        To open your account, you
+        <fidel-sign-term term="log in" sign="/media/sign.webm" sign-placeholder
+          meaning-en="Entering your name and password to open your account."
+          meaning-am="ስምዎንና የይለፍ ቃልዎን አስገብተው መለያዎን መክፈት።">log in</fidel-sign-term>.
+        Your lessons are kept on a
+        <fidel-sign-term term="server"
+          meaning-en="A computer that stores websites and sends them to your phone."
+          meaning-am="ድር ጣቢያዎችን አስቀምጦ ወደ ስልክዎ የሚልክ ኮምፒውተር።">server</fidel-sign-term>.
+      </p>
+      <p><strong>Placeholder:</strong> the video for “log in” is a colour-bar test pattern, not a real sign. The team will record Ethiopian Sign Language clips with interpreters. “server” shows what a learner sees when no sign has been recorded yet.</p>
+      <ul>
+        <li>Press Tab to the word “log in” and press Enter. The sign plays, muted, with Pause and Slower buttons and the meaning in English and Amharic.</li>
+        <li>Press Escape: the dialog closes and you are back on the word.</li>
+      </ul>
+
+      <h3 id="c-visual-alert">Sounds you can see: &lt;fidel-visual-alert&gt;</h3>
+      <p>Who this helps: Deaf and hard-of-hearing learners, who miss sounds that tell other people something happened.</p>
+      <fidel-visual-alert id="c-alerts"></fidel-visual-alert>
+      <p>
+        <button type="button" class="c-demo-button" id="c-alert-test">Show a test alert</button>
+        <button type="button" class="c-demo-button" id="c-alert-event">Send an alert from another component</button>
+      </p>
+      <ul>
+        <li>Press “Show a test alert”: a yellow banner appears and stays until you press its Close alert button.</li>
+        <li>Open “Alert settings” to let alerts close after 15 seconds, or to vibrate (on phones that can).</li>
+      </ul>
+
+      <h3 id="c-step-nav">Big Previous and Next links: &lt;fidel-step-nav&gt;</h3>
+      <p>Who this helps: learners with tremor, one hand, or a switch, who need large targets that say where they go.</p>
+      <fidel-step-nav prev-href="/demo/blank.html" prev-label="Lesson 2: The player on a blank page"
+                      next-href="/demo/savanna-mock/" next-label="Lesson 4: A lesson inside Savanna"
+                      position="3" total="8"></fidel-step-nav>
+      <ul>
+        <li>Press Tab to the Previous and Next links; each says the lesson it opens. They are at least 48 pixels tall and full width on a phone.</li>
+      </ul>
+
+      <h3 id="c-session-keeper">Never lose work to a time-out: &lt;fidel-session-keeper&gt;</h3>
+      <p>Who this helps: everyone who types slowly or uses assistive technology, so a form never times out on them.</p>
+      <fidel-session-keeper id="c-session" timeout="40" warn-before="30" manual></fidel-session-keeper>
+      <p>
+        <button type="button" class="c-demo-button" id="c-session-start">Start a 40-second test session</button>
+      </p>
+      <p id="c-session-log">No session events yet.</p>
+      <ul>
+        <li>Press “Start a 40-second test session”. After 10 seconds a dialog asks “Do you need more time?” with “Yes, more time” focused.</li>
+        <li>Press Enter for more time, or open “Time limit” and tick “Never time me out”.</li>
+      </ul>
+
+      <h3 id="c-lesson-map">Where am I, and jump anywhere: &lt;fidel-lesson-map&gt;</h3>
+      <p>Who this helps: blind learners who move by headings and landmarks, and everyone in a long lesson.</p>
+      <fidel-lesson-map for="c-lesson-player" notes-id="c-notes" code-id="c-code"></fidel-lesson-map>
+      <fidel-player id="c-lesson-player"
+        src="/media/lesson.mp4"
+        src-webm="/media/lesson.webm"
+        captions-en="/demo/media/en.vtt"
+        chapters="/demo/media/chapters.vtt"
+        lang="en">
+      </fidel-player>
+      <div id="c-notes">
+        <h4>Notes</h4>
+        <p>Test notes for the lesson map: the map links here because this part has the id it looks for.</p>
+      </div>
+      <div id="c-code">
+        <h4>Code</h4>
+        <pre><code>print("Hello, Fidel")</code></pre>
+      </div>
+      <ul>
+        <li>Use the jump links (Video, Transcript, Notes, Code, Next lesson) to move around the lesson.</li>
+        <li>Press a chapter button such as “Play from 0:59” to play from there; press “Where am I?” to hear how much you have watched.</li>
+      </ul>
+
+      <h3 id="c-help">Help in the same place, in every form: &lt;fidel-help&gt;</h3>
+      <p>Who this helps: everyone; text comes first so Deaf learners are never sent to a phone line.</p>
+      <fidel-help chat-url="https://t.me/example_help" email="help@example.org"
+                  video-call-url="https://meet.example.org/interpreter" phone="+251 11 000 0000"
+                  hours="Monday to Friday, 8:30 to 17:00"></fidel-help>
+      <p>The same help in Amharic:</p>
+      <fidel-help ui-lang="am" chat-url="https://t.me/example_help" email="help@example.org"
+                  hours="ሰኞ እስከ ዓርብ፣ ከ2:30 እስከ 11:00"></fidel-help>
+      <ul>
+        <li>Press “Get help”: the dialog lists text chat first and the phone (voice call) last, each a real link.</li>
+        <li>Press Escape to close it; focus returns to “Get help”.</li>
+      </ul>
+
+      <style>
+        /* Demo page only: the host's own buttons. */
+        .c-demo-button { min-height: 2.75rem; padding: 0.5rem 0.875rem; font: inherit; }
+      </style>
+      <script>
+        // The host page talks to the components (demo only).
+        document.getElementById('c-alert-test').addEventListener('click', () => {
+          document.getElementById('c-alerts').notify('Your lesson finished downloading');
+        });
+        document.getElementById('c-alert-event').addEventListener('click', () => {
+          document.dispatchEvent(new CustomEvent('fidel-visual-alert', { detail: { message: 'A new message from your teacher' } }));
+        });
+        document.getElementById('c-session-start').addEventListener('click', () => {
+          document.getElementById('c-session').start();
+        });
+        for (const name of ['fidel-session-warning', 'fidel-session-extend', 'fidel-session-decline', 'fidel-session-timeout', 'fidel-session-no-timeout']) {
+          document.addEventListener(name, () => {
+            document.getElementById('c-session-log').textContent = 'Last session event sent to the page: ' + name;
+          });
+        }
+      </script>
+    </section>
     <!-- PACKAGE C END -->
 
     <!-- PACKAGE D START -->

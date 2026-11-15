@@ -458,6 +458,124 @@ inside the target does not grow). Event: `fidel-display-prefs-change`.
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->
+#### Deaf learners, motor access, navigation and help
+
+Every Package C tag takes `ui-lang="en|am"` (default: the page's `lang`, else
+English). Its text is in `player/i18n/components-c.en.json` and `.am.json`. Settings
+the learner chooses are kept in `localStorage` under `fidel-components-c`.
+
+**`<fidel-sign-term>`**: a tech word with its sign. The word becomes a button
+that opens a dialog with the term, a muted looping video of the sign (downloaded
+only when the dialog opens), Play/Pause and Slower (0.5×) buttons, and the meaning in English and
+Amharic. If there is no clip, or the clip fails to load, the dialog says "No sign recorded yet for this word".
+
+```html
+<fidel-sign-term term="login" sign="/media/signs/login.webm" poster="/media/signs/login.jpg"
+                 meaning-en="Entering your name and password to open your account."
+                 meaning-am="ስምዎንና የይለፍ ቃልዎን አስገብተው መለያዎን መክፈት።">login</fidel-sign-term>
+```
+
+| Attribute / event | Meaning |
+|---|---|
+| `term` | the word (default: the text inside) |
+| `sign`, `poster` | sign-language clip (WebM/MP4) and its still picture |
+| `meaning-en`, `meaning-am` | plain-language meaning |
+| `sign-placeholder` | the clip is a stand-in: the dialog says "Placeholder clip" |
+| `glossary` | URL of `{ terms: [{ en, sign, meaning_en, meaning_am }] }`; attributes win |
+| `fidel-sign-term-open` | `{ term }` when the dialog opens |
+
+**`<fidel-visual-alert>`**: sounds you can see. Call `notify(text)`, or send a
+`fidel-visual-alert` event on `document` with `detail.message`, to show a banner
+(icon + text). The banner stays until the learner closes it, or closes after 15 s if the learner
+chose that in "Alert settings". The learner can turn on vibration. The banner never
+flashes, and screen readers read it politely. Put it near the top of the page.
+
+```html
+<fidel-visual-alert id="alerts"></fidel-visual-alert>
+<script>document.getElementById('alerts').notify('Your lesson finished downloading');</script>
+```
+
+| Attribute / method / event | Meaning |
+|---|---|
+| `notify(message)` | show a message |
+| `fidel-visual-alert` (listened for on `document`) | `{ message }`: any script or component can raise an alert |
+| `fidel-visual-alert-shown` | `{ message }` when a banner appears |
+
+**`<fidel-step-nav>`**: big Previous / Next links at the end of a lesson,
+inside `<nav aria-label="Lesson">`, with "Lesson 3 of 8". The links are at least 48 px tall and full width on phones.
+They sit in the page flow and are never sticky.
+
+```html
+<fidel-step-nav prev-href="lesson-2.html" prev-label="Lesson 2: Forms"
+                next-href="lesson-4.html" next-label="Lesson 4: Tables"
+                position="3" total="8"></fidel-step-nav>
+```
+
+| Attribute / event | Meaning |
+|---|---|
+| `prev-href`, `prev-label`, `next-href`, `next-label` | the links (a missing href = no link) |
+| `position`, `total` | "Lesson 3 of 8" |
+| `label` | name of the landmark (default "Lesson") |
+| `fidel-step-nav-go` | `{ direction: "previous" \| "next" }` |
+
+**`<fidel-session-keeper>`**: never lose work to a time-out (WCAG 2.2.1).
+Before your time-out a dialog asks "Do you need more time?" with "Yes, more
+time" focused. The learner has at least 20 s to answer and can extend at least 10 times. The learner
+can also tick "Never time me out"; your page receives that choice as an event and decides what to do.
+
+```html
+<fidel-session-keeper timeout="1800" warn-before="120" extend-url="/api/v1/session/extend"></fidel-session-keeper>
+```
+
+| Attribute / method / event | Meaning |
+|---|---|
+| `timeout`, `warn-before` | seconds (defaults 1800 and 120; warning at least 20 s) |
+| `extend-url` | POSTed to (same-origin cookies) when the learner asks for more time |
+| `max-extend` | how many extensions (default 20, never below 10) |
+| `off` | no time limit on this page |
+| `manual` | the timer starts only when you call `start()` |
+| `start()`, `stop()` | `start()` (re)starts the timer, e.g. when your own session is renewed; `stop()` stops it |
+| `fidel-session-warning` | the dialog opened |
+| `fidel-session-extend` | `{ count }`: extend your session now |
+| `fidel-session-decline` | the learner pressed "No" |
+| `fidel-session-timeout` | time ran out |
+| `fidel-session-no-timeout` | `{ never: true \| false }`: the learner's "Never time me out" choice |
+
+**`<fidel-lesson-map>`**: where am I, and jump anywhere. A
+`<nav aria-label="This lesson">` with jump links only to the parts that exist on the page
+(Video, Transcript, Notes, Code, Next lesson) and chapter buttons ("Play from 0:59
+…"). It also shows "You have watched 40%" (`<progress>` + text); this is read out only when
+the learner presses "Where am I?".
+
+```html
+<fidel-lesson-map for="lesson-player" chapters="chapters.vtt"></fidel-lesson-map>
+```
+
+| Attribute / event | Meaning |
+|---|---|
+| `for` | id of the `<fidel-player>` (default: the first player with an id) |
+| `chapters` | WebVTT chapters (default: the player's `chapters` / `chapters-am`) |
+| `notes-id`, `code-id` | ids of the notes and code parts (default `notes`, `code`) |
+| `next-href`, `next-label` | next lesson (default: from a `<fidel-step-nav>` on the page) |
+| `fidel-lesson-map-play` | `{ seconds }` when a chapter button is used |
+
+**`<fidel-help>`**: help in the same place, in every form (WCAG 3.2.6). A
+"Get help" button opens a dialog that lists only the routes you configure, text first:
+Text chat, Email, Video call with a sign-language interpreter, Phone (voice
+call). **Put it in the same spot on every page.**
+
+```html
+<fidel-help chat-url="https://t.me/example_help" email="help@example.org"
+            video-call-url="https://meet.example.org/interpreter" phone="+251 11 000 0000"
+            hours="Monday to Friday, 8:30 to 17:00"></fidel-help>
+```
+
+| Attribute / event | Meaning |
+|---|---|
+| `chat-url`, `email`, `video-call-url`, `phone` | the routes (at least one; none = nothing shown) |
+| `hours` | working hours, shown in the dialog |
+| `fidel-help-open` | the dialog opened |
+| `fidel-help-choose` | `{ route: "chat" \| "email" \| "video" \| "phone" }` |
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->

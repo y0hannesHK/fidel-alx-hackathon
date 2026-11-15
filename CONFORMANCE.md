@@ -211,6 +211,33 @@ components.
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->
+### Package C: sign term, visual alert, step nav, session keeper, lesson map, help
+
+Checked by `e2e/tests/components-c.spec.js` (axe at 100/200/400 %, every dialog
+open, Amharic) and `player/test/components-c.test.js`. The checks by people (screen readers, Braille displays and
+TalkBack) are not done yet; see docs/manual-testing.md.
+
+| Criterion | Status | Notes |
+|---|---|---|
+| 1.1.1 Non-text content | Supports | Icons (✋, 🔔, arrows) are `aria-hidden`; every control has a text name. The sign clip has a figcaption and a written meaning. |
+| 1.2.1 Audio-only and video-only | Partially supports | The sign clip is video-only; its written meaning is the alternative. No real Ethiopian Sign Language clips are recorded yet (the demo uses a placeholder). |
+| 1.3.1 Info and relationships | Supports | Real `<nav>`, `<ul>`, `<dialog>` with a heading, `<figure>`/`<figcaption>`, `<progress>`, checkboxes with `<label>`. |
+| 1.4.1 Use of colour | Supports | Pressed buttons show ✓; alert banners have an icon, a thick border and text. |
+| 1.4.3 / 1.4.11 Contrast | Supports | Text is at least 4.5:1; borders and focus outlines are at least 3:1 (axe finds no issues). |
+| 1.4.4 / 1.4.10 Resize and reflow | Supports | Sizes in `rem`; no sideways scrolling at 320 px (tested at 200 % and 400 %). |
+| 1.4.12 Text spacing | Supports (not machine-tested) | No fixed heights on text; Amharic line-height 1.7. |
+| 2.1.1 / 2.1.2 Keyboard, no trap | Supports | Only native buttons, links and checkboxes; Escape closes every dialog. A Tab-through test checks this. |
+| 2.2.1 Timing adjustable | Supports | `<fidel-session-keeper>` warns at least 20 s before the time-out, focuses "Yes, more time", allows at least 10 extensions, and offers "Never time me out". Alerts stay until closed by default. The host must still extend its own session when it receives `fidel-session-extend`. |
+| 2.2.2 Pause, stop, hide | Supports | The looping sign clip has a Pause button. It does not start by itself when the learner prefers reduced motion. |
+| 2.3.1 Three flashes | Supports | Nothing flashes; alerts appear once without animation. |
+| 2.4.3 Focus order | Supports | Focus moves into each dialog and back to the button that opened it. Closing an alert moves focus to the next alert, or to the settings if there is none. |
+| 2.4.11 Focus not obscured | Supports | Step nav and alerts are in the page flow, never fixed or sticky. |
+| 2.5.8 Target size | Supports | Buttons are at least 44 × 44 px; step-nav links are at least 48 px tall. The sign-term word sits inside a sentence, so it uses the exception for inline targets (it is at least 24 px tall). |
+| 3.1.2 Language of parts | Supports | `lang` is set on each component and on Amharic meanings and labels that come from attributes. An Amharic speaker still needs to review the Amharic text (BACKLOG.md). |
+| 3.1.3 Unusual words | Supports | `<fidel-sign-term>` gives a meaning (and sign) for tech words. |
+| 3.2.6 Consistent help | Supports when placed consistently | `<fidel-help>` gives text chat, email, an interpreter video call and phone. The host must put it in the same place on every page. |
+| 4.1.2 Name, role, value | Supports | Native elements; `aria-pressed` on Slower; `aria-haspopup="dialog"` on the buttons that open dialogs. |
+| 4.1.3 Status messages | Supports | Alerts, "Time extended" and the "Where am I?" answer go through the shared polite announcer; progress is never announced by itself. |
 <!-- PACKAGE C END -->
 
 <!-- PACKAGE D START -->
