@@ -47,3 +47,13 @@ def test_text_is_limited(monkeypatch):
     monkeypatch.setattr(speak, "get_text_to_speech", lambda settings: FakeVoice())
     assert client.post("/api/v1/speak", json={"text": "", "lang": "am"}).status_code == 400
     assert client.post("/api/v1/speak", json={"text": "ሀ" * 501, "lang": "am"}).status_code == 400
+
+
+def test_one_address_cannot_keep_the_voice_engine_busy(monkeypatch):
+    voice = FakeVoice()
+    monkeypatch.setattr(speak, "get_text_to_speech", lambda settings: voice)
+    monkeypatch.setattr(speak, "LIMIT_PER_HOUR", 2)
+    monkeypatch.setattr(speak, "_recent", type(speak._recent)(speak._recent.default_factory))
+    codes = [client.post("/api/v1/speak", json={"text": "ሰላም", "lang": "am"}).status_code for _ in range(3)]
+    assert codes == [200, 200, 429]
+    assert len(voice.calls) == 2  # the third was never sent to the engine

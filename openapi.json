@@ -2926,6 +2926,9 @@
           "409": {
             "description": "No voice for this language"
           },
+          "429": {
+            "description": "Too many requests from this address this hour"
+          },
           "422": {
             "description": "Validation Error",
             "content": {

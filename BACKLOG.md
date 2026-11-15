@@ -198,8 +198,9 @@ All six components are finished and on `demo/components.html`. Still to do:
   `demo/inputs.html`. Especially: "(ግዴታ)" for "(required)", the keyboard
   hint, "ረቂቁ ተቀምጧል" (Draft saved), "በዚህ ስልክ ላይ ተቀምጧል..." (Saved on this
   phone), "{name}" grammar in "የተመረጠ፦ {name}፣ {size}".
-- **`POST /api/v1/speak` is public** (learners use it) with a 500-character
-  limit but no rate limit: a busy site should add one (like caption reports).
+- **`POST /api/v1/speak` is public** (learners use it): 500 characters per request and
+  60 requests per address per hour (`FIDEL_SPEAK_PER_HOUR`), counted in memory
+  (resets on restart).
 - **Sensitive answers offline** wait only in memory: if the page is closed
   before the phone is online, the queued form is sent without them.
 - **Files cannot wait offline**: a form with a chosen file says "send again
