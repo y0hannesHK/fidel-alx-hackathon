@@ -20,6 +20,8 @@ const STAFF = { Authorization: `Bearer ${TOKEN}` };
 const VIDEO = '../data/demo/sign.webm'; // short and silent: processed in seconds
 test.skip(!TOKEN, 'Set FIDEL_STAFF_TOKEN (or create ../.env) to run these tests.');
 test.skip(!existsSync(VIDEO), 'Run scripts/make-demo-clip.sh first (needs data/demo/sign.webm).');
+// Chromium's fake camera, for the sign-language answer (D6); no other test uses a camera.
+test.use({ launchOptions: { args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] } });
 
 const ZOOMS = [
   { name: '100%', viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
@@ -374,5 +376,56 @@ test.describe('D5: live session card', () => {
     const ics = readFileSync(await file.path(), 'utf8');
     expect(ics).toContain('DTSTART:20261204T160000Z');
     expect(ics).toContain('SUMMARY:Office hours: how to present');
+  });
+});
+
+test.describe('D6: answer in sign language (fake camera)', () => {
+  test('start camera -> record -> watch -> send (event for the host); the camera goes off', async ({ page }) => {
+    await openComponents(page);
+    const answer = page.locator('fidel-sign-answer');
+    await answer.getByRole('button', { name: 'Start camera' }).click();
+    await expect(answer.getByRole('heading', { name: 'Step 2: record your answer' })).toBeFocused();
+    await expect(answer.getByText('Camera on')).toBeVisible();
+    expect(await seriousAxeIssues(page), 'camera step').toEqual([]);
+    await answer.getByRole('button', { name: 'Record' }).click();
+    await expect(answer.getByText('Recording starts in 3')).toBeVisible();
+    const stop = answer.getByRole('button', { name: 'Stop recording' });
+    await expect(stop).toBeFocused({ timeout: 6000 });
+    await expect(answer.locator('.fidel-sign-banner')).toContainText('Recording');
+    await page.waitForTimeout(1500);
+    await stop.click();
+    await expect(answer.getByRole('heading', { name: 'Step 3: watch your answer' })).toBeFocused();
+    // The camera is off as soon as recording stops.
+    expect(await answer.evaluate((el) => el.stream === null)).toBe(true);
+    await expect(answer.getByRole('button', { name: 'Slower (0.5×)' })).toHaveAttribute('aria-pressed', 'false');
+    await answer.getByRole('button', { name: 'Slower (0.5×)' }).click();
+    expect(await answer.locator('video').evaluate((v) => v.playbackRate)).toBe(0.5);
+    expect(await seriousAxeIssues(page), 'review step').toEqual([]);
+
+    const ready = page.evaluate(() => new Promise((resolve) => document.addEventListener('fidel-sign-answer-ready',
+      (e) => resolve({ size: e.detail.blob.size, mimeType: e.detail.mimeType, seconds: e.detail.durationSeconds }), { once: true })));
+    await answer.getByRole('button', { name: /^Send \(\d+\.\d MB\)$/ }).click();
+    const detail = await ready;
+    expect(detail.size).toBeGreaterThan(0);
+    expect(detail.mimeType).toMatch(/^video\/webm/);
+    expect(detail.seconds).toBeGreaterThanOrEqual(1);
+    await expect(answer.locator('.fidel-sign-status')).toHaveText('Your answer is ready.');
+  });
+
+  test('camera refused: the message in words and the file-picker fallback', async ({ page }) => {
+    await page.addInitScript(() => {
+      navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('Permission denied', 'NotAllowedError'));
+    });
+    await openComponents(page);
+    const answer = page.locator('fidel-sign-answer');
+    await answer.getByRole('button', { name: 'Start camera' }).click();
+    await expect(answer.getByRole('heading', { name: 'Your camera is not available here.' })).toBeFocused();
+    await expect(answer.getByText('Permission to use the camera was refused.')).toBeVisible();
+    const picker = answer.getByLabel("Record with your phone's camera app, or choose a video file");
+    await expect(picker).toHaveAttribute('accept', 'video/*');
+    await expect(picker).toHaveAttribute('capture', 'user');
+    await picker.setInputFiles(VIDEO);
+    await expect(answer.getByRole('heading', { name: 'Step 3: watch your answer' })).toBeFocused();
+    await expect(answer.getByRole('button', { name: /^Send \(\d+\.\d MB\)$/ })).toBeVisible();
   });
 });

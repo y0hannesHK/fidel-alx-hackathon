@@ -106,6 +106,23 @@
         <li>Press "Request access support", tick what you need and Send. Only the kind of support is asked, never why.</li>
         <li>"Add to calendar" downloads a calendar file. The Join link appears 15 minutes before the start; after the end, "Watch the recording".</li>
       </ul>
+      <h3 id="d-sign">Answer in sign language</h3>
+      <p>Who this helps: Deaf learners whose first language is Ethiopian Sign Language, to reply, ask a question or explain a caption problem without writing.</p>
+      <fidel-sign-answer label="Ask your question in sign language" max-seconds="30" heading-level="4"></fidel-sign-answer>
+      <p id="d-sign-host" aria-live="off"></p>
+      <script>
+        // Host page code: this demo has no upload address, so the component
+        // hands the recording to the page, which could upload it.
+        document.addEventListener('fidel-sign-answer-ready', (e) => {
+          document.getElementById('d-sign-host').textContent = 'The page received a ' + e.detail.mimeType + ' video of ' + (e.detail.durationSeconds ?? '?') + ' seconds. Nothing was uploaded.';
+        });
+      </script>
+      <p>Try it:</p>
+      <ul>
+        <li>Press "Start camera": only now does the browser ask for the camera. "Camera on" shows while it is on; "Stop camera" turns it off.</li>
+        <li>Press Record: a 3-2-1 countdown, then "Recording". Stop recording turns the camera off. Watch it, slower if you like, then Record again or Send.</li>
+        <li>With no camera (or the camera refused), the message says so and offers your phone's camera app or a video file instead.</li>
+      </ul>
     </section>
     <!-- PACKAGE D END -->
   </main>

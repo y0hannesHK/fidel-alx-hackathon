@@ -232,6 +232,40 @@ a.fidel-d-button { text-decoration: underline; }
   .fidel-event-facts dd { margin-block-end: 0.5rem; }
 }
 
+/* ---------- D6: <fidel-sign-answer> -------------------------------------------- */
+.fidel-sign {
+  padding: 1rem;
+  border: 1px solid var(--fidel-border);
+  border-radius: 0.5rem;
+  background: var(--fidel-paper);
+}
+.fidel-sign-label { margin: 0 0 0.5rem; font-size: 1.25rem; }
+.fidel-sign-step { margin: 0.75rem 0 0.5rem; font-size: 1.1rem; }
+.fidel-sign-step:focus { outline: none; }
+.fidel-sign-step:focus-visible { outline: 3px solid var(--fidel-accent); }
+.fidel-sign-video {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 30rem;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: 0.25rem;
+}
+.fidel-sign-banner {
+  display: inline-block;
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #1a1a1a;          /* 17:1 */
+  border-radius: 0.25rem;
+}
+.fidel-sign-banner.fidel-sign-recording { background: #b00020; }   /* 6.9:1, and the word "Recording" */
+.fidel-sign-countdown { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; }
+.fidel-sign-status:empty { display: none; }
+.fidel-sign-status { font-weight: 600; margin: 0.75rem 0 0; }
+.fidel-sign-file { display: block; max-inline-size: 100%; min-block-size: 2.75rem; }
+
 @media (prefers-reduced-motion: reduce) {
   :is(fidel-caption-report, fidel-amharic-keyboard, fidel-event-card, fidel-sign-answer, fidel-reading-guide) * {
     transition: none !important;
