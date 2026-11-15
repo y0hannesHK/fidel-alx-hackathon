@@ -26,7 +26,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import auth, caption_reports, certificates, editing, engines, glossary, jobs, lessons, offline, speak, webhooks
+from .api import auth, caption_reports, certificates, editing, engines, glossary, jobs, lessons, offline, questions, speak, webhooks
 from .config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -110,6 +110,7 @@ app.include_router(webhooks.router)
 app.include_router(engines.router)
 app.include_router(caption_reports.router)  # Package D: learners report caption problems
 app.include_router(speak.router)  # Forms: "Listen" through the optional voice engine
+app.include_router(questions.router)  # Package E: learners ask about a moment (text, voice note, sign language)
 
 
 @app.get("/health", tags=["system"])

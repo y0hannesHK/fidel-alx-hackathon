@@ -73,6 +73,7 @@ export async function lessonPage(main, lessonId) {
   main.append(captions);
   main.append(await (await import('./reports.js')).reportsSection(lessonId)); // Package D: caption reports from learners
   main.append(await (await import('./sound-check.js')).soundCheckSection(lessonId, manifest)); // Package D: sound-off check
+  main.append(await (await import('./questions.js')).questionsSection(lessonId)); // Package E: learners' questions (text, voice, sign)
   main.addEventListener('captions-saved', async () => {
     manifest = await api(`/api/v1/lessons/${lessonId}`);
     refreshPreview();

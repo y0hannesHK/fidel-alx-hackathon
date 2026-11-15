@@ -75,6 +75,21 @@ CREATE TABLE IF NOT EXISTS caption_reports (
     created_at  TEXT NOT NULL,
     updated_at  TEXT NOT NULL
 );
+
+-- Package E: learners ask about a moment in a lesson (api/questions.py). No name, no account, no IP.
+CREATE TABLE IF NOT EXISTS questions (
+    id          TEXT PRIMARY KEY,
+    lesson_id   TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    time        REAL NOT NULL,              -- seconds into the video
+    kind        TEXT NOT NULL,              -- text | voice | sign
+    text        TEXT,                       -- the written question (kind = text)
+    caption     TEXT,                       -- the caption shown at that moment (optional)
+    media_file  TEXT,                       -- file name in data/questions/<lesson id>/ (voice | sign)
+    media_type  TEXT,                       -- its MIME type
+    status      TEXT NOT NULL,              -- open | answered | dismissed
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
 """
 
 # Columns added after the first version. Older databases get them on start.

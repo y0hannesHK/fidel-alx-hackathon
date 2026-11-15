@@ -509,6 +509,197 @@
       </ul>
     </section>
     <!-- PACKAGE FORMS END -->
+
+    <!-- PACKAGE E START -->
+    <section id="package-e" aria-labelledby="package-e-title">
+      <h2 id="package-e-title">Package E: lesson formats, questions, notes, quiz, callouts, tables</h2>
+      <p>Every learner chooses HOW they take part: by watching, listening, reading, sign language or simple words; asking in writing, with their voice or in sign language. Nobody is asked why.</p>
+      <p><fidel-skip-link target="#e-lesson" label="Skip to the Package E lesson video"></fidel-skip-link></p>
+
+      <h3 id="e-formats">Choose how to take the lesson</h3>
+      <p>Who this helps: blind learners and learners on expensive data (Listen: no video is downloaded), Deaf learners (Sign language), low-literacy learners (Simple words) and anyone who prefers to read.</p>
+      <fidel-lesson-formats for="e-formats-player" heading-level="4"></fidel-lesson-formats>
+      <fidel-player id="e-formats-player"
+        src="/media/lesson.mp4"
+        src-webm="/media/lesson.webm"
+        captions-en="/demo/media/en.vtt"
+        chapters="/demo/media/chapters.vtt"
+        sign="/media/sign.webm"
+        lang="en">
+      </fidel-player>
+      <script>
+        // Host page code (runs before fidel.js): with ?lesson=ID, this player
+        // shows that lesson from this Fidel server instead of the demo files,
+        // so Listen (audio and transcript) and Read (the lesson document) are offered.
+        (() => {
+          const id = new URLSearchParams(location.search).get('lesson');
+          if (!/^[a-f0-9]{12}$/.test(id || '')) return;
+          const player = document.getElementById('e-formats-player');
+          for (const name of ['src', 'src-webm', 'captions-en', 'chapters', 'sign']) player.removeAttribute(name);
+          player.setAttribute('lesson', '/api/v1/lessons/' + id);
+        })();
+      </script>
+      <p id="e-formats-host" aria-live="off"></p>
+      <script>
+        document.addEventListener('fidel-lesson-format', (e) => {
+          document.getElementById('e-formats-host').textContent = 'The page was told: format "' + e.detail.format + '".';
+        });
+      </script>
+      <p>Try it:</p>
+      <ul>
+        <li>Only the formats this lesson has are offered, each with its download size. Open this page with <code>?lesson=</code> and the id of a lesson with sound to see Listen and Read too.</li>
+        <li>Press Listen: the video goes away and the audio and transcript appear; no video is downloaded. Your choice is remembered: reload the page.</li>
+        <li>Press Sign language: the signer window opens beside the video, large. Simple words switches the simple version of texts such as the one in Package A on.</li>
+      </ul>
+
+      <h3 id="e-question">Ask about this moment</h3>
+      <p>Who this helps: Deaf learners (ask in sign language), blind learners and learners who find writing hard (a voice note), and shy learners: no name is needed.</p>
+      <div id="e-lesson" tabindex="-1">
+        <fidel-player id="e-lesson-player"
+          src="/media/lesson.mp4"
+          src-webm="/media/lesson.webm"
+          captions-en="/demo/media/en.vtt"
+          captions-am="/demo/media/am.vtt"
+          captions-am-status="draft"
+          lang="en">
+        </fidel-player>
+      </div>
+      <fidel-question id="e-ask" for="e-lesson-player"></fidel-question>
+      <script>
+        // Host page code (runs before fidel.js): with ?lesson=ID the player
+        // shows that lesson and questions are sent to this Fidel server (staff
+        // read them in Studio); without it, the page receives the questions.
+        (() => {
+          const id = new URLSearchParams(location.search).get('lesson');
+          if (!/^[a-f0-9]{12}$/.test(id || '')) return;
+          const player = document.getElementById('e-lesson-player');
+          for (const name of ['src', 'src-webm', 'captions-en', 'captions-am', 'captions-am-status']) player.removeAttribute(name);
+          player.setAttribute('lesson', '/api/v1/lessons/' + id);
+          document.getElementById('e-ask').setAttribute('api', '/api/v1');
+        })();
+      </script>
+      <p id="e-question-host" aria-live="off"></p>
+      <script>
+        document.addEventListener('fidel-question-ready', (e) => {
+          const d = e.detail;
+          document.getElementById('e-question-host').textContent = 'The page received a ' + d.kind + ' question at ' + d.time + ' s' +
+            (d.blob ? ' (' + d.blob.type + ', ' + d.blob.size + ' bytes)' : '') + '. Nothing was uploaded.';
+        });
+      </script>
+      <p>Try it:</p>
+      <ul>
+        <li>Play the video, then press "Ask about this moment". The video pauses; the time and the caption are filled in. Cancel or Escape: the video plays on.</li>
+        <li>Choose Voice note, press Start recording (only now is the microphone asked for), Stop, listen, then Send. The size is shown first.</li>
+        <li>With no microphone (or permission refused) a file picker opens your phone's voice recorder instead. Offline, the question is kept on the phone and sent later.</li>
+      </ul>
+
+      <h3 id="e-voice">Voice note on its own</h3>
+      <p>Who this helps: learners who speak more easily than they write, and blind learners. The recording is never turned into text by a cloud service.</p>
+      <fidel-voice-note label="Leave a voice message for your mentor" max-seconds="60" heading-level="4"></fidel-voice-note>
+      <p id="e-voice-host" aria-live="off"></p>
+      <script>
+        document.addEventListener('fidel-voice-note-ready', (e) => {
+          document.getElementById('e-voice-host').textContent = 'The page received a ' + e.detail.mimeType + ' voice note of ' + (e.detail.durationSeconds ?? '?') + ' seconds. Nothing was uploaded.';
+        });
+      </script>
+
+      <h3 id="e-notes">My notes, at a time in the video</h3>
+      <p>Who this helps: learners who revise later, screen-reader users who cannot scrub a timeline, and learners who share a phone (notes stay on this device only).</p>
+      <fidel-notes for="e-lesson-player" lesson-id="components-demo" heading-level="4"></fidel-notes>
+      <p>Try it:</p>
+      <ul>
+        <li>Play the video, then press "Add a note at …": the time is filled in. Write a note and Save.</li>
+        <li>Press a note to play from its time. Delete a note, then Undo. Download your notes as a text file.</li>
+      </ul>
+
+      <h3 id="e-small">Progress, Mark as complete, Skip link, Toggletip</h3>
+      <p>Who this helps: everyone who wants to know how far they are, keyboard and screen-reader users (the skip link), and learners meeting a new word (the toggletip).</p>
+      <fidel-progress for="e-lesson-player" label="Package E demo lesson"></fidel-progress>
+      <fidel-mark-complete for="e-lesson-player" lesson-id="components-demo"></fidel-mark-complete>
+      <p>The transcript is under the video. <fidel-toggletip label="What is a transcript?">A transcript is everything said in the video, written down. You can read it, search it, or press a line to play the video from there.</fidel-toggletip></p>
+      <p>Try it:</p>
+      <ul>
+        <li>Play the video: the progress line changes quietly; "Say my progress" reads it out. "Mark as complete" becomes available at the end of the video.</li>
+        <li>Tab to "Skip to the Package E lesson video" at the top of this section (on a lesson page it is the first Tab stop): it moves focus to the video.</li>
+        <li>Press "What is a transcript?": the explanation opens and is read out. Escape closes it.</li>
+      </ul>
+
+      <h3 id="e-callouts">Callouts</h3>
+      <p>Who this helps: everyone; the type is in words ("Warning:"), not only in colour or an icon.</p>
+      <fidel-callout type="tip" heading="Save often" heading-level="4"><p>Press Ctrl+S (or Cmd+S on a Mac) every few minutes.</p></fidel-callout>
+      <fidel-callout type="warning" heading="Do not share your password" heading-level="4"><p>ALX staff will never ask for it.</p></fidel-callout>
+
+      <h3 id="e-tables">Tables that fit a phone</h3>
+      <p>Who this helps: low-vision learners at 400% zoom and phone users: narrow tables become cards, never sideways scrolling. Screen readers still get a real table.</p>
+      <fidel-table sortable="true">
+        <table>
+          <caption>Lessons this week</caption>
+          <thead><tr><th>Lesson</th><th>Length</th><th>Download size</th><th>Sign language</th></tr></thead>
+          <tbody>
+            <tr><th>HTML basics</th><td>12:30</td><td>18 MB</td><td>Yes</td></tr>
+            <tr><th>CSS colours</th><td>8:05</td><td>11 MB</td><td>Yes</td></tr>
+            <tr><th>Forms that work for everyone</th><td>15:40</td><td>23 MB</td><td>Coming soon</td></tr>
+          </tbody>
+        </table>
+      </fidel-table>
+      <p>A table without a caption gets a warning for authors:</p>
+      <fidel-table show-warnings>
+        <table>
+          <thead><tr><th>Day</th><th>Topic</th></tr></thead>
+          <tbody><tr><td>Monday</td><td>Headings</td></tr></tbody>
+        </table>
+      </fidel-table>
+      <p>Try it:</p>
+      <ul>
+        <li>Make the window narrow or zoom to 400%: each row becomes a card with "Length: 12:30".</li>
+        <li>Press a column header (Lesson, Length…) to sort; press again for the other direction.</li>
+      </ul>
+
+      <h3 id="e-quiz">Quiz with a timer you control</h3>
+      <p>Who this helps: learners who need more time (the timer warns 1 minute before the end and can be extended or switched off), and screen-reader users (feedback in words, focus moves to it).</p>
+      <fidel-quiz label="Timed practice" time-limit="600" heading-level="4">
+        <div data-question data-answer="1" data-explanation="&lt;h1&gt; is the main heading of the page.">
+          <p>Which tag is the main heading of a page?</p>
+          <ul><li>&lt;p&gt;</li><li>&lt;h1&gt;</li><li>&lt;a&gt;</li></ul>
+        </div>
+        <div data-question data-answer="0,2" data-explanation="Captions and a transcript both give the words of the video as text.">
+          <p>Which of these help a Deaf learner follow a video?</p>
+          <ul><li>Captions</li><li>Louder sound</li><li>A transcript</li></ul>
+        </div>
+      </fidel-quiz>
+      <p>Try it:</p>
+      <ul>
+        <li>Choose an answer and press "Check answer": the feedback is next to the question and gets focus.</li>
+        <li>The timer starts when you enter the quiz. "Add 5 minutes" or "Switch the timer off" at any time.</li>
+      </ul>
+
+      <h3 id="e-sample">A sample lesson: headings</h3>
+      <p>Who this helps: everyone. Callouts, a table and a quiz together, as a lesson page would use them.</p>
+      <article id="e-sample-lesson" aria-labelledby="e-sample-title" style="border: 1px solid #5c5c5c; border-radius: 8px; padding: 0 1rem 1rem;">
+        <h4 id="e-sample-title">Headings in HTML</h4>
+        <p>Headings structure a page into sections: screen-reader users list them and jump between them, so use one &lt;h1&gt; and do not skip levels.</p>
+        <fidel-callout type="example" heading="A page with three headings" heading-level="5">
+          <pre style="white-space: pre-wrap;">&lt;h1&gt;Cooking&lt;/h1&gt;
+&lt;h2&gt;Breakfast&lt;/h2&gt;
+&lt;h2&gt;Lunch&lt;/h2&gt;</pre>
+        </fidel-callout>
+        <fidel-callout type="note" heading="Headings are not for size" heading-level="5"><p>To make text bigger, use CSS, not a heading.</p></fidel-callout>
+        <fidel-table>
+          <table>
+            <caption>Heading levels</caption>
+            <thead><tr><th>Tag</th><th>Use it for</th></tr></thead>
+            <tbody>
+              <tr><th>&lt;h1&gt;</th><td>The page title (one per page)</td></tr>
+              <tr><th>&lt;h2&gt;</th><td>Main sections</td></tr>
+              <tr><th>&lt;h3&gt;</th><td>Parts of a section</td></tr>
+            </tbody>
+          </table>
+        </fidel-table>
+        <fidel-quiz label="Check what you learned" heading-level="5"
+          questions='[{"question":"How many h1 headings should a page have?","options":["One","Two","As many as you like"],"answer":0,"explanation":"One main title per page."},{"question":"Why do headings help screen-reader users?","options":["They can jump between sections","They make text bold"],"answer":0,"explanation":"Screen readers list the headings, so you can jump to a section.","ownWay":true}]'></fidel-quiz>
+      </article>
+    </section>
+    <!-- PACKAGE E END -->
   </main>
 </body>
 </html>

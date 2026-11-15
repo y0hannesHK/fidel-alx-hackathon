@@ -433,3 +433,4 @@ def delete_lesson(lesson_id: str = LessonId):
     get_lesson_or_404(lesson_id)
     db.delete_lesson(lesson_id)
     shutil.rmtree(lesson_folder(lesson_id), ignore_errors=True)
+    shutil.rmtree(settings.data_dir / "questions" / lesson_id, ignore_errors=True)  # Package E: learners' question recordings

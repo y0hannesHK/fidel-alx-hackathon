@@ -18,6 +18,7 @@ export const DEFAULT_PREFS = {
   simpleWords: false, // <fidel-simple-mode>: show the simple version (Package A)
   sectionLanguage: null, // <fidel-lang>: last chosen section language (Package B)
   typingVoice: 'off', // form fields: say each 'words' or 'characters' as typed (Forms); off by default
+  lessonFormat: null, // <fidel-lesson-formats>: watch | listen | read | sign | simple (Package E)
 };
 
 export const CAPTION_SIZE = { min: 100, max: 250, step: 25 };

@@ -34,7 +34,7 @@ router = APIRouter(prefix="/api/v1/webhooks", tags=["webhooks"], dependencies=[D
 db = Database(settings.data_dir / "fidel.db")
 
 Event = Literal["lesson.ready", "lesson.published", "lesson.unpublished", "captions.reviewed", "caption.reported",
-                "certificate.issued", "certificate.revoked"]
+                "certificate.issued", "certificate.revoked", "question.asked"]
 
 
 class WebhookIn(BaseModel):

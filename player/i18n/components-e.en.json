@@ -1,0 +1,194 @@
+{
+  "formats": {
+    "legend": "How do you want this lesson?",
+    "noPlayer": "The lesson player was not found.",
+    "nothing": "This lesson has no formats to choose from yet.",
+    "mb": "{n} MB",
+    "withSize": "{what}, {size}",
+    "names": {
+      "watch": "Watch",
+      "listen": "Listen",
+      "read": "Read",
+      "sign": "Sign language",
+      "simple": "Simple words"
+    },
+    "what": {
+      "watch": "video and captions",
+      "listen": "audio and transcript, low data",
+      "read": "the lesson as text",
+      "sign": "video with a large sign-language window",
+      "simple": "video and the lesson in simple words"
+    },
+    "modes": {
+      "watch": "Watch mode: video and captions.",
+      "listen": "Listen mode: audio and transcript.",
+      "read": "Read mode: the lesson as text.",
+      "sign": "Sign language mode: video with a large sign-language window.",
+      "simple": "Simple words mode: video and simple words."
+    },
+    "audioLabel": "Lesson audio",
+    "listenHeading": "Listen to the lesson",
+    "transcript": "Transcript",
+    "loadingTranscript": "Loading the transcript…",
+    "noTranscript": "The transcript could not be loaded. Check your connection and try again.",
+    "playFrom": "Play from ",
+    "readHeading": "Read the lesson",
+    "readIntro": "The same lesson as a document. No video is loaded.",
+    "openHtml": "Open the lesson as a web page",
+    "openPdf": "Download the lesson as a PDF",
+    "openBrf": "Download the Braille file (.brf)"
+  },
+  "voice": {
+    "label": "Record a voice note",
+    "intro": "Nothing is recorded or sent until you choose. Your voice is not turned into text.",
+    "step1": "Step 1: start recording",
+    "start": "Start recording",
+    "maxLength": "Up to {time} (minutes:seconds).",
+    "step2": "Step 2: stop when you are done",
+    "recording": "Recording",
+    "stop": "Stop recording",
+    "step3": "Step 3: listen to your voice note",
+    "yours": "Your voice note",
+    "size": "Size: {size} MB.",
+    "sendSize": "Send ({size} MB)",
+    "again": "Record again",
+    "ready": "Your voice note is ready.",
+    "sending": "Sending…",
+    "sent": "Sent. Thank you.",
+    "sendFailed": "Not sent. Check your connection and try again.",
+    "noMic": "Your microphone is not available here.",
+    "filePicker": "Record with your phone's voice recorder, or choose an audio file",
+    "fileChosen": "Audio chosen ({size} MB).",
+    "problems": {
+      "insecure": "The browser allows the microphone only on secure (https) pages.",
+      "none": "No microphone was found.",
+      "recorder": "This browser cannot record sound.",
+      "denied": "Permission to use the microphone was refused.",
+      "other": "The microphone could not be started."
+    }
+  },
+  "question": {
+    "button": "Ask about this moment",
+    "heading": "Ask about this moment",
+    "intro": "Ask in writing, with your voice or in sign language. No name or account is needed.",
+    "time": "Time in the video (minutes:seconds)",
+    "timeHint": "For example 1:05.",
+    "timeTooLate": "The video is only {length} long.",
+    "shown": "Caption at this time",
+    "noCaption": "No caption at this time.",
+    "how": "How do you want to ask?",
+    "kinds": {
+      "text": "Write",
+      "voice": "Voice note",
+      "sign": "Sign language"
+    },
+    "yourQuestion": "Your question",
+    "textHint": "Up to 2000 letters.",
+    "voiceLabel": "Ask with your voice",
+    "signLabel": "Ask in sign language",
+    "send": "Send",
+    "cancel": "Cancel",
+    "needText": "Write your question.",
+    "needVoice": "Record your question first: press Start recording.",
+    "needSign": "Record your question first: press Start camera.",
+    "ready": "Your question is ready.",
+    "sending": "Sending…",
+    "sent": "Your question was sent. A teacher will answer.",
+    "sentLater": "Your saved question was sent.",
+    "savedOffline": "Saved on this phone. It will be sent when you are online.",
+    "notSaved": "This recording is too big to keep on this phone. Send it when you are online.",
+    "notSent": "Not sent: {reason}"
+  },
+  "callout": {
+    "types": {
+      "tip": "Tip:",
+      "warning": "Warning:",
+      "example": "Example:",
+      "note": "Note:"
+    }
+  },
+  "table": {
+    "noCaption": "This table has no caption. Authors: add a <caption> that names the table.",
+    "sorted": "Sorted by {name}, {direction}.",
+    "ascending": "ascending",
+    "descending": "descending"
+  },
+  "notes": {
+    "heading": "My notes",
+    "private": "Saved only on this device. Nobody else can see them.",
+    "add": "Add a note at {time}",
+    "empty": "No notes yet.",
+    "export": "Download my notes (.txt)",
+    "time": "Time in the video (minutes:seconds)",
+    "timeHint": "For example 1:05.",
+    "text": "Note",
+    "save": "Save note",
+    "cancel": "Cancel",
+    "added": "Note added at {time}.",
+    "saved": "Note saved.",
+    "play": "Play from {time}: {text}",
+    "edit": "Edit",
+    "delete": "Delete",
+    "noteAt": "note at {time}",
+    "deleted": "Note at {time} deleted.",
+    "undo": "Undo",
+    "restored": "Note restored.",
+    "noPlayer": "The lesson video was not found.",
+    "fileTitle": "My notes",
+    "exported": "Notes downloaded."
+  },
+  "quiz": {
+    "heading": "Quiz",
+    "number": "Question {n}.",
+    "chooseAll": "Choose all that apply.",
+    "check": "Check answer",
+    "chooseFirst": "Choose an answer first.",
+    "chooseFirstMany": "Choose one or more answers first.",
+    "correct": "Correct.",
+    "notQuite": "Not quite: the answer is {answer}.",
+    "and": "and",
+    "seeScore": "See my score",
+    "scoreHeading": "Your score",
+    "score": "You got {score} of {total} right ({percent}%).",
+    "ownWay": "Answer in your own way",
+    "ownHow": "How do you want to answer?",
+    "ownKinds": {
+      "text": "Write",
+      "voice": "Voice note",
+      "sign": "Sign language"
+    },
+    "ownText": "Your answer",
+    "ownSend": "Save my answer",
+    "ownSaved": "Your answer was saved for your teacher.",
+    "ownCount": "Answered in your own way: {n}. Your teacher will check them.",
+    "timer": "Time limit",
+    "limitBefore": "Time limit: {minutes} minutes. The timer starts when you begin.",
+    "left": "Time left: {minutes} min {seconds} s",
+    "warning": "1 minute left. You can add time or switch the timer off.",
+    "extend": "Add 5 minutes",
+    "extended": "5 minutes added.",
+    "timerOff": "Switch the timer off",
+    "off": "Timer off. Take as long as you need.",
+    "over": "Time is up. Here is your score."
+  },
+  "progress": {
+    "label": "Lesson",
+    "watched": "{percent}% watched",
+    "say": "Say my progress"
+  },
+  "complete": {
+    "button": "Mark as complete",
+    "notYet": "Available when you reach the end of the video.",
+    "nowAvailable": "You reached the end. You can mark the lesson as complete.",
+    "readyHint": "Press when you have finished this lesson.",
+    "doneHint": "Done. Press again to mark it not complete.",
+    "marked": "Lesson marked complete.",
+    "unmarked": "Lesson marked not complete."
+  },
+  "skip": {
+    "label": "Skip to the lesson"
+  },
+  "toggletip": {
+    "label": "More information"
+  }
+}
