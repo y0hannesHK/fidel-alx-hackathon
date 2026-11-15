@@ -121,6 +121,35 @@ use the small Whisper model and skip translation (see "Hardware and models").
                       chat="zoom-chat.txt" anonymize></fidel-session-viewer>
 ```
 
+**Two files, still one script tag.** `fidel.js` holds the player, job card,
+session viewer and certificate. The other component tags (`<fidel-quiz>`,
+`<fidel-input>`, … see "More components") are in `fidel-components.js` and
+`fidel-components.css`, and `fidel.js` loads them **by itself, only when the
+page uses one of those tags**. A lesson page with only a player downloads
+163 KB instead of 231 KB (gzipped). A page that creates component tags from
+its own script before they are needed (like Studio) can load the second file
+directly:
+
+```html
+<link rel="stylesheet" href="https://YOUR-FIDEL-HOST/embed/v1/fidel-components.css">
+<script src="https://YOUR-FIDEL-HOST/embed/v1/fidel-components.js" defer></script>
+```
+
+**Without a Fidel server: from GitHub through a CDN.** Each GitHub release
+can attach the built files (`npm run build` in `player/` makes them in
+`player/dist/`: `fidel.js`, `fidel.css`, `fidel-components.js`,
+`fidel-components.css`, `fonts/`). A free CDN such as jsDelivr then serves a
+fixed version, e.g. `https://cdn.jsdelivr.net/gh/OWNER/REPO@v1.0.0/dist/fidel.js`
+(the path depends on where the release puts `dist/`). The player alone works
+this way with your own files (`src=`, `captions-en=` …); lessons, jobs and
+certificates still need a Fidel server for their data.
+
+**Why not copy the components into your project (like shadcn)?** You can:
+each component is one folder (`player/src/components/<package>/`, its
+`components.css` and `player/i18n/components-<package>.*.json`). But a copy
+does not receive our accessibility fixes, and small edits can break them
+(a label, a focus rule). For learners, using the hosted files is safer.
+
 **What learners get**
 
 - **Player** (built on [Able Player](https://github.com/ableplayer/ableplayer)):
@@ -1228,7 +1257,8 @@ caption is reviewed by a person before it counts as final.
 
 | What | Value |
 |---|---|
-| `fidel.js` (Able Player + jQuery + DOMPurify + Fidel), gzipped | 158 KB (Fidel's own code: about 17 KB) |
+| `fidel.js` (Able Player + jQuery + DOMPurify + Fidel player, job card, session viewer, certificate), gzipped | 163 KB |
+| `fidel-components.js` + `.css` (43 component tags; loaded only on pages that use them), gzipped | 68 KB + 8 KB |
 | `fidel.css`, gzipped | 6.5 KB |
 | Ethiopic font (2 weights, loaded only when Amharic text is shown) | 2 × 75 KB |
 | Audio-only lesson (Opus 24 kbps) | 187 KB per minute (2.8 MB per 15 minutes) |

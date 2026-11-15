@@ -61,3 +61,16 @@ test('outside Savanna: the blank page works with no host styles', async ({ page 
   await expect.poll(() => player.locator('video').first().evaluate((v) => !v.paused)).toBe(true);
   expect(serious(await new AxeBuilder({ page }).withTags(TAGS).analyze())).toEqual([]);
 });
+
+test('a page with only a player does not download the component library; a page with components does', async ({ page }) => {
+  const files = [];
+  page.on('request', (r) => { if (r.url().includes('fidel-components.')) files.push(r.url()); });
+  await page.goto('/demo/blank.html');
+  await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 20_000 });
+  expect(files, 'player-only page: fidel-components.js not loaded').toEqual([]);
+
+  await page.goto('/demo/components.html');
+  await expect.poll(() => page.evaluate(() => Boolean(customElements.get('fidel-quiz')))).toBe(true);
+  expect(files.some((url) => url.endsWith('/fidel-components.js'))).toBe(true);
+  expect(files.some((url) => url.endsWith('/fidel-components.css'))).toBe(true);
+});

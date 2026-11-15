@@ -62,10 +62,32 @@ export class FidelPlayer extends HTMLElement {
   connectedCallback() {
     // connectedCallback runs again if the element is moved; build only once.
     if (this.ablePlayer || this.building) return;
+    // The learner chose "Listen" or "Read" before (Package E's lesson-formats
+    // chooser): the chooser takes this player off the page before any video
+    // downloads. It is in fidel-components.js, which arrives a moment after
+    // this file, so wait for it (at most 5 s) instead of starting the video.
+    if (!this.waitedForFormats && ['listen', 'read'].includes(loadPrefs().lessonFormat) && this.hasFormatChooser()) {
+      this.waitedForFormats = true;
+      this.building = true;
+      const timeout = new Promise((resolve) => setTimeout(resolve, 5000));
+      Promise.race([customElements.whenDefined('fidel-lesson-formats'), timeout]).then(() => {
+        this.building = false;
+        if (this.isConnected) this.connectedCallback();
+      });
+      return;
+    }
     instanceCount += 1;
     this.idPrefix = this.id || `fidel-${instanceCount}`;
     this.prefs = loadPrefs();
     this.build();
+  }
+
+  /** Is there a <fidel-lesson-formats> on the page for this player? */
+  hasFormatChooser() {
+    return [...document.querySelectorAll('fidel-lesson-formats')].some((chooser) => {
+      const target = chooser.getAttribute('for');
+      return target ? target === this.id : true;
+    });
   }
 
   disconnectedCallback() {

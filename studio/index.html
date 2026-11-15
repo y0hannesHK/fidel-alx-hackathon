@@ -5,9 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fidel Studio</title>
   <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <link rel="stylesheet" href="/embed/v1/fidel-components.css">
   <link rel="stylesheet" href="studio.css">
   <!-- The player, for the lesson preview. -->
   <script src="/embed/v1/fidel.js" defer></script>
+  <!-- Studio builds form fields (<fidel-input>) from its own code, so it loads
+       the component library right away instead of waiting for fidel.js to. -->
+  <script src="/embed/v1/fidel-components.js" defer></script>
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
