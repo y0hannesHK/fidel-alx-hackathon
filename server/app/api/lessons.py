@@ -51,7 +51,7 @@ class Manifest(BaseModel):
     chapters: dict[str, str] = Field(description="Chapter lists (WebVTT) by language")
     descriptions: dict[str, str] = Field(description="Audio description text (WebVTT) by language")
     description_recordings: dict[str, list[dict]] = Field(
-        description="Recorded audio descriptions by language: [{start, url}]")
+        description="Recorded audio descriptions by language: [{start, url, machine_read}]")
     sign: str | None = Field(description="Sign-language video (WebM)")
     offline: dict[str, str] = Field(description="Offline downloads: page (one HTML file), page_with_video, pack (.zip)")
     offline_sizes: dict[str, int] = Field(description="About how many bytes each offline download is, to show before downloading")
@@ -128,8 +128,8 @@ def build_manifest(lesson: dict, request: Request) -> Manifest:
         for lang, state in sorted(db.get_captions(lesson["id"]).items())
         if (folder / f"captions-{lang}.vtt").is_file()
     ]
-    by_language = lambda kind: {  # noqa: E731
-        lang: url for lang in ("en", "am") if (url := if_exists(f"{kind}-{lang}.vtt"))
+    by_language = lambda kind, langs=("en", "am"): {  # noqa: E731
+        lang: url for lang in langs if (url := if_exists(f"{kind}-{lang}.vtt"))
     }
     return Manifest(
         id=lesson["id"],
@@ -140,11 +140,12 @@ def build_manifest(lesson: dict, request: Request) -> Manifest:
         audio=audio,
         captions=captions,
         chapters=by_language("chapters"),
-        descriptions=by_language("descriptions"),
+        descriptions=by_language("descriptions", ("en", "am", "om")),
         description_recordings={
-            lang: [{"start": int(p.stem.rsplit("-", 1)[1]) / 1000, "url": f"{files}/{p.name}"}
-                   for p in sorted(folder.glob(f"desc-{lang}-*.opus"))]
-            for lang in ("en", "am") if any(folder.glob(f"desc-{lang}-*.opus"))
+            lang: [{"start": int(p.stem.rsplit("-", 1)[1]) / 1000, "url": f"{files}/{p.name}",
+                    "machine_read": p.with_suffix(".machine").is_file()}
+                   for p in sorted(folder.glob(f"desc-{lang}-*.opus"), key=lambda p: int(p.stem.rsplit("-", 1)[1]))]
+            for lang in ("en", "am", "om") if any(folder.glob(f"desc-{lang}-*.opus"))
         },
         sign=if_exists("sign.webm"),
         offline={

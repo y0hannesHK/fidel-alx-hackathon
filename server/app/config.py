@@ -42,7 +42,7 @@ class Settings:
     translate_to: list[str]  # caption languages to machine-translate into, e.g. ['am', 'om']
     # Optional engines in their own containers (docker compose profiles); empty = off.
     omniasr_url: str  # Omnilingual ASR, e.g. http://omniasr:8001 (speech-to-text for omniasr_languages)
-    omniasr_languages: list[str]  # spoken languages it handles instead of Whisper, e.g. ['am']
+    omniasr_languages: list[str]  # spoken languages it handles instead of Whisper, e.g. ['am', 'om']
     tts_url: str  # ToucanTTS, e.g. http://toucan:8002 (machine-read Amharic recordings)
 
 
@@ -64,7 +64,7 @@ def load_settings() -> Settings:
         translator=os.environ.get("FIDEL_TRANSLATOR", "local_madlad"),
         translate_to=[c.strip() for c in os.environ.get("FIDEL_TRANSLATE_TO", "am,om").split(",") if c.strip()],
         omniasr_url=os.environ.get("FIDEL_OMNIASR_URL", "").strip().rstrip("/"),
-        omniasr_languages=[c.strip() for c in os.environ.get("FIDEL_OMNIASR_LANGUAGES", "am").split(",") if c.strip()],
+        omniasr_languages=[c.strip() for c in os.environ.get("FIDEL_OMNIASR_LANGUAGES", "am,om").split(",") if c.strip()],
         tts_url=os.environ.get("FIDEL_TTS_URL", "").strip().rstrip("/"),
     )
 

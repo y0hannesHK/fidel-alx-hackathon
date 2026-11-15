@@ -84,6 +84,39 @@ are deliberately not used:
 - **Somali is not offered.** It would need Transphone, a model from another
   publisher.
 
+## Afaan Oromo
+
+- **Voice.** Toucan reads Afaan Oromo (`gaz`, West Central Oromo) with
+  espeak-ng's Oromo rules, so Transphone is not needed. Afaan Oromo is not in
+  Toucan's training recordings, so the voice is a best guess from similar
+  languages. Samples are in `data/model-tests/outputs/toucan-oromo/`.
+- **Speech to text.** Omnilingual ASR lists `orm_Latn`, so Afaan Oromo lessons
+  are sent to it (`FIDEL_OMNIASR_LANGUAGES=am,om`). This is untested: there
+  is no Oromo test clip yet.
+
+## Why the Amharic voice is not clear, and what would fix it
+
+A team member listened (15 Nov 2026): the accent is not clear and some words
+are swallowed. Speaking more slowly helps a little
+(`TOUCAN_DURATION_SCALE`). The main cause is the step that turns letters into
+sounds (espeak-ng):
+- **The ɨ vowel.** It adds ɨ after almost every sixth-order letter (ስ, ት, ክ),
+  where speakers often say no vowel. For example, ካስታጠቅህ becomes
+  "kasɨtat'ək'ɨx".
+- **Doubled consonants.** It cannot know gemination, because Amharic writing
+  does not mark it.
+
+Real fixes, best first:
+1. **Recordings by people.** Fidel already supports them, and they always
+   replace the machine voice.
+2. **Better rules for letters to sounds.** Write Amharic rules for when ɨ is
+   said, checked by a speaker. Toucan accepts sounds directly.
+3. **Fine-tune Toucan.** Train it on a few hours of one clear Amharic voice
+   (needs a GPU and recordings with permission).
+4. **Another engine.** Meta's MMS Amharic voice is CC-BY-NC, which Fidel does
+   not allow. Cloud voices would be opt-in only, because the text leaves the
+   server.
+
 ## Licences
 
 All code and models are Apache-2.0. Two parts need attention:

@@ -368,7 +368,7 @@ any other service. Engines are chosen in `.env`, never by changing code:
 | `FIDEL_TRANSLATOR` | `local_madlad`, `none` | `local_madlad` |
 | `FIDEL_TRANSLATE_TO` | caption languages to translate into: `am` (Amharic), `om` (Afaan Oromo) | `am,om` |
 | `FIDEL_OMNIASR_URL` | address of the optional Amharic speech-to-text engine, e.g. `http://omniasr:8001` | empty (off) |
-| `FIDEL_OMNIASR_LANGUAGES` | spoken languages it transcribes instead of Whisper | `am` |
+| `FIDEL_OMNIASR_LANGUAGES` | spoken languages it transcribes instead of Whisper | `am,om` |
 | `FIDEL_TTS_URL` | address of the optional Amharic voice engine, e.g. `http://toucan:8002` | empty (off) |
 
 `none` switches a step off (shown as "skipped" in Studio). After
@@ -377,7 +377,7 @@ and models are all served from the Fidel server.
 
 Not available yet: a cloud translation option (Addis AI), see [BACKLOG.md](BACKLOG.md).
 
-### Optional Amharic speech engines
+### Optional Amharic and Afaan Oromo speech engines
 
 Two extra engines, each in **its own container**, so PyTorch and the GPL parts
 of the voice engine never enter the main image. Both are off unless you start
@@ -385,8 +385,8 @@ them. Only the Fidel server can reach them (no ports are opened).
 
 | Engine | What it adds | Image | Model | RAM while loaded | Speed (laptop CPU) |
 |---|---|---|---|---|---|
-| **Omnilingual ASR** (Meta, `omniASR_CTC_300M_v2`, Apache-2.0) | Draft captions for lessons **spoken in Amharic**, with word timings | 1.75 GB | 1.3 GB | about 3 GB | about 0.25 s per second of audio |
-| **ToucanTTS** (IMS Stuttgart, Apache-2.0) | **Machine-read** Amharic recordings of descriptions and job summaries | 1.8 GB | 0.33 GB | about 1.5 GB | about 1 s per second of speech |
+| **Omnilingual ASR** (Meta, `omniASR_CTC_300M_v2`, Apache-2.0) | Draft captions for lessons **spoken in Amharic or Afaan Oromo**, with word timings | 1.75 GB | 1.3 GB | about 3 GB | about 0.25 s per second of audio |
+| **ToucanTTS** (IMS Stuttgart, Apache-2.0) | **Machine-read** Amharic and Afaan Oromo recordings of descriptions, and of Amharic job summaries | 1.8 GB | 0.33 GB | about 1.5 GB | about 1 s per second of speech |
 
 Turn them on:
 
@@ -403,15 +403,24 @@ docker compose --profile amharic-speech --profile amharic-voice up -d --build
 
 What changes:
 
-- A lesson uploaded with **spoken language: Amharic** gets draft Amharic
-  captions from Omnilingual ASR. English lessons still use Whisper. The engine
+- A lesson uploaded with **spoken language: Amharic or Afaan Oromo** gets draft
+  captions from Omnilingual ASR. English lessons still use Whisper. (Amharic was
+  checked by a speaker on one clip; Afaan Oromo is untested.) The engine
   writes no punctuation, so cues also end where the speaker pauses. Like every
   machine caption, they are a draft until a person checks them in Studio.
-- Studio shows **"Make machine-read recording"** next to "Attach recording" for
-  Amharic descriptions and job summaries, but only while the voice engine is
-  running (`GET /api/v1/engines`). Machine-read recordings are marked in Studio,
-  and the job card tells learners when the Amharic summary is a computer voice.
-  A person's recording replaces it, and is always better.
+- **Amharic and Afaan Oromo are read aloud like English.** English
+  descriptions are read by the browser's voice; most phones have no Amharic or
+  Oromo voice, so when the descriptions are saved, every one without a person's
+  recording gets a **machine-read recording automatically** (in the background).
+  Edited text is read again. Job summaries in Amharic work the same way. A
+  person's recording is never replaced, and is always better.
+- Studio marks machine-read recordings, and can remake one ("Make machine-read
+  recording", shown only while the voice engine runs: `GET /api/v1/engines`).
+  The job card tells learners when the Amharic summary is a computer voice.
+- Quality: the voice is understandable but not clear: it can blur or swallow
+  words. Afaan Oromo was not in the voice's training data, so it is a best
+  guess. `TOUCAN_DURATION_SCALE=1.25` (on the `toucan` service) speaks 25%
+  slower. See [docs/speech-engines.md](docs/speech-engines.md) for why.
 - How they were chosen and measured: [docs/speech-engines.md](docs/speech-engines.md).
 
 ## Hardware and models

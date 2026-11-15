@@ -7,7 +7,7 @@ container, so PyTorch and the GPLv3 parts it needs (espeak-ng, phonemizer,
 parselmouth) stay out of the main Fidel image. Only reachable inside Docker's
 network:
 
-    GET  /health   {"status": "ok", "languages": ["am"], "model_downloaded": true}
+    GET  /health   {"status": "ok", "languages": ["am", "om"], "model_downloaded": true}
     POST /speak    JSON {"text": "...", "language": "am"}  ->  audio/wav (24 kHz mono)
 
 Speed on a laptop CPU: about 0.8 s of work per second of speech.
@@ -40,7 +40,10 @@ from pathlib import Path
 TOUCAN_SRC = Path(os.environ.get("TOUCAN_SRC", "/toucan"))
 MODEL_DIR = Path(os.environ.get("TOUCAN_MODEL_DIR", "/models/Flux9665--ToucanTTS"))
 FILES = ("ToucanTTS.pt", "Vocoder.pt")
-LANGUAGES = {"am": "amh"}  # Fidel code -> Toucan code. Amharic was trained on real recordings.
+LANGUAGES = {"am": "amh", "om": "gaz"}  # Fidel code -> Toucan code. Amharic was trained on real
+# recordings; Afaan Oromo (West Central, "gaz") was not, so its voice is a best guess.
+# Speaking rate: TOUCAN_DURATION_SCALE above 1 is slower (1.25 = 25% slower).
+DURATION_SCALE = float(os.environ.get("TOUCAN_DURATION_SCALE", "1.0"))
 MAX_CHARS = 2000
 SENTENCE_END = re.compile(r"(?<=[።፧!?.])\s+|(?<=፤)\s+")
 
@@ -112,7 +115,7 @@ def speak(text: str, language: str) -> bytes:
         parts, rate = [], 24000
         for sentence in sentences:
             with torch.inference_mode():
-                wave, rate = engine(sentence)
+                wave, rate = engine(sentence, duration_scaling_factor=DURATION_SCALE)
             parts.append(wave.cpu().numpy() if torch.is_tensor(wave) else np.asarray(wave))
             parts.append(np.zeros(int(0.35 * rate), dtype=np.float32))  # short pause between sentences
     audio = np.concatenate(parts[:-1]) if parts else np.zeros(rate // 2, dtype=np.float32)

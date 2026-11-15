@@ -12,7 +12,7 @@ import httpx
 
 from . import ProviderUnavailable
 
-LANGUAGES = {"am"}  # what the engine was tested with (Amharic was trained on real recordings)
+LANGUAGES = {"am", "om"}  # Amharic (trained on real recordings); Afaan Oromo (not in its training data: a best guess)
 
 
 class ToucanTextToSpeech:
@@ -23,7 +23,7 @@ class ToucanTextToSpeech:
 
     def speak(self, text: str, language: str, out: Path) -> None:
         if language not in LANGUAGES:
-            raise ProviderUnavailable(f"Machine-read recordings are only available in Amharic, not '{language}'.")
+            raise ProviderUnavailable(f"Machine-read recordings are only available in Amharic and Afaan Oromo, not '{language}'.")
         try:
             # About 1 s of work per 10 characters on a laptop CPU, plus loading.
             response = httpx.post(f"{self.url}/speak", json={"text": text, "language": language},

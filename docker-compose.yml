@@ -38,13 +38,16 @@ services:
       - ./data/models:/models
     restart: unless-stopped
 
-  # Machine-read Amharic recordings (IMS ToucanTTS). About 1.5 GB RAM while loaded.
+  # Machine-read Amharic and Afaan Oromo recordings (IMS ToucanTTS). About 1.5 GB RAM while loaded.
   #   docker compose --profile amharic-voice up -d    and set FIDEL_TTS_URL=http://toucan:8002
   toucan:
     profiles: ["amharic-voice"]
     build:
       context: .
       dockerfile: engines/toucan/Dockerfile
+    environment:
+      # Speaking rate: 1.0 = normal, 1.25 = 25% slower (clearer for some listeners).
+      TOUCAN_DURATION_SCALE: "${TOUCAN_DURATION_SCALE:-1.0}"
     volumes:
       - ./data/models:/models
     restart: unless-stopped

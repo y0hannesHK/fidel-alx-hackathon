@@ -57,9 +57,14 @@ Known issues and agreed follow-ups, with the phase they are planned for.
   plain p/k/t by default; `TOUCAN_EJECTIVE_MARK=1` tries the ejective sound:
   compare `amh_*.wav` with `amh_*_ejectivefix.wav`. (3) Review the job card's
   new Amharic sentence `machineReadAm` in `player/src/job-card.js`.
-- **Machine-read description audio is not labelled for learners.** Studio
-  marks it, and the job card says so for summaries, but the player plays
-  machine-read description recordings without saying it is a computer voice.
+- **Machine-read description audio is not labelled for learners.** It is now
+  made automatically for Amharic and Afaan Oromo. Studio marks it, the job
+  card says so for summaries, and the lesson manifest has `machine_read` for
+  each recording, but the player does not yet tell learners it is a computer
+  voice.
+- **Afaan Oromo voice and captions: test with a speaker.** The voice is a best
+  guess (Oromo is not in the voice's training data), and Oromo speech-to-text
+  has not been tried on a real clip.
 
 - **Addis AI translation provider (reminder for the user).** Left out in
   Phase 3 because we have no API key or docs to test it. The translator slot is

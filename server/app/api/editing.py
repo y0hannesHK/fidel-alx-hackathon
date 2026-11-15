@@ -3,6 +3,7 @@ captions (with per-cue review), chapters, audio description text,
 sign-language video upload, and publishing.
 """
 
+import logging
 import shutil
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from .auth import require_staff
 from .webhooks import notify
 from .lessons import VIDEO_EXTENSIONS, Language, LessonId, Manifest, build_manifest, db, get_lesson_or_404, save_upload
 
+log = logging.getLogger("fidel.editing")
 router = APIRouter(prefix="/api/v1/lessons", tags=["editing (staff)"])
 staff = [Depends(require_staff)]
 
@@ -238,8 +240,13 @@ def get_descriptions(lang: Language, lesson_id: str = LessonId):
 
 
 @router.put("/{lesson_id}/descriptions/{lang}", response_model=DescriptionsEdit, dependencies=staff)
-def save_descriptions(body: DescriptionsEdit, lang: Language, lesson_id: str = LessonId):
-    """Save audio description text: what is shown on screen and not said aloud."""
+def save_descriptions(body: DescriptionsEdit, background: BackgroundTasks, lang: Language, lesson_id: str = LessonId):
+    """Save audio description text: what is shown on screen and not said aloud.
+
+    If the optional voice engine is set up for this language (Amharic, Afaan
+    Oromo), every description without a person's recording gets a machine-read
+    recording automatically, in the background: like English, which the
+    browser reads aloud. Never replaces a person's recording."""
     get_lesson_or_404(lesson_id)
     path = lesson_folder(lesson_id) / f"descriptions-{lang}.vtt"
     cues = sorted(body.cues, key=lambda c: c.start)
@@ -256,7 +263,40 @@ def save_descriptions(body: DescriptionsEdit, lang: Language, lesson_id: str = L
         if recording.name not in keep:
             recording.unlink()
             machine_marker(recording).unlink(missing_ok=True)
+    if cues and voice_for(lang):
+        background.add_task(machine_read_missing, lesson_id, lang)
     return get_descriptions(lang, lesson_id)
+
+
+def voice_for(lang: str):
+    """The voice engine, if it is set up for this language (else None)."""
+    engine = get_text_to_speech(settings)
+    return engine if engine and lang in engine.languages else None
+
+
+def needs_machine_reading(recording: Path, text: str) -> bool:
+    """True if there is no recording, or a machine-read one of different text.
+    A person's recording (no marker) is never replaced."""
+    marker = machine_marker(recording)
+    if not recording.is_file():
+        return True
+    return marker.is_file() and marker.read_text(encoding="utf-8") != text
+
+
+def machine_read_missing(lesson_id: str, lang: str) -> None:
+    """Background task: machine-read every description that needs it."""
+    folder = lesson_folder(lesson_id)
+    path = folder / f"descriptions-{lang}.vtt"
+    for cue in read_vtt(path) if path.is_file() else []:
+        text = " ".join(cue.text.split())
+        recording = folder / recording_name(lang, cue.start)
+        if not needs_machine_reading(recording, text):
+            continue
+        try:
+            machine_read_recording(text, lang, recording)
+        except HTTPException as problem:  # engine stopped, unreadable audio...: try again on the next save
+            log.warning("No machine-read %s description at %.1f s: %s", lang, cue.start, problem.detail)
+            return
 
 
 @router.post("/{lesson_id}/descriptions/{lang}/recording", response_model=DescriptionsEdit, dependencies=staff)
@@ -296,9 +336,10 @@ def make_machine_description_recording(
     start: float = Query(ge=0, description="Start time of the description (seconds)"),
     lesson_id: str = LessonId,
 ):
-    """Make a MACHINE-READ recording of one description with the optional
-    voice engine (Amharic only). Use it when no person has recorded it yet;
-    Studio marks it as machine-read. 409 if no voice engine is set up."""
+    """Make (or make again) a MACHINE-READ recording of one description with
+    the optional voice engine (Amharic, Afaan Oromo). Saving descriptions does
+    this automatically; this is for one description, e.g. after the engine was
+    started. Replaces any recording. 409 if no voice engine is set up."""
     get_lesson_or_404(lesson_id)
     folder = lesson_folder(lesson_id)
     path = folder / f"descriptions-{lang}.vtt"
@@ -327,7 +368,7 @@ def machine_read_recording(text: str, lang: str, out: Path) -> None:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "The voice engine sent audio that could not be read.") from problem
     finally:
         wav.unlink(missing_ok=True)
-    machine_marker(out).touch()
+    machine_marker(out).write_text(text, encoding="utf-8")  # which text was read
 
 
 @router.delete("/{lesson_id}/descriptions/{lang}/recording", response_model=DescriptionsEdit, dependencies=staff)

@@ -14,7 +14,7 @@
 //   captions-en, captions-am, captions-om   WebVTT captions (English, Amharic, Afaan Oromo)
 //   captions-am-status, captions-om-status  "draft" (machine-made) or "reviewed"
 //   chapters-en, chapters-am         WebVTT chapter titles ("chapters" = English)
-//   descriptions-en, descriptions-am audio description text ("descriptions" = English)
+//   descriptions-en, descriptions-am, descriptions-om  audio description text ("descriptions" = English)
 //   sign                             sign-language video (WebM or MP4)
 //   src-small                        small video for low-data mode
 //   offline-page, offline-page-video one-page offline lesson (audio + text / + video)
@@ -264,6 +264,7 @@ export class FidelPlayer extends HTMLElement {
     addTrack('chapters', this.getAttribute('chapters-am'), 'am', 'ምዕራፎች');
     addTrack('descriptions', en('descriptions'), 'en', 'Audio description');
     addTrack('descriptions', this.getAttribute('descriptions-am'), 'am', 'የድምፅ መግለጫ');
+    addTrack('descriptions', this.getAttribute('descriptions-om'), 'om', 'Afaan Oromoo');
     return video;
   }
 

@@ -241,13 +241,15 @@ async function descriptionsSection(lessonId, videoTime, onSaved) {
   const wrapper = h('div');
   const editors = {};
   const voice = await voiceLanguages();
-  for (const [lang, name] of [['en', 'English'], ['am', 'Amharic']]) {
+  for (const [lang, name] of [['en', 'English'], ['am', 'Amharic'], ['om', 'Afaan Oromo']]) {
     const { cues } = await api(`/api/v1/lessons/${lessonId}/descriptions/${lang}`);
     editors[lang] = rowsEditor({
       heading: `Audio description (${name})`,
       intro: lang === 'en'
         ? 'Describe what is shown on screen but not said aloud (slides, code, actions). Each description is read out at its time.'
-        : null,
+        : voice.has(lang)
+          ? 'After saving, each description without a recording by a person gets a machine-read recording automatically (computer voice, about 1 second per 10 letters). A recording by a person is always better.'
+          : null,
       itemName: 'Description',
       emptyText: 'No descriptions yet.',
       addLabel: 'Add description',
@@ -264,7 +266,12 @@ async function descriptionsSection(lessonId, videoTime, onSaved) {
         const body = rows.map((r) => ({ start: r.start, end: r.end, text: r.text.trim() }));
         const saved = await api(`/api/v1/lessons/${lessonId}/descriptions/${lang}`, { method: 'PUT', json: { cues: body } });
         onSaved();
-        return { message: `Saved ${body.length} ${name} description(s).`, rows: saved.cues };
+        return {
+          message: voice.has(lang)
+            ? `Saved ${body.length} ${name} description(s). Machine-read recordings are being made; reload this page in a minute to see them.`
+            : `Saved ${body.length} ${name} description(s).`,
+          rows: saved.cues,
+        };
       },
       // A recording of each description being read aloud. Needed for Amharic:
       // most phones have no Amharic voice to read the text.

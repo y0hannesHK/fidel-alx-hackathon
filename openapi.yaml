@@ -563,7 +563,16 @@ paths:
       - editing (staff)
       summary: Save Descriptions
       description: 'Save audio description text: what is shown on screen and not said
-        aloud.'
+        aloud.
+
+
+        If the optional voice engine is set up for this language (Amharic, Afaan
+
+        Oromo), every description without a person''s recording gets a machine-read
+
+        recording automatically, in the background: like English, which the
+
+        browser reads aloud. Never replaces a person''s recording.'
       operationId: save_descriptions_api_v1_lessons__lesson_id__descriptions__lang__put
       parameters:
       - name: lang
@@ -739,11 +748,14 @@ paths:
       tags:
       - editing (staff)
       summary: Make Machine Description Recording
-      description: 'Make a MACHINE-READ recording of one description with the optional
+      description: 'Make (or make again) a MACHINE-READ recording of one description
+        with
 
-        voice engine (Amharic only). Use it when no person has recorded it yet;
+        the optional voice engine (Amharic, Afaan Oromo). Saving descriptions does
 
-        Studio marks it as machine-read. 409 if no voice engine is set up.'
+        this automatically; this is for one description, e.g. after the engine was
+
+        started. Replaces any recording. 409 if no voice engine is set up.'
       operationId: make_machine_description_recording_api_v1_lessons__lesson_id__descriptions__lang__recording_machine_post
       parameters:
       - name: lang
@@ -1211,7 +1223,12 @@ paths:
       tags:
       - jobs
       summary: Create Job
-      description: Add a job. Returns it as schema.org/JobPosting JSON-LD.
+      description: 'Add a job. Returns it as schema.org/JobPosting JSON-LD. With the
+        optional
+
+        voice engine, the Amharic summary gets a machine-read recording in the
+
+        background (no recording by a person yet).'
       operationId: create_job_api_v1_jobs_post
       parameters:
       - name: authorization
@@ -2462,7 +2479,7 @@ components:
             type: array
           type: object
           title: Description Recordings
-          description: 'Recorded audio descriptions by language: [{start, url}]'
+          description: 'Recorded audio descriptions by language: [{start, url, machine_read}]'
         sign:
           anyOf:
           - type: string
