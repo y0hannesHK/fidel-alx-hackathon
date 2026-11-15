@@ -135,14 +135,19 @@ directly:
 <script src="https://YOUR-FIDEL-HOST/embed/v1/fidel-components.js" defer></script>
 ```
 
-**Without a Fidel server: from GitHub through a CDN.** Each GitHub release
-can attach the built files (`npm run build` in `player/` makes them in
-`player/dist/`: `fidel.js`, `fidel.css`, `fidel-components.js`,
-`fidel-components.css`, `fonts/`). A free CDN such as jsDelivr then serves a
-fixed version, e.g. `https://cdn.jsdelivr.net/gh/OWNER/REPO@v1.0.0/dist/fidel.js`
-(the path depends on where the release puts `dist/`). The player alone works
-this way with your own files (`src=`, `captions-en=` …); lessons, jobs and
-certificates still need a Fidel server for their data.
+**Without a Fidel server: from GitHub through a CDN.** Pushing a version tag
+(`git tag v1.0.0 && git push origin v1.0.0`) runs
+`.github/workflows/release-player.yml`: it builds and tests the player, makes a
+GitHub release with the files attached, and publishes them on the `cdn` branch
+so the free jsDelivr CDN serves a fixed version:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/y0hannesHK/fidel-alx-hackathon@v1.0.0-cdn/fidel.css">
+<script src="https://cdn.jsdelivr.net/gh/y0hannesHK/fidel-alx-hackathon@v1.0.0-cdn/fidel.js" defer></script>
+```
+
+The player alone works this way with your own files (`src=`, `captions-en=` …);
+lessons, jobs and certificates still need a Fidel server for their data.
 
 **Why not copy the components into your project (like shadcn)?** You can:
 each component is one folder (`player/src/components/<package>/`, its

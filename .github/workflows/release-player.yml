@@ -1,0 +1,77 @@
+# Publishes the built player when a version tag is pushed, e.g.:
+#   git tag v1.0.0 && git push origin v1.0.0
+#
+# It builds and tests player/ (npm ci, npm run build, npm test), then:
+#  1. creates a GitHub release "v1.0.0" with the files attached
+#     (fidel.js, fidel.css, fidel-components.js, fidel-components.css and a
+#     .zip with fonts/), for people who host the files themselves;
+#  2. commits the same files to the "cdn" branch and tags that commit
+#     "v1.0.0-cdn", so the free jsDelivr CDN can serve them (it serves files
+#     that are IN the repository, not release attachments):
+#       https://cdn.jsdelivr.net/gh/<owner>/<repo>@v1.0.0-cdn/fidel.js
+#
+# The main branch never contains built files (player/dist/ stays git-ignored).
+name: Release the player
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # create the release, push the cdn branch and its tag
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: player/package-lock.json
+
+      - name: Build and test the player
+        working-directory: player
+        run: |
+          npm ci
+          npm run build
+          npm test
+
+      - name: Pack the files
+        run: |
+          cd player/dist
+          zip -r "../../fidel-player-${GITHUB_REF_NAME}.zip" .
+
+      - name: Create the GitHub release with the files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Fidel player $GITHUB_REF_NAME" \
+            --notes "Built player files. Add to a page: fidel.css and fidel.js (fidel-components.js/.css load by themselves when a page uses a component tag). CDN: https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}-cdn/fidel.js" \
+            player/dist/fidel.js player/dist/fidel.css \
+            player/dist/fidel-components.js player/dist/fidel-components.css \
+            "fidel-player-${GITHUB_REF_NAME}.zip"
+
+      - name: Publish the files to the cdn branch (for jsDelivr)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -rf /tmp/cdn && mkdir /tmp/cdn && cp -r player/dist/. /tmp/cdn/
+          if git ls-remote --exit-code --heads origin cdn >/dev/null; then
+            git fetch origin cdn:cdn && git switch cdn
+          else
+            git switch --orphan cdn
+          fi
+          git rm -rq --ignore-unmatch . && git clean -fdxq
+          cp -r /tmp/cdn/. .
+          printf '%s\n' "Built Fidel player files, one commit per release (made by .github/workflows/release-player.yml)." \
+            "Use a fixed version: https://cdn.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}-cdn/fidel.js" > README.md
+          git add -A
+          git commit -m "Player files for ${GITHUB_REF_NAME}"
+          git tag "${GITHUB_REF_NAME}-cdn"
+          git push origin cdn "${GITHUB_REF_NAME}-cdn"
