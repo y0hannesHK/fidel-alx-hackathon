@@ -8,6 +8,7 @@ import { FidelOfflineStatus } from './offline-status.js';
 import { FidelDownloadLater } from './download-later.js';
 import { FidelEthiopianDate } from './ethiopian-date.js';
 import { FidelLang } from './section-lang.js';
+import { FidelDisplayPrefs } from './display-prefs.js';
 
 const TAGS = {
   'fidel-data-saver': FidelDataSaver,
@@ -15,6 +16,7 @@ const TAGS = {
   'fidel-download-later': FidelDownloadLater,
   'fidel-ethiopian-date': FidelEthiopianDate,
   'fidel-lang': FidelLang,
+  'fidel-display-prefs': FidelDisplayPrefs,
 };
 
 for (const [name, Element] of Object.entries(TAGS)) {

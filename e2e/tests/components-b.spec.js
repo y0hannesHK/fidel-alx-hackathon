@@ -46,6 +46,16 @@ for (const zoom of ZOOMS) {
     expect(await seriousAxeIssues(page)).toEqual([]);
     const { pixels, outermost } = await sidewaysScroll(page);
     expect(pixels, `sideways scrolling; sticking out: ${outermost.join(', ')}`).toBeLessThanOrEqual(1);
+
+    // With the dialog open, and then with the biggest settings applied.
+    await page.getByRole('button', { name: 'Display settings' }).click();
+    await expect(page.getByRole('dialog', { name: 'Display settings' })).toBeVisible();
+    expect(await seriousAxeIssues(page, 'fidel-display-prefs')).toEqual([]);
+    await page.getByRole('radio', { name: '200 %' }).check();
+    await page.getByRole('radio', { name: 'Wide' }).check();
+    await page.keyboard.press('Escape');
+    const after = await sidewaysScroll(page);
+    expect(after.pixels, `sideways scrolling at 200 % text; sticking out: ${after.outermost.join(', ')}`).toBeLessThanOrEqual(1);
     await context.close();
   });
 }
@@ -161,4 +171,72 @@ test('section language: buttons in their own language, one version shown, rememb
   await page.reload();
   await expect(page.locator('fidel-lang div[lang="am"]')).toBeVisible();
   await expect(page.locator('fidel-lang').getByRole('button', { name: 'አማርኛ' })).toHaveAttribute('aria-current', 'true');
+});
+
+test('display settings: dialog, applied only to the target and Fidel components, Escape returns focus', async ({ page }) => {
+  await ready(page);
+  const opener = page.getByRole('button', { name: 'Display settings' });
+  await opener.click();
+  const dialog = page.getByRole('dialog', { name: 'Display settings' });
+  await expect(dialog).toBeVisible();
+  expect(await seriousAxeIssues(page, 'fidel-display-prefs')).toEqual([]);
+
+  await dialog.getByRole('radio', { name: '150 %' }).check();
+  await dialog.getByRole('radio', { name: 'Wide' }).check();
+  await dialog.getByRole('radio', { name: 'Yellow on black' }).check();
+  await dialog.getByRole('checkbox', { name: 'Stop motion' }).check();
+  await dialog.getByRole('checkbox', { name: 'Thicker focus outline' }).check();
+  const lesson = page.locator('#demo-b-lesson');
+  await expect(lesson).toHaveClass(/fidel-dp-size-150/);
+  await expect(lesson).toHaveClass(/fidel-dp-contrast-yellow/);
+  await expect(page.locator('fidel-lang')).toHaveClass(/fidel-dp-wide/);
+  expect(await page.evaluate(() => document.body.className + document.documentElement.className)).not.toContain('fidel-dp');
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#demo-b-lesson p')).color)).toBe('rgb(255, 255, 0)');
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+
+  await page.reload();
+  await expect(page.locator('#demo-b-lesson')).toHaveClass(/fidel-dp-size-150/);
+  await page.getByRole('button', { name: 'Display settings' }).click();
+  await expect(page.getByRole('radio', { name: '150 %' })).toBeChecked();
+  await page.getByRole('button', { name: 'Reset' }).click();
+  await expect(page.locator('#demo-b-lesson')).not.toHaveClass(/fidel-dp-/);
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByRole('button', { name: 'Display settings' })).toBeFocused();
+});
+
+test('package B in Amharic (ui-lang="am"): axe clean with the dialog open', async ({ page }) => {
+  await page.route('**/demo/components.html', async (route) => {
+    const response = await route.fetch();
+    const html = (await response.text())
+      .replace(/<(fidel-(?:data-saver|offline-status|download-later|ethiopian-date|lang|display-prefs))\b/g, '<$1 ui-lang="am"');
+    await route.fulfill({ response, body: html });
+  });
+  await ready(page);
+  await expect(page.locator('fidel-data-saver')).toContainText('ይህ ቪዲዮ 2.2 MB ነው።');
+  await expect(page.locator('fidel-offline-status')).toContainText('በመስመር ላይ ነዎት።');
+  expect(await seriousAxeIssues(page)).toEqual([]);
+  await page.getByRole('button', { name: 'የማሳያ ቅንብሮች' }).click();
+  await expect(page.getByRole('dialog', { name: 'የማሳያ ቅንብሮች' })).toBeVisible();
+  expect(await seriousAxeIssues(page, 'fidel-display-prefs')).toEqual([]);
+});
+
+test('keyboard: Tab reaches every package B control and never gets stuck', async ({ page }) => {
+  await ready(page);
+  await page.locator('#pkg-b').evaluate((el) => { el.tabIndex = -1; el.focus(); });
+  const seen = [];
+  for (let i = 0; i < 25; i++) {
+    await page.keyboard.press('Tab');
+    seen.push(await page.evaluate(() => {
+      const el = document.activeElement;
+      return el.closest('.demo-b') ? `${el.tagName.toLowerCase()}:${el.textContent.trim().slice(0, 40)}` : 'outside';
+    }));
+  }
+  const expected = ['button:Load it (2.2 MB)', "button:Download when I'm online (Lesson 3 (demo",
+    'button:English', 'button:አማርኛ', 'button:Afaan Oromoo', 'button:العربية', 'button:Display settings', 'a:A link inside the lesson'];
+  for (const name of expected) expect(seen, seen.join(' > ')).toContain(name);
+  const stuck = seen.some((s, i) => i >= 4 && seen.slice(i - 4, i + 1).every((x) => x === s));
+  expect(stuck).toBe(false);
 });
