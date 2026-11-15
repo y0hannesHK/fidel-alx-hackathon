@@ -286,6 +286,50 @@ fidel-word { display: inline; }
   padding-inline-start: 0.5rem;
 }
 
+/* ---------- A6 <fidel-steps> -------------------------------------------------------- */
+fidel-steps {
+  border: 1px solid var(--fidel-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+.fidel-steps-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-block-end: 0.75rem;
+}
+.fidel-steps-title { flex-basis: 100%; margin: 0; font-size: 1.2rem; }
+.fidel-steps-count { margin: 0; }
+.fidel-steps-progress { inline-size: 8rem; max-inline-size: 100%; block-size: 1rem; accent-color: var(--fidel-accent); }
+.fidel-steps-heading { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.fidel-steps-body { margin-block-end: 0.75rem; font-size: 1.1rem; }
+.fidel-steps-check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  margin-block-end: 0.75rem;
+}
+.fidel-steps-check-row label { cursor: pointer; padding-block: 0.5rem; }
+.fidel-steps-check {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  margin: 0;
+  flex: none;
+  accent-color: var(--fidel-accent);
+}
+.fidel-steps-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+.fidel-steps-nav .fidel-a-button { min-width: 7rem; }
+.fidel-steps-list[hidden], .fidel-steps-one[hidden] { display: none; }
+.fidel-steps-list li { margin-block-end: 0.4rem; }
+.fidel-steps-done { font-weight: 700; }
+
 /* ---------- Windows high contrast / forced colours, reduced motion ---------------- */
 @media (forced-colors: active) {
   .fidel-a-button { border: 2px solid ButtonText; }

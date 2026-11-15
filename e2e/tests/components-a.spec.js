@@ -187,7 +187,7 @@ test('word: reads the glossary format when there are no attributes', async ({ pa
   await expect(dialog.getByText('የግርጌ ጽሑፍ')).toBeVisible();
 });
 
-// A stand-in for the browser's voices: an English voice only, each sentence takes 400 ms.
+// A stand-in for the browser's voices: an English voice only, each sentence takes 1.5 s.
 async function fakeSpeech(page) {
   await page.addInitScript(() => {
     const timers = [];
@@ -201,7 +201,7 @@ async function fakeSpeech(page) {
         speak(u) {
           window.__spoken.push(u.text);
           timers.push(setTimeout(() => u.onstart?.(), 10));
-          timers.push(setTimeout(() => u.onend?.(), 400));
+          timers.push(setTimeout(() => u.onend?.(), 1500));
         },
         cancel() { timers.splice(0).forEach(clearTimeout); },
       },
@@ -251,6 +251,38 @@ test('read aloud: a recording is used when there is no voice, loaded only on Lis
   expect(requests).toEqual([]);
   await el.getByRole('button', { name: 'Listen' }).click();
   await expect.poll(() => requests.length).toBeGreaterThan(0);
+});
+
+test('steps: Next moves focus to the step heading; progress is remembered; show all', async ({ page }) => {
+  await open(page);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const steps = page.locator('fidel-steps').first();
+  await expect(steps.getByRole('heading', { name: 'Step 1 of 5' })).toBeVisible();
+  await expect(steps.getByRole('button', { name: 'Previous' })).toBeDisabled();
+  await steps.getByRole('button', { name: 'Next' }).click();
+  const heading = steps.getByRole('heading', { name: 'Step 2 of 5' });
+  await expect(heading).toBeFocused();
+  await expect(steps.locator('.fidel-steps-body')).toContainText('Download button');
+  await steps.getByRole('checkbox', { name: 'I did this step' }).check();
+  await expect(steps.getByText('1 of 5 steps done')).toBeVisible();
+
+  await page.reload();
+  await expect(steps.getByRole('heading', { name: 'Step 2 of 5' })).toBeVisible();
+  await expect(steps.getByRole('checkbox', { name: 'I did this step' })).toBeChecked();
+
+  const all = steps.getByRole('button', { name: 'Show all steps' });
+  await all.click();
+  await expect(all).toHaveAttribute('aria-pressed', 'true');
+  await expect(steps.locator('ol li')).toHaveCount(5);
+  await expect(steps.locator('ol li').nth(1)).toContainText('(Done)');
+  await expect(steps.locator('ol')).toBeVisible();
+  await expect(steps.locator('.fidel-steps-one')).toBeHidden();
+
+  // Amharic interface.
+  const am = page.locator('fidel-steps[ui-lang="am"]');
+  await expect(am.getByRole('heading', { name: 'ደረጃ 1 ከ3' })).toBeVisible();
+  await expect(am.getByRole('button', { name: 'ቀጣይ' })).toBeVisible();
 });
 
 test('Package A keyboard: Tab reaches every control and never gets stuck', async ({ page }) => {
