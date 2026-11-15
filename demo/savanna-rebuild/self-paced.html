@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Self-paced course – Savanna (accessible rebuild, demo)</title>
+  <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <script src="/embed/v1/fidel.js" defer></script>
+  <link rel="stylesheet" href="savanna.css">
+</head>
+<body>
+  <a class="skip-link" href="#page-title" data-i18n="skip">Skip to main content</a>
+  <header class="site-header">
+    <div class="header-bar">
+      <button type="button" class="menu-toggle" aria-expanded="true" aria-controls="sidebar"><span class="bars" aria-hidden="true"></span><span data-i18n="menu">Menu</span></button>
+      <a class="brand" href="index.html">Savanna <span class="brand-note" data-i18n="brandNote">(accessible rebuild)</span></a>
+      <span class="built-with"><span data-i18n="builtWith">Built with</span> <img src="/demo/brand/fidel-logo.svg" alt="Fidel" width="60" height="28"></span>
+      <div class="lang-switch" role="group" aria-labelledby="lang-label">
+        <span id="lang-label" class="lang-label" data-i18n="language">Page language</span>
+        <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="am" aria-pressed="false"><span lang="am">አማርኛ</span><span class="visually-hidden"> (Amharic)</span></button>
+      </div>
+    </div>
+    <p class="demo-note" data-i18n="demoNote">Demo: Savanna's pages rebuilt by Team Fidel for the Digital Bridge hackathon. Not an ALX product.</p>
+  </header>
+
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Main" data-i18n-label="navMain">
+      <ul>
+        <li><a href="index.html" data-i18n="navHome">Home (paced course)</a></li>
+        <li><a href="self-paced.html" aria-current="page" data-i18n="navSelf">Self-paced course</a></li>
+        <li><a href="lesson.html" data-i18n="navLesson">Lesson</a></li>
+        <li><a href="jobs.html" data-i18n="navJobs">Jobs</a></li>
+      </ul>
+    </nav>
+
+    <main id="main">
+      <div class="course-bar">
+        <p><span class="small" data-i18n="yourCourse">Your course</span><br>
+          <span class="course-name">Digital Skills for Everyone (DS-101)</span><br>
+          <span class="small">Self-paced. Finish by 31 January 2027.</span></p>
+        <button type="button" class="btn" id="programme-open"><span data-i18n="programme">Programme details</span></button>
+      </div>
+
+      <h1 id="page-title" tabindex="-1" data-i18n="selfTitle">Self-paced course</h1>
+
+      <div class="grid-2">
+        <section class="card" aria-labelledby="progress-title">
+          <h2 id="progress-title" data-i18n="courseProgress">Course progress</h2>
+          <div class="measure">
+            <label for="progress-meter">Progress toward graduation</label>
+            <meter id="progress-meter" min="0" max="100" low="35" high="70" optimum="100" value="16" aria-describedby="progress-text">16%</meter>
+            <p id="progress-text">16% of 70% needed to graduate. 1 of 3 modules complete.</p>
+          </div>
+        </section>
+        <section class="card" aria-labelledby="pace-title">
+          <h2 id="pace-title">Your pace</h2>
+          <p>11 days left in Module 2. About 20 minutes a day keeps you on track.</p>
+          <p><a href="lesson.html">Continue lesson 4: Tech education as an equalizer</a></p>
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="modules-title">
+        <h2 id="modules-title" data-i18n="modules">Modules</h2>
+        <p class="small" id="modules-hint">Choose a module to see its activities below.</p>
+        <ul class="chip-list" id="module-switch" aria-describedby="modules-hint"></ul>
+        <div id="module-panel"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="programme" id="programme" aria-labelledby="programme-title">
+    <div class="dialog-head">
+      <h2 id="programme-title" data-i18n="programme">Programme details</h2>
+      <button type="button" class="btn" id="programme-close"><span data-i18n="close">Close</span></button>
+    </div>
+    <p>Digital Bridge programme, made up for this demo. Three courses, taken in order.</p>
+    <h3>1. Digital Skills for Everyone (DS-101)</h3>
+    <ol>
+      <li>Module 1: Getting started (complete)</li>
+      <li>Module 2: Learning online (in progress)</li>
+      <li>Module 3: Working with others (not started)</li>
+    </ol>
+    <h3>2. Web Foundations (WF-100)</h3>
+    <p>8 weeks with a cohort. A personal web page as the final project.</p>
+    <h3>3. Communication at Work (CC-110)</h3>
+    <p>6 weeks with a cohort. Starts 11 January 2027.</p>
+    <p>To graduate, reach 70% in each course.</p>
+  </dialog>
+
+  <footer class="site-footer">
+    <p data-i18n="footer">All people, courses and scores on these pages are made up.</p>
+    <fidel-help chat-url="https://t.me/example_help" email="help@example.org"
+                video-call-url="https://meet.example.org/interpreter" phone="+251 11 000 0000"
+                hours="Monday to Friday, 8:30 to 17:00"></fidel-help>
+  </footer>
+
+  <script src="savanna.js"></script>
+  <script src="self-paced.js"></script>
+</body>
+</html>

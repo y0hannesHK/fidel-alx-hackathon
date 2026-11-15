@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tech education as an equalizer – Savanna (accessible rebuild, demo)</title>
+  <!-- Fidel: the same two lines as on any other page. -->
+  <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <script src="/embed/v1/fidel.js" defer></script>
+  <link rel="stylesheet" href="savanna.css">
+</head>
+<body>
+  <a class="skip-link" href="#page-title" data-i18n="skip">Skip to main content</a>
+  <header class="site-header">
+    <div class="header-bar">
+      <button type="button" class="menu-toggle" aria-expanded="true" aria-controls="sidebar"><span class="bars" aria-hidden="true"></span><span data-i18n="menu">Menu</span></button>
+      <a class="brand" href="index.html">Savanna <span class="brand-note" data-i18n="brandNote">(accessible rebuild)</span></a>
+      <span class="built-with"><span data-i18n="builtWith">Built with</span> <img src="/demo/brand/fidel-logo.svg" alt="Fidel" width="60" height="28"></span>
+      <div class="lang-switch" role="group" aria-labelledby="lang-label">
+        <span id="lang-label" class="lang-label" data-i18n="language">Page language</span>
+        <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="am" aria-pressed="false"><span lang="am">አማርኛ</span><span class="visually-hidden"> (Amharic)</span></button>
+      </div>
+    </div>
+    <p class="demo-note" data-i18n="demoNote">Demo: Savanna's pages rebuilt by Team Fidel for the Digital Bridge hackathon. Not an ALX product.</p>
+  </header>
+
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Main" data-i18n-label="navMain">
+      <ul>
+        <li><a href="index.html" data-i18n="navHome">Home (paced course)</a></li>
+        <li><a href="self-paced.html" data-i18n="navSelf">Self-paced course</a></li>
+        <li><a href="lesson.html" aria-current="page" data-i18n="navLesson">Lesson</a></li>
+        <li><a href="jobs.html" data-i18n="navJobs">Jobs</a></li>
+      </ul>
+    </nav>
+
+    <main id="main">
+      <div class="course-bar">
+        <p><span class="small" data-i18n="yourCourse">Your course</span><br>
+          <span class="course-name">Digital Skills for Everyone (DS-101)</span></p>
+        <div class="measure">
+          <label for="course-meter" data-i18n="courseProgress">Course progress</label>
+          <meter id="course-meter" min="0" max="100" low="50" high="70" optimum="100" value="16" aria-describedby="course-meter-text">16%</meter>
+          <span id="course-meter-text" class="small">16% done. You need 70% to graduate.</span>
+        </div>
+      </div>
+
+      <h1 id="page-title" tabindex="-1">Tech education as an equalizer</h1>
+
+      <div class="lesson-layout">
+        <aside class="curriculum" aria-labelledby="curriculum-title">
+          <h2 id="curriculum-title" data-i18n="contents">Course contents</h2>
+          <p class="small">Module 2: Learning online. 3 of 6 lessons done.</p>
+          <ol id="curriculum-list">
+            <li class="state-done"><a href="lesson.html?n=1"><span class="lesson-title">Welcome to the course</span> <span class="lesson-state"><span class="icon" aria-hidden="true">✓</span>Done</span></a></li>
+            <li class="state-done"><a href="lesson.html?n=2"><span class="lesson-title">How to learn online</span> <span class="lesson-state"><span class="icon" aria-hidden="true">✓</span>Done</span></a></li>
+            <li class="state-done"><a href="lesson.html?n=3"><span class="lesson-title">Your learning tools</span> <span class="lesson-state"><span class="icon" aria-hidden="true">✓</span>Done</span></a></li>
+            <li class="state-current"><a href="lesson.html" aria-current="page"><span class="lesson-title">Tech education as an equalizer</span> <span class="lesson-state"><span class="icon" aria-hidden="true">▶</span>In progress</span> <span class="lesson-here">You are here</span></a></li>
+            <li class="state-unread"><a href="lesson.html?n=5"><span class="lesson-title">Accessible platforms for everyone</span> <span class="lesson-state"><span class="icon" aria-hidden="true">○</span>Not started</span></a></li>
+            <li class="state-unread"><a href="lesson.html?n=6"><span class="lesson-title">Module 2 wrap-up</span> <span class="lesson-state"><span class="icon" aria-hidden="true">○</span>Not started</span></a></li>
+          </ol>
+        </aside>
+
+        <div class="lesson-body">
+          <fidel-display-prefs target="#lesson"></fidel-display-prefs>
+
+          <div id="lesson">
+            <div id="lesson-content">
+              <p class="lesson-meta">Lesson 4 of 6. A video of 2 minutes 39 seconds, with English and Amharic captions, a transcript you can search, and Ethiopian Sign Language.</p>
+
+              <fidel-lesson-formats for="lesson-player" heading-level="2"></fidel-lesson-formats>
+
+              <fidel-lesson-map for="lesson-player"></fidel-lesson-map>
+
+              <fidel-player id="lesson-player"
+                src="/media/lesson.mp4"
+                src-webm="/media/lesson.webm"
+                captions-en="/demo/media/en.vtt"
+                captions-am="/demo/media/am.vtt"
+                captions-am-status="draft"
+                chapters="/demo/media/chapters.vtt"
+                chapters-am="/demo/media/chapters-am.vtt"
+                sign="/media/sign.webm"
+                lang="en">
+              </fidel-player>
+
+              <fidel-question for="lesson-player"></fidel-question>
+
+              <section aria-labelledby="take-away-title">
+                <h2 id="take-away-title" data-i18n="takeAway">Take this lesson with you</h2>
+                <ul class="downloads">
+                  <li><a href="/media/lesson.mp4" download="tech-education-equalizer.mp4">Download the video (MP4)</a></li>
+                  <li><a href="/demo/media/en.vtt" download="tech-education-equalizer.en.vtt">Download the English captions (WebVTT text)</a></li>
+                  <li><a href="/demo/media/am.vtt" download="tech-education-equalizer.am.vtt">Download the Amharic captions (WebVTT text, draft)</a></li>
+                </ul>
+                <p class="small">The transcript can also be saved as text: use "Download the transcript as text" in the transcript part under the video.</p>
+              </section>
+
+              <fidel-callout type="note" heading="Key point" heading-level="2">
+                <p>Tech training should reach everyone who can benefit from it: people with disability, refugees, and anyone else who has been left out. Technical education can then act as an equalizer, because skills open the same job opportunities to every learner.</p>
+              </fidel-callout>
+
+              <div id="notes">
+                <fidel-notes for="lesson-player" lesson-id="savanna-rebuild-lesson-4" heading-level="2"></fidel-notes>
+              </div>
+
+              <fidel-quiz label="Check your understanding" heading-level="2"
+                questions='[{"question":"What does the speaker call technical education?","options":["The ultimate equalizer","A luxury for a few people","Something only engineers need"],"answer":0,"explanation":"About one minute into the video, the speaker says that technical education is the ultimate equalizer."},{"question":"Which learners should the programmes reach more often? Choose all that apply.","options":["People with disability","Refugees","Only university graduates"],"answer":[0,1],"explanation":"The speaker names people with disability and refugees, and anyone who can benefit from tech training."}]'></fidel-quiz>
+            </div>
+          </div>
+
+          <div class="lesson-tools">
+            <fidel-mark-complete manual lesson-id="savanna-rebuild-lesson-4"></fidel-mark-complete>
+          </div>
+
+          <fidel-step-nav
+            prev-href="lesson.html?n=3" prev-label="Lesson 3: Your learning tools"
+            next-href="lesson.html?n=5" next-label="Lesson 5: Accessible platforms for everyone"
+            position="4" total="6"></fidel-step-nav>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p data-i18n="footer">All people, courses and scores on these pages are made up.</p>
+    <fidel-help chat-url="https://t.me/example_help" email="help@example.org"
+                video-call-url="https://meet.example.org/interpreter" phone="+251 11 000 0000"
+                hours="Monday to Friday, 8:30 to 17:00"></fidel-help>
+  </footer>
+
+  <script src="savanna.js"></script>
+  <script src="lesson.js"></script>
+</body>
+</html>

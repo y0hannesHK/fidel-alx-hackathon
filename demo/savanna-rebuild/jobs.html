@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jobs – Savanna (accessible rebuild, demo)</title>
+  <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <script src="/embed/v1/fidel.js" defer></script>
+  <link rel="stylesheet" href="savanna.css">
+</head>
+<body>
+  <a class="skip-link" href="#page-title" data-i18n="skip">Skip to main content</a>
+  <header class="site-header">
+    <div class="header-bar">
+      <button type="button" class="menu-toggle" aria-expanded="true" aria-controls="sidebar"><span class="bars" aria-hidden="true"></span><span data-i18n="menu">Menu</span></button>
+      <a class="brand" href="index.html">Savanna <span class="brand-note" data-i18n="brandNote">(accessible rebuild)</span></a>
+      <span class="built-with"><span data-i18n="builtWith">Built with</span> <img src="/demo/brand/fidel-logo.svg" alt="Fidel" width="60" height="28"></span>
+      <div class="lang-switch" role="group" aria-labelledby="lang-label">
+        <span id="lang-label" class="lang-label" data-i18n="language">Page language</span>
+        <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="am" aria-pressed="false"><span lang="am">አማርኛ</span><span class="visually-hidden"> (Amharic)</span></button>
+      </div>
+    </div>
+    <p class="demo-note" data-i18n="demoNote">Demo: Savanna's pages rebuilt by Team Fidel for the Digital Bridge hackathon. Not an ALX product.</p>
+  </header>
+
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Main" data-i18n-label="navMain">
+      <ul>
+        <li><a href="index.html" data-i18n="navHome">Home (paced course)</a></li>
+        <li><a href="self-paced.html" data-i18n="navSelf">Self-paced course</a></li>
+        <li><a href="lesson.html" data-i18n="navLesson">Lesson</a></li>
+        <li><a href="jobs.html" aria-current="page" data-i18n="navJobs">Jobs</a></li>
+      </ul>
+    </nav>
+
+    <main id="main">
+      <h1 id="page-title" tabindex="-1" data-i18n="jobsTitle">Jobs for Digital Bridge learners</h1>
+      <p>Open jobs from employers who welcome learners with disabilities, refugees and returnees. Every card lists the support the employer offers, in words.</p>
+      <p><span data-i18n="today">Today</span>: <fidel-ethiopian-date id="today" format="long"></fidel-ethiopian-date></p>
+      <p id="jobs-status" role="status">Loading the jobs…</p>
+      <ul class="jobs" id="jobs" aria-labelledby="page-title"></ul>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p data-i18n="footer">All people, courses and scores on these pages are made up.</p>
+    <fidel-help chat-url="https://t.me/example_help" email="help@example.org"
+                video-call-url="https://meet.example.org/interpreter" phone="+251 11 000 0000"
+                hours="Monday to Friday, 8:30 to 17:00"></fidel-help>
+  </footer>
+
+  <script src="savanna.js"></script>
+  <script src="jobs.js"></script>
+</body>
+</html>

@@ -58,6 +58,41 @@ The demo video is not in git (it is cut from a large recording), so on a fresh
 install the mock page's player says the video could not be loaded. Upload any
 lesson video in Studio instead (next section).
 
+### Savanna rebuilt with Fidel (`/demo/savanna-rebuild/`)
+
+A demo, **not ALX's product**: Team Fidel's own pages, written from scratch
+(plain HTML, one CSS file, small scripts; no Bootstrap, no ALX code, logo or
+images), with Fidel built in. Every page says so in a visible note. The
+learner (Selam) and all course data are made up.
+
+| Page | What it rebuilds |
+|---|---|
+| http://localhost:8000/demo/savanna-rebuild/lesson.html | The lesson page: course contents (done / in progress / not started in words, `aria-current="page"`) beside the lesson, a `<fidel-player>` with English and Amharic captions, chapters and sign language, and `<fidel-lesson-formats>`, `<fidel-lesson-map>`, `<fidel-question>`, `<fidel-callout>`, `<fidel-notes>`, `<fidel-quiz>`, `<fidel-mark-complete manual>`, `<fidel-step-nav>`, `<fidel-display-prefs>`. Lessons 1-3, 5 and 6 (`?n=`) are short reading lessons. |
+| http://localhost:8000/demo/savanna-rebuild/index.html | The paced homepage: course switcher, week strip, "continue where you left off", deliverables (`<progress>` + text), score (`<meter>` + text), `<fidel-event-card>`s, `<fidel-offline-status>`. |
+| http://localhost:8000/demo/savanna-rebuild/self-paced.html | The self-paced homepage: progress gauge (`<meter>`, "16% of 70% needed to graduate"), module switcher, activities, programme details in a `<dialog>`. |
+| http://localhost:8000/demo/savanna-rebuild/jobs.html | Jobs: one `<fidel-job-card>` per open job from `/api/v1/jobs`, or a sentence when there are none; today's date with `<fidel-ethiopian-date>`. |
+
+Savanna defects fixed by design (Team Technical Guide, section 2):
+
+- The menu and the course switcher are real `<button>`s (`aria-expanded`), not
+  `<div>`s with click handlers; the week strip and the module switcher are
+  buttons with `aria-pressed` that wrap instead of scrolling sideways.
+- A "Skip to main content" link is the first Tab stop on every page and lands
+  on the page's `<h1>` (not on `<main>`, which Narrator reads out whole).
+- No file names as text alternatives; the only image is the Fidel logo, `alt="Fidel"`.
+- Headings in order and landmarks: banner, `<nav aria-label="Main">` with
+  `aria-current="page"`, main, the course contents as an `<aside>`, contentinfo.
+- No fixed or sticky bars, so nothing covers the focused element (WCAG 2.4.11).
+- Visible 3 px focus, 44 px targets, `rem` units, no sideways scrolling at
+  320 px / 400 % zoom, `prefers-reduced-motion` and `forced-colors` respected.
+- An English / አማርኛ switch for the page around the lesson (buttons with
+  `aria-pressed`, remembered); Amharic text has `lang="am"`, Noto Sans Ethiopic
+  and taller lines. Lesson content stays in English. "Get help" (`<fidel-help>`)
+  is in the same place on every page.
+
+Tests: `e2e/tests/savanna-rebuild.spec.js` (axe at 100/200/400 % and in
+Amharic, Tab never stuck, the main task by keyboard, the widgets, the jobs page).
+
 ### Install in one hour: what takes time
 
 | Step | Time |

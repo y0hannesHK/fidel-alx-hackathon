@@ -141,14 +141,16 @@ export class FidelEventCard extends HTMLElement {
     this.state.textContent = state === 'before' ? (joinUrl ? tt('joinLater') : '')
       : state === 'open' ? (this.start <= new Date() ? tt('live') : '') : tt('ended');
     this.state.hidden = !this.state.textContent;
-    this.actions.replaceChildren(
+    // replaceChildren() would write "false" for the parts left out: filter them.
+    this.actions.replaceChildren(...[
       state === 'open' && joinUrl && h('a', { class: 'fidel-d-button fidel-d-primary', href: joinUrl, 'data-action': 'join' }, tt('join')),
       state === 'ended' && recording && h('a', { class: 'fidel-d-button', href: recording, 'data-action': 'recording' }, tt('recording')),
       state !== 'ended' && h('button', { type: 'button', class: 'fidel-d-button', 'data-action': 'request', onclick: () => this.openRequest() }, tt('request')),
       state !== 'ended' && h('button', {
         type: 'button', class: 'fidel-d-button', 'data-action': 'calendar', 'aria-describedby': hintId, onclick: () => this.downloadIcs(),
       }, tt('calendar')),
-      state !== 'ended' && h('p', { id: hintId, class: 'fidel-d-hint fidel-event-hint' }, tt('calendarHint')));
+      state !== 'ended' && h('p', { id: hintId, class: 'fidel-d-hint fidel-event-hint' }, tt('calendarHint')),
+    ].filter(Boolean));
     if (hadFocus) (this.actions.querySelector(`[data-action="${hadFocus}"]`) || this.actions.querySelector('a, button'))?.focus();
   }
 
