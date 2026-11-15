@@ -27,6 +27,11 @@ cp .env.example .env          # then set FIDEL_STAFF_TOKEN in .env (any long ran
 docker compose up --build -d
 ```
 
+The first build also fetches the pinned Kozha source and hash-verifies the
+CWASA support assets it needs from the upstream Virtual Humans Group server.
+The BSL corpus and avatar assets are non-commercial; this integration is for
+non-commercial demonstrations only.
+
 Then open:
 
 | Address | What |
@@ -35,6 +40,7 @@ Then open:
 | http://localhost:8000/demo/savanna-mock/jobs.html | Jobs page with Fidel job cards |
 | http://localhost:8000/studio/ | Fidel Studio (staff), sign in with `FIDEL_STAFF_TOKEN` |
 | http://localhost:8000/api/docs | Interactive API documentation |
+| http://localhost:8001/ | Self-hosted Kozha service for the experimental BSL avatar |
 
 ### Fidel inside Savanna, and on a blank page
 
@@ -54,15 +60,58 @@ The starter is downloaded, not stored in this repository (it is ALX's).
 Fidel resets the few host styles that would otherwise reach it (Bootstrap's
 large floated `<legend>`, light-blue links) only inside its own elements.
 
-The demo video is not in git (it is cut from a large recording), so on a fresh
-install the mock page's player says the video could not be loaded. Upload any
-lesson video in Studio instead (next section).
+The default mock page plays a locally hosted CC0 sample video. It
+demonstrates the real player and controls without attaching unrelated captions.
+Use `?source=lesson` to open the owner-provided Digital Bridge clip with its
+English and draft Amharic caption tracks. The clip is kept out of git at
+`data/demo/original/lesson.mp4`; provide an authorized copy there to make this
+mode available. The separate `?source=original` mode uses locally generated
+Whisper draft captions for a supplied video. See
+`.\scripts\make-captioned-video.ps1 'C:\path\to\your-video.mp4'` for that
+workflow.
+
+The lesson page uses the local Kozha service to produce an **experimental,
+unverified BSL avatar** from the active English caption cue. This is not EthSL,
+not a human interpretation, and its animation timing may differ from the
+video. English caption timings are estimated and need review; the Amharic
+captions remain an unreviewed draft and are not sent to Kozha.
+
+The original Digital Bridge lesson uses English captions and an Amharic
+machine-translation draft. The Amharic file is explicitly marked as unreviewed;
+its split-cue timings are estimated and need checking against the source video.
+The project does not include Afaan Oromoo captions for this lesson. Add a
+language track only after the translation is checked against the spoken
+transcript by a fluent speaker.
+
+For a quick player demonstration without these recordings, open the default
+mock page. It intentionally has no captions or sign output because the flower
+sample has no speech. To test English captions and the experimental BSL path
+without the Digital Bridge recording, run `.\scripts\make-qa-video.ps1` while
+Docker Compose is running and an English Windows text-to-speech voice is
+installed, then open
+`http://localhost:8000/demo/savanna-mock/?source=qa`. This creates a separate
+synthetic voice-over of the CC0 video with matching WebVTT; it is not the
+Digital Bridge lesson.
+
+To test a video you own, generate local draft captions with
+`.\scripts\make-captioned-video.ps1 'C:\path\to\your-video.mp4'` while Docker
+Compose is running. It detects the spoken language locally and writes English
+captions only; other languages stop with an explanatory error. If needed, get
+the local Whisper model with
+`docker compose run --rm server python -m app.download_models --only whisper`.
+Then open `http://localhost:8000/demo/savanna-mock/?source=original`.
+Whisper captions need human review, and Kozha's BSL output is experimental
+and unverified. The video is copied to ignored `data/demo/original/` and is
+not committed or sent to an external service. To keep it local-only after a
+restart, run `$env:FIDEL_BIND='127.0.0.1'` before `docker compose up -d`.
+EthSL still requires a real EthSL interpreter recording; Kozha does not
+generate EthSL.
 
 ### Install in one hour: what takes time
 
 | Step | Time |
 |---|---|
-| `docker compose up --build` (first time; downloads Python, Node, ffmpeg and libraries) | about 5–15 minutes, depending on the connection |
+| `docker compose up --build` (first time; also builds the pinned Kozha service) | depends on the connection and machine; the Kozha image includes Python, spaCy, BSL data, and avatar assets |
 | Upload a video in Studio: web versions, low-data version and audio-only file | about 30 seconds for a 2.5-minute video |
 | Optional: download the AI models for automatic captions (about 3.5 GB) | depends on your connection: 10 minutes on fast internet, much longer on slow |
 
@@ -110,6 +159,11 @@ use the small Whisper model and skip translation (see "Hardware and models").
               captions-am-status="draft" chapters="chapters.vtt" sign="sign.webm"
               lang="en"></fidel-player>
 
+<!-- Optional, experimental, non-commercial BSL output from an English VTT -->
+<fidel-player src="lesson.mp4" captions-en="en.vtt"
+              sign-provider="kozha-bsl" kozha-origin="http://localhost:8001"
+              lang="en"></fidel-player>
+
 <!-- A job card -->
 <fidel-job-card job="https://YOUR-FIDEL-HOST/api/v1/jobs/JOB_ID" lang="en"></fidel-job-card>
 
@@ -121,6 +175,14 @@ use the small Whisper model and skip translation (see "Hardware and models").
                       chat="zoom-chat.txt" anonymize></fidel-session-viewer>
 ```
 
+The English cue text is sent to the configured self-hosted Kozha service; it is
+not sent to Kozha's hosted website. The BSL avatar is loaded only after the
+learner opens the sign window. BSL output is machine-generated, may omit or
+fingerspell words, is not human-verified, and should not be used as a substitute
+for an interpreter. The companion controller follows caption cues and playback
+events, but does not adjust the avatar's intrinsic animation speed, so timing
+is approximate.
+
 **What learners get**
 
 - **Player** (built on [Able Player](https://github.com/ableplayer/ableplayer)):
@@ -130,8 +192,10 @@ use the small Whisper model and skip translation (see "Hardware and models").
   button that lists them; interface in English or **አማርኛ**;
   captions in English or Amharic, 100–250% size, four colour presets, background,
   position; a notice when Amharic captions are machine-made and not yet checked.
-- **Sign-language window**: beside the video (the signer never covers the
-  slides) or over it, three sizes, corner buttons: no dragging needed.
+- **Sign-language window**: recorded sign videos can appear beside or over the
+  lesson, with three sizes and corner buttons. An optional Kozha avatar provides
+  experimental BSL from English captions; it is not EthSL or a verified
+  interpretation.
 - **Transcript**: searchable in both languages ("Play from 1:33"), highlights the
   current line; "Follow along" scrolling switches off when a keyboard user enters it.
 - **Audio description**: read by the browser or screen reader, or recordings made
@@ -172,6 +236,9 @@ use the small Whisper model and skip translation (see "Hardware and models").
 | `descriptions-en` (or `descriptions`), `descriptions-am` | Audio description text (WebVTT). |
 | `description-recordings` | JSON: recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
 | `sign` | Sign-language video (WebM or MP4). |
+| `sign-provider="kozha-bsl"` | Experimental BSL avatar driven only by `captions-en`; requires the self-hosted Kozha service. |
+| `sign-visible="true"` | Shows the configured sign-language window as soon as the player is ready. |
+| `kozha-origin` | Origin for the self-hosted Kozha service, e.g. `http://localhost:8001`; must differ from the Fidel page's origin. |
 | `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
 | `lang` | Default interface language: `en` or `am`. |
 
@@ -436,11 +503,14 @@ The e2e tests use a running server at `http://localhost:8000` (set
 `FIDEL_BASE_URL` for another) and the staff token from `.env`. Change the port
 with `FIDEL_PORT` in `.env`.
 
-Demo media: with the original recordings in `assets/`, `sh scripts/make-demo-clip.sh`
-makes `data/demo/lesson.*`, and `sh scripts/make-demo-session.sh` makes the
-recorded session for `/demo/savanna-mock/session.html`. It also makes `data/demo/sign.webm`, a
-**colour-bar test pattern, not real signing**, used only to build and test the
-sign-language window.
+Demo media: with the authorized original recordings in `assets/`,
+`sh scripts/make-demo-clip.sh` (Git Bash, Linux, or macOS) or
+`.\scripts\make-demo-clip.ps1` (Windows PowerShell) creates `data/demo/lesson.*` and
+`sh scripts/make-demo-session.sh` creates the recorded session for
+`/demo/savanna-mock/session.html`. The lesson script does not create
+`data/demo/sign.webm`; supply a genuine synchronized EthSL recording separately.
+The default player sample is bundled as `demo/media/flower.mp4` and
+`demo/media/flower.webm` (CC0; see [LICENSES.md](LICENSES.md)).
 
 ## Credits
 

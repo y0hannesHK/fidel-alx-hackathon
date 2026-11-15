@@ -65,6 +65,36 @@ fidel-player[data-sign-layout="floating"] .fidel-sign-dock {
 .fidel-sign-dock .able-window-toolbar {
   display: none;
 }
+.fidel-kozha-sign-window {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--fidel-border);
+  background: var(--fidel-paper);
+}
+.fidel-kozha-sign-warning {
+  margin: 0;
+  padding: 0.5rem;
+  color: #382600;
+  background: #fff3cd;
+  border-block-end: 1px solid #806000;
+  font-size: 0.875rem;
+}
+.fidel-kozha-sign-window .fidel-sign-status {
+  min-height: 1.5rem;
+  margin: 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+}
+.fidel-kozha-sign-frame {
+  display: block;
+  width: 100%;
+  height: 18rem;
+  border: 0;
+  background: #f7f8fa;
+}
+.fidel-player-slot .fidel-kozha-sign-window {
+  max-width: 50%;
+}
 /* Floating: never wider than half the video. */
 .fidel-player-slot .able-sign-window {
   max-width: 50%;
@@ -88,6 +118,14 @@ fidel-player[data-caption-position="over-top"] .able-captions-overlay {
 /* ---------- Status: machine-generated caption notice ----------------------- */
 .fidel-status:empty {
   display: none;
+}
+.fidel-media-status:empty,
+.fidel-sign-status:empty {
+  display: none;
+}
+.fidel-media-status,
+.fidel-sign-status {
+  margin: 0.5rem 0;
 }
 .fidel-draft-notice {
   border-inline-start: 6px solid #8a5a00;

@@ -21,3 +21,18 @@ services:
       timeout: 3s
       retries: 5
     restart: unless-stopped
+
+  kozha:
+    build:
+      context: .
+      dockerfile: Dockerfile.kozha
+    ports:
+      - "${KOZHA_BIND:-127.0.0.1}:${KOZHA_PORT:-8001}:8000"
+    volumes:
+      - ./kozha-integration:/app/public/fidel-sign:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/chat2hamnosys/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped

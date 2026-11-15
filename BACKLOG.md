@@ -29,8 +29,8 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 - **Test the offline page on a real Android phone in airplane mode** (automated
   tests block the network in desktop Chrome; a phone check is still needed).
 
-- Replace `data/demo/sign.webm` (colour-bar test pattern) with a real EthSL
-  recording.
+- Supply `data/demo/sign.webm` as a genuine, authorized EthSL recording. The
+  demo no longer generates fake sign-language footage.
 - Speaker's name tile is visible in the demo clip: confirm consent or choose
   another section.
 

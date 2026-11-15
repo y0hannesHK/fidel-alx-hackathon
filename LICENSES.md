@@ -29,6 +29,39 @@ non-commercial (NC) licence as a default.
 | [Pango](https://pango.gnome.org/), [HarfBuzz](https://harfbuzz.github.io/) (Debian packages) | distro | LGPL-2.0+ / MIT | Text layout for WeasyPrint |
 | [FFmpeg](https://ffmpeg.org/) (Debian package) | distro | LGPL-2.1+ / GPL-2+ (Debian build) | Media processing, run as a separate program |
 
+## Demo media
+
+| Name | Licence | Use |
+|---|---|---|
+| [MDN flower sample](https://github.com/mdn/interactive-examples/tree/main/live-examples/media/cc0-videos) (`flower.mp4`, `flower.webm`) | CC0 1.0 Universal ([license](https://github.com/mdn/interactive-examples/blob/main/LICENSE)) | Locally hosted sample for the mock player's playback demonstration and synthetic QA video; Digital Bridge captions and sign-language content are not attached |
+
+The optional `?source=qa` fixture combines the CC0 flower video with a local
+Windows text-to-speech narration and a WebVTT track timed to that narration.
+Generate it with `.\scripts\make-qa-video.ps1`; its outputs are stored under
+git-ignored `data/demo/qa/`. This synthetic fixture tests English caption
+playback and the experimental BSL integration, not real speech recognition,
+translation quality, or the Digital Bridge lesson.
+
+## Optional Kozha BSL integration
+
+The `kozha` Compose service builds the pinned
+[Kozha source](https://github.com/zhan-a/Kozha/tree/ce93d533b24740879df1e84cbb5341dfa575fc1f)
+and serves its BSL planner, dictionary, and CWASA avatar locally. Its assets
+remain in that service and are not copied into Fidel's player bundle.
+
+| Name | Version / source | Licence | Use |
+|---|---|---|---|
+| [Kozha](https://github.com/zhan-a/Kozha) | commit `ce93d533b24740879df1e84cbb5341dfa575fc1f` | MIT | Self-hosted English-caption to BSL gloss planning |
+| DictaSign BSL sign corpus | Kozha's `hamnosys_bsl_version1.sigml` | [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/) | BSL vocabulary; attribution, share-alike, and non-commercial use |
+| CWASA avatar engine | Kozha's `public/cwa` assets plus SHA-256-verified support assets from the [Virtual Humans Group server](https://vhg.cmp.uea.ac.uk/tech/jas/vhg2024/) | CC BY-ND | Renders SiGML as an avatar; served unmodified |
+
+The included BSL demonstration is therefore **non-commercial only**. Do not
+modify the CWASA assets or use the integration commercially without obtaining
+separate permissions. The build downloads the required CWASA XSLT, shaders, and
+common avatar archive from the upstream host, verifies their SHA-256 hashes, and
+serves them unchanged. The BSL output is experimental and has not been verified
+by a human interpreter.
+
 ## Build and test tools (not shipped)
 
 | Name | Licence |

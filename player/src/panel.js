@@ -40,7 +40,7 @@ export function buildPanel(options) {
         lang: code,
         'aria-pressed': String(code === lang),
         'data-fidel-ui-lang': code,
-        onclick: () => code !== lang && on.uiLang(code),
+        onclick: () => on.uiLang(code),
       },
       label
     )
@@ -112,6 +112,18 @@ export function buildPanel(options) {
         onChange: on.captionPosition,
       })
     )
+  );
+
+  let muted = options.muted;
+  const muteButton = h(
+    'button',
+    {
+      type: 'button',
+      class: 'fidel-button',
+      'aria-pressed': String(muted),
+      onclick: () => on.muted(!muted),
+    },
+    tr(muted ? 'unmuteAudio' : 'muteAudio')
   );
 
   // --- Sign language ---------------------------------------------------------
@@ -225,6 +237,7 @@ export function buildPanel(options) {
       h('span', { id: `${idPrefix}-ui-lang-label`, class: 'fidel-label' }, tr('interfaceLanguage')),
       h('div', { class: 'fidel-row' }, languageButtons)
     ),
+    h('div', { class: 'fidel-row' }, muteButton),
     h('p', {},
       h('button', {
         type: 'button', class: 'fidel-button', 'aria-haspopup': 'dialog',
@@ -246,6 +259,11 @@ export function buildPanel(options) {
     },
     setSignVisible(visible) {
       signToggle?.setAttribute('aria-pressed', String(visible));
+    },
+    setMuted(value) {
+      muted = Boolean(value);
+      muteButton.setAttribute('aria-pressed', String(muted));
+      muteButton.textContent = tr(muted ? 'unmuteAudio' : 'muteAudio');
     },
   };
 }

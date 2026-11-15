@@ -3,13 +3,86 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const PAGE = '/demo/savanna-mock/';
+const PAGE = '/demo/savanna-mock/?source=lesson';
 
 // Open the lesson and wait until Fidel's panel is built (Able Player ready).
 async function openLesson(page) {
   await page.goto(PAGE);
   await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 15_000 });
 }
+
+test('default mock page plays its local CC0 sample without mismatched captions', async ({ page }) => {
+  await page.goto('/demo/savanna-mock/');
+  await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 15_000 });
+  const video = page.locator('fidel-player .able-media-container video');
+  await expect.poll(() => video.evaluate((v) => v.readyState >= 2 && v.duration > 0)).toBe(true);
+  expect(await video.evaluate((v) => v.currentSrc)).toContain('/demo/media/flower.');
+  await expect(page.locator('#media-note')).toContainText('not the Digital Bridge talk');
+  await expect(page.locator('fidel-player .able-media-container track[kind="captions"]')).toHaveCount(0);
+
+  const muteButton = page.locator('.fidel-panel').getByRole('button', { name: 'Mute audio' });
+  await muteButton.click();
+  await expect.poll(() => video.evaluate((v) => v.muted)).toBe(true);
+  const unmuteButton = page.locator('.fidel-panel').getByRole('button', { name: 'Unmute audio' });
+  await unmuteButton.click();
+  await expect.poll(() => video.evaluate((v) => v.muted)).toBe(false);
+
+  await press(playButton(page));
+  await expect.poll(() => video.evaluate((v) => v.currentTime), { timeout: 5_000 }).toBeGreaterThan(0.25);
+  await expect(page.locator('.fidel-panel')).toContainText('This lesson does not have a sign language video yet.');
+});
+
+test('shows an accessible error when every video source fails', async ({ page }) => {
+  await page.route('**/demo/media/flower.*', (route) => route.abort());
+  await page.goto('/demo/savanna-mock/');
+  await expect(page.locator('fidel-player .fidel-video-error')).toBeVisible();
+  await expect(page.locator('fidel-player .fidel-video-error')).toContainText('could not be loaded');
+});
+
+test('lesson route shows the configured Kozha sign panel by default', async ({ page }) => {
+  await page.goto(PAGE);
+  const sign = page.getByRole('region', { name: 'Experimental British Sign Language avatar' });
+  await expect(sign).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: 'Show sign language' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('interface language selects only the matching caption track', async ({ page }) => {
+  await openLesson(page);
+  const panel = page.locator('.fidel-panel');
+  const captionBox = page.locator('fidel-player .able-captions-wrapper');
+
+  await panel.locator('[data-fidel-ui-lang="am"]').click();
+  await expect(panel.getByRole('radio', { name: 'አማርኛ' })).toBeChecked();
+  await expect(captionBox).toHaveAttribute('lang', 'am');
+  await expect(page.locator('.fidel-transcript select')).toHaveValue('am');
+  await expect(page.locator('.fidel-draft-notice p')).toHaveCount(1);
+  await expect(page.locator('.fidel-draft-notice p')).toHaveAttribute('lang', 'am');
+  await expect(page.locator('.fidel-sign-status')).toContainText('የአማርኛ የምልክት');
+
+  await panel.locator('[data-fidel-ui-lang="en"]').click();
+  await expect(panel.getByRole('radio', { name: 'English' })).toBeChecked();
+  await expect(captionBox).toHaveAttribute('lang', 'en');
+  await expect(page.locator('.fidel-transcript select')).toHaveValue('en');
+  await expect(page.locator('.fidel-draft-notice')).toHaveCount(0);
+});
+
+test('Kozha replaces English caption animations without scheduler errors', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.stack || error.message));
+  await page.goto(PAGE);
+
+  const avatar = page.frameLocator('iframe.fidel-kozha-sign-frame');
+  await expect(avatar.locator('#status')).toContainText('ready', { timeout: 45_000 });
+  const video = page.locator('fidel-player video').first();
+  await press(playButton(page));
+  await expect.poll(() => video.evaluate((media) => media.currentTime), { timeout: 5_000 })
+    .toBeGreaterThan(0.5);
+  await page.waitForTimeout(7_000);
+
+  expect(pageErrors.filter((error) => /allcsa\.js|AnimScheduler|reading 'reset'/i.test(error)))
+    .toEqual([]);
+  await expect(avatar.locator('#status')).not.toContainText('animation error');
+});
 
 // The Play button in the control bar. (Able Player also shows a big Play
 // button over the video; both are named "Play".)
@@ -51,6 +124,7 @@ test('axe: no critical or serious issues, before and after using every feature',
   const panel = page.locator('.fidel-panel');
   await panel.getByRole('radio', { name: 'አማርኛ' }).check();
   await panel.getByRole('button', { name: 'Show sign language' }).click();
+  await panel.getByRole('button', { name: 'Show sign language' }).click();
   await page.getByRole('searchbox', { name: 'Search the transcript' }).fill('ALX');
   await page.getByRole('button', { name: 'Search', exact: true }).click();
   await expect(page.locator('.fidel-search-results li')).not.toHaveCount(0);
@@ -71,7 +145,7 @@ test('main task with the keyboard: Amharic captions, bigger, sign language, sear
   const captionBox = page.locator('fidel-player .able-captions-wrapper');
   await expect(captionBox).toHaveAttribute('lang', 'am');
 
-  // The machine-translation notice appears, in Amharic and English.
+  // The machine-translation notice follows the selected interface language.
   await expect(page.locator('.fidel-draft-notice')).toContainText('not yet reviewed');
 
   // Make captions bigger: 150% -> 200%.
@@ -88,6 +162,7 @@ test('main task with the keyboard: Amharic captions, bigger, sign language, sear
   expect(fontSize).toBeGreaterThanOrEqual(24);
 
   // Show the sign-language window; it is docked beside the video.
+  await press(panel.getByRole('button', { name: 'Show sign language' }));
   const signToggle = panel.getByRole('button', { name: 'Show sign language' });
   await press(signToggle);
   await expect(signToggle).toHaveAttribute('aria-pressed', 'true');
@@ -110,7 +185,6 @@ test('main task with the keyboard: Amharic captions, bigger, sign language, sear
 test('the sign window can float over the video and move to a corner with buttons', async ({ page }) => {
   await openLesson(page);
   const panel = page.locator('.fidel-panel');
-  await panel.getByRole('button', { name: 'Show sign language' }).click();
   await panel.getByRole('radio', { name: 'Over the video', exact: true }).check();
   await panel.getByRole('radio', { name: 'Small' }).check();
   await panel.getByRole('button', { name: 'Top left' }).click();
@@ -175,7 +249,6 @@ test.describe('reflow (WCAG 1.4.10)', () => {
   test('320px wide: no horizontal scrolling, signer wraps below the video', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await openLesson(page);
-    await page.locator('.fidel-panel').getByRole('button', { name: 'Show sign language' }).click();
     await expectNoHorizontalScroll(page);
     const video = await page.locator('.fidel-player-slot').boundingBox();
     const sign = await page.locator('.fidel-sign-dock').boundingBox();

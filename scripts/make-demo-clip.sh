@@ -7,7 +7,8 @@
 # Output (in ./data/demo/, git-ignored, served at /media/):
 #   lesson.webm  VP9 + Opus, 720p  (used by browsers that support WebM)
 #   lesson.mp4   H.264 + AAC, 720p (fallback, e.g. Safari/iPhone)
-#   sign.webm    sign-language TEST PATTERN, only if no real clip exists yet
+# A genuine sign-language recording is provided separately by the lesson team;
+# this script never creates a substitute signer or test-pattern video.
 #
 # Usage:  sh scripts/make-demo-clip.sh
 set -e
@@ -47,13 +48,8 @@ echo "Encoding MP4 (H.264/AAC)..."
 run_ffmpeg -c:v libx264 -preset medium -crf 26 -pix_fmt yuv420p \
   -c:a aac -b:a 96k -movflags +faststart /app/data/demo/lesson.mp4
 
-# Sign-language TEST PATTERN (colour bars), only so the sign window can be
-# built and tested before we have a real EthSL clip. Replace it with a real
-# interpreter recording (same length, about 320x360) before any demo.
-if [ ! -f data/demo/sign.webm ] || [ "$1" = "--sign-test-pattern" ]; then
-  echo "Making sign-language TEST PATTERN (not real signing)..."
-  docker compose run --rm --no-deps -T server ffmpeg -hide_banner -loglevel warning -y     -f lavfi -i "smptebars=size=320x360:rate=10" -t "$DURATION"     -c:v libvpx-vp9 -b:v 40k -an /app/data/demo/sign.webm
-fi
-
 ls -l data/demo
+if [ ! -f data/demo/sign.webm ]; then
+  echo "No EthSL video was created. Add an authorized, synchronized sign recording separately."
+fi
 echo "Done."

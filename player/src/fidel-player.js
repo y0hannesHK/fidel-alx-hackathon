@@ -16,6 +16,9 @@
 //   chapters-en, chapters-am         WebVTT chapter titles ("chapters" = English)
 //   descriptions-en, descriptions-am audio description text ("descriptions" = English)
 //   sign                             sign-language video (WebM or MP4)
+//   sign-provider="kozha-bsl"        experimental BSL avatar for English captions
+//   sign-visible="true"              show the configured sign window on startup
+//   kozha-origin                     self-hosted Kozha base URL, e.g. http://localhost:8001
 //   src-small                        small video for low-data mode
 //   offline-page, offline-page-video one-page offline lesson (audio + text / + video)
 //   offline-pack                     offline pack (.zip)
@@ -58,6 +61,10 @@ function whenReady(player, timeoutMs = 15000) {
 }
 
 export class FidelPlayer extends HTMLElement {
+  static get observedAttributes() {
+    return ['sign-visible'];
+  }
+
   connectedCallback() {
     // connectedCallback runs again if the element is moved; build only once.
     if (this.ablePlayer || this.building) return;
@@ -65,6 +72,12 @@ export class FidelPlayer extends HTMLElement {
     this.idPrefix = this.id || `fidel-${instanceCount}`;
     this.prefs = loadPrefs();
     this.build();
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name !== 'sign-visible' || oldValue === newValue || !this.sign?.available) return;
+    this.sign.setVisible(newValue === 'true');
+    this.panel?.setSignVisible(this.sign.visible);
   }
 
   disconnectedCallback() {
@@ -122,6 +135,7 @@ export class FidelPlayer extends HTMLElement {
 
     this.signDock = h('div', { class: 'fidel-sign-dock' });
     this.statusArea = h('div', { class: 'fidel-status', role: 'status' });
+    this.mediaStatus = null;
     const playerSlot = h('div', { class: 'fidel-player-slot' });
     this.transcript = buildTranscript({
       lang,
@@ -132,19 +146,9 @@ export class FidelPlayer extends HTMLElement {
       transcriptLang: () => this.ablePlayer?.transcriptLang || currentCaptionLang(this.ablePlayer || {}) || 'en',
     });
 
+    this.failedCaptionLanguages = new Set();
     const video = this.buildVideo(lang, this.transcript.bodyId);
-    // If no video file can be loaded, say so (instead of an empty black box).
-    const sources = [...video.querySelectorAll('source')];
-    sources.at(-1)?.addEventListener('error', () => {
-      // The browser updates networkState just after this event: check a moment later.
-      setTimeout(() => {
-        if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE && !this.querySelector('.fidel-video-error')) {
-          const lowDataHint = this.getAttribute('src-small') && !this.prefs.lowData ? ` ${t(lang, 'videoErrorLowData')}` : '';
-          this.statusArea.prepend(h('p', { class: 'fidel-error fidel-video-error' }, t(lang, 'videoError') + lowDataHint));
-          emit(this, 'fidel-error', { message: 'video could not be loaded' });
-        }
-      }, 100);
-    });
+    this.bindVideoStatus(video, lang);
     playerSlot.append(video);
     this.replaceChildren(
       h(
@@ -253,7 +257,19 @@ export class FidelPlayer extends HTMLElement {
     }
 
     const addTrack = (kind, url, srclang, label) => {
-      if (url) video.append(h('track', { kind, src: url, srclang, label }));
+      if (!url) return;
+      const track = h('track', { kind, src: url, srclang, label });
+      if (kind === 'captions') {
+        track.addEventListener('error', () => {
+          this.failedCaptionLanguages.add(srclang);
+          this.updateCaptionLoadError();
+        });
+        track.addEventListener('load', () => {
+          this.failedCaptionLanguages.delete(srclang);
+          this.updateCaptionLoadError();
+        });
+      }
+      video.append(track);
     };
     addTrack('captions', this.getAttribute('captions-en'), 'en', 'English');
     addTrack('captions', this.getAttribute('captions-am'), 'am', 'አማርኛ');
@@ -265,6 +281,70 @@ export class FidelPlayer extends HTMLElement {
     addTrack('descriptions', en('descriptions'), 'en', 'Audio description');
     addTrack('descriptions', this.getAttribute('descriptions-am'), 'am', 'የድምፅ መግለጫ');
     return video;
+  }
+
+  bindVideoStatus(video, lang) {
+    let failed = false;
+    const showError = () => {
+      if (failed) return;
+      failed = true;
+      this.ensureMediaStatus();
+      const lowDataHint = this.getAttribute('src-small') && !this.prefs.lowData ? ` ${t(lang, 'videoErrorLowData')}` : '';
+      this.mediaStatus.classList.add('fidel-error', 'fidel-video-error');
+      this.mediaStatus.setAttribute('role', 'alert');
+      this.mediaStatus.textContent = t(lang, 'videoError') + lowDataHint;
+      emit(this, 'fidel-error', { message: 'video could not be loaded' });
+    };
+    const loading = () => {
+      this.ensureMediaStatus();
+      this.mediaStatus.classList.remove('fidel-error');
+      this.mediaStatus.setAttribute('role', 'status');
+      this.mediaStatus.textContent = t(lang, 'videoLoading');
+    };
+    const ready = () => {
+      this.mediaStatus?.remove();
+      this.mediaStatus = null;
+    };
+    video.addEventListener('loadstart', loading);
+    video.addEventListener('waiting', loading);
+    video.addEventListener('stalled', loading);
+    video.addEventListener('seeking', loading);
+    video.addEventListener('canplay', ready);
+    video.addEventListener('playing', ready);
+    video.addEventListener('seeked', ready);
+    video.addEventListener('error', showError);
+
+    const sources = [...video.querySelectorAll('source')];
+    const failedSources = new Set();
+    for (const source of sources) {
+      source.addEventListener('error', () => {
+        failedSources.add(source);
+        if (failedSources.size === sources.length) showError();
+      });
+    }
+  }
+
+  ensureMediaStatus() {
+    if (this.mediaStatus) return;
+    this.mediaStatus = h('p', { class: 'fidel-media-status', role: 'status', 'aria-live': 'polite' });
+    this.statusArea.append(this.mediaStatus);
+  }
+
+  updateCaptionLoadError() {
+    const lang = currentCaptionLang(this.ablePlayer || {});
+    const selected = lang === 'off' ? this.prefs.captionLang : lang;
+    const failed = selected && selected !== 'off' && this.failedCaptionLanguages.has(selected);
+    let message = this.statusArea?.querySelector('.fidel-caption-error');
+    if (!failed) {
+      message?.remove();
+      return;
+    }
+    if (!message) {
+      message = h('p', { class: 'fidel-error fidel-caption-error', role: 'alert' });
+      this.statusArea.append(message);
+    }
+    message.lang = this.uiLang;
+    message.textContent = t(this.uiLang, 'captionLoadError');
   }
 
   /**
@@ -320,6 +400,7 @@ export class FidelPlayer extends HTMLElement {
     markCaptionLanguage(player);
     placeCaptions(player, this, this.prefs.captionPosition);
     this.updateDraftNotice();
+    this.updateCaptionLoadError();
 
     // Recorded audio descriptions (see able-extensions.js).
     try {
@@ -329,11 +410,22 @@ export class FidelPlayer extends HTMLElement {
     }
 
     // Sign language window.
-    this.sign = new SignWindow(player, this, this.signDock);
+    const signProvider = this.getAttribute('sign-provider');
+    this.sign = new SignWindow(player, this, this.signDock, signProvider === 'kozha-bsl'
+      ? {
+          provider: 'kozha-bsl',
+          kozhaOrigin: this.getAttribute('kozha-origin'),
+          parentOrigin: window.location.origin,
+        }
+      : undefined);
+    if (signProvider === 'kozha-bsl') {
+      this.updateSignCues();
+    }
     if (this.sign.available) {
       this.sign.setLayout(this.prefs.signLayout);
       this.sign.setSize(this.prefs.signSize);
       this.sign.setCorner(this.prefs.signCorner);
+      if (this.getAttribute('sign-visible') === 'true') this.sign.setVisible(true);
     }
 
     // Playback speed (Able Player's Faster/Slower buttons change it).
@@ -348,6 +440,7 @@ export class FidelPlayer extends HTMLElement {
       idPrefix: this.idPrefix,
       headingLevel,
       prefs: this.prefs,
+      muted: player.media.muted,
       captionLangs,
       captionLang: currentCaptionLang(player),
       hasSign: this.sign.available,
@@ -370,6 +463,7 @@ export class FidelPlayer extends HTMLElement {
       on: this.panelHandlers(),
     });
     this.querySelector('.fidel-panel-slot').replaceChildren(this.panel.element);
+    video.addEventListener('volumechange', () => this.panel?.setMuted(video.muted));
 
     // Keep the panel in step when the learner uses Able Player's own buttons
     // (CC menu, sign window Close). Checked shortly after any click or key.
@@ -420,6 +514,9 @@ export class FidelPlayer extends HTMLElement {
   panelHandlers() {
     return {
       uiLang: (lang) => this.switchInterfaceLanguage(lang),
+      muted: (muted) => {
+        this.ablePlayer.media.muted = muted;
+      },
       lowData: (lowData) => {
         emit(this, 'fidel-low-data-change', { lowData });
         this.savePrefs({ lowData });
@@ -429,7 +526,9 @@ export class FidelPlayer extends HTMLElement {
         selectCaptions(this.ablePlayer, lang);
         emit(this, 'fidel-captions-change', { lang });
         this.savePrefs({ captionLang: lang });
+        this.updateSignCues(lang);
         this.updateDraftNotice();
+        this.updateCaptionLoadError();
       },
       captionSize: (size) => {
         this.savePrefs({ captionSize: clampCaptionSize(size) });
@@ -479,14 +578,32 @@ export class FidelPlayer extends HTMLElement {
     if (lang !== this.prefs.captionLang) {
       this.savePrefs({ captionLang: lang });
       emit(this, 'fidel-captions-change', { lang });
+      this.updateSignCues(lang);
     }
     this.updateDraftNotice();
+    this.updateCaptionLoadError();
   }
 
   /** Rebuild the player in another interface language, keeping the position. */
   switchInterfaceLanguage(lang) {
-    this.savePrefs({ uiLang: lang });
+    const previousUiLang = this.uiLang;
+    const captionLangs = this.ablePlayer?.captions?.map((track) => track.language) || [];
+    const changes = { uiLang: lang };
+    const hasCaptionTrack = captionLangs.includes(lang);
+    if (hasCaptionTrack) changes.captionLang = lang;
+    this.savePrefs(changes);
     emit(this, 'fidel-language-change', { lang });
+    if (previousUiLang === lang) {
+      if (hasCaptionTrack && currentCaptionLang(this.ablePlayer) !== lang) {
+        selectCaptions(this.ablePlayer, lang);
+        this.panel?.setCaptionLang(lang);
+        emit(this, 'fidel-captions-change', { lang });
+        this.updateSignCues(lang);
+        this.updateDraftNotice();
+        this.updateCaptionLoadError();
+      }
+      return;
+    }
     this.rebuild(`[data-fidel-ui-lang="${lang}"]`);
   }
 
@@ -520,7 +637,7 @@ export class FidelPlayer extends HTMLElement {
     // Amharic: the notice in Amharic and English. Afaan Oromo: English (and
     // Amharic if that is the interface language) until a speaker writes it in Oromo.
     const key = lang === 'om' ? 'draftNoticeOm' : 'draftNotice';
-    const lines = lang === 'am' || this.uiLang === 'am' ? [['am', t('am', key)], ['en', t('en', key)]] : [['en', t('en', key)]];
+    const lines = [[this.uiLang, t(this.uiLang, key)]];
     this.statusArea.append(
       h('div', { class: 'fidel-draft-notice', 'data-lang': lang }, lines.map(([l, text]) => h('p', { lang: l }, text)))
     );
@@ -546,6 +663,37 @@ export class FidelPlayer extends HTMLElement {
       );
     }
     return this.captionText;
+  }
+
+  updateSignCues(language = currentCaptionLang(this.ablePlayer || {})) {
+    if (this.sign?.provider !== 'kozha-bsl') return;
+    const signWindow = this.sign;
+    const requestId = (this.signCueRequest || 0) + 1;
+    this.signCueRequest = requestId;
+    this.loadCaptionText()
+      .then((tracks) => {
+        if (this.sign !== signWindow || requestId !== this.signCueRequest) return;
+        if (language === 'en') {
+          const english = tracks.find((track) => track.lang === 'en');
+          signWindow.setCues(english?.cues || [], {
+            language: 'en',
+            unavailableMessage: t(this.uiLang, 'signNoEnglishCaptions'),
+          });
+          return;
+        }
+        signWindow.setCues([], {
+          language,
+          unavailableMessage: t(this.uiLang, language === 'off' ? 'signNeedsCaptions' : 'signEnglishOnly'),
+        });
+      })
+      .catch((error) => {
+        if (this.sign === signWindow && requestId === this.signCueRequest) {
+          signWindow.updateStatus({
+            type: 'error',
+            message: `Caption cues for the sign avatar could not be loaded: ${error.message}`,
+          });
+        }
+      });
   }
 
   playFrom(seconds) {

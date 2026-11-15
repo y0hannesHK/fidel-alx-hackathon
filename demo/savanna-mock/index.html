@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Accessible tech careers – Lesson 1 – Savanna (mock)</title>
+  <title>Video player demo – Savanna (mock)</title>
 
   <!-- Fidel install: these two lines plus the <fidel-player> tag below. -->
   <link rel="stylesheet" href="/embed/v1/fidel.css">
-  <script src="/embed/v1/fidel.js" defer></script>
+  <script src="/embed/v1/fidel.js?v=20261115-4" defer></script>
 
   <!-- Styles for this mock page only (not part of Fidel). -->
   <style>
@@ -64,36 +64,35 @@
   <main id="main" tabindex="-1">
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <ol>
-        <li>Digital Bridge</li>
-        <li>Week 1</li>
-        <li aria-current="page">Lesson 1</li>
+        <li id="breadcrumb-course">Savanna mock</li>
+        <li id="breadcrumb-section">Video player</li>
+        <li id="breadcrumb-current" aria-current="page">CC0 sample</li>
       </ol>
     </nav>
 
-    <h1>Lesson 1: Why accessible tech education matters</h1>
+    <h1 id="page-title">Fidel video player demo</h1>
 
     <section class="card" aria-labelledby="video-heading">
-      <h2 id="video-heading">Lesson video</h2>
+      <h2 id="video-heading">Demo video</h2>
       <fidel-player
         id="lesson-player"
-        src="/media/lesson.mp4"
-        src-webm="/media/lesson.webm"
-        captions-en="/demo/media/en.vtt"
-        captions-am="/demo/media/am.vtt"
-        captions-am-status="draft"
-        chapters="/demo/media/chapters.vtt"
-        chapters-am="/demo/media/chapters-am.vtt"
-        sign="/media/sign.webm"
+        src="/demo/media/flower.mp4"
+        src-webm="/demo/media/flower.webm"
         lang="en">
       </fidel-player>
+      <p id="media-note" role="status">
+        Local CC0 sample video to demonstrate real playback and controls.
+        It is not the Digital Bridge talk, so lesson captions and sign-language video are not shown.
+      </p>
     </section>
 
     <section class="card" aria-labelledby="about-heading">
-      <h2 id="about-heading">About this lesson</h2>
-      <p>
-        In this short talk from the Digital Bridge training session, the speaker
-        explains why ALX wants its learning platforms to work for everyone,
-        including people with disabilities, refugees and internally displaced people.
+      <h2 id="about-heading">About this demo</h2>
+      <p id="about-copy">
+        The CC0 sample is bundled locally, so this demo does not depend on an
+        external video host. The owner-provided Digital Bridge clip and its
+        captions are available with <code>?source=lesson</code> when the local
+        video file is present.
       </p>
     </section>
   </main>
@@ -101,5 +100,74 @@
   <footer>
     <p>This is a mock page for testing Fidel. It is not the real Savanna platform.</p>
   </footer>
+  <script>
+    const source = new URLSearchParams(location.search).get('source');
+    if (source === 'lesson') {
+      const player = document.getElementById('lesson-player');
+      player.setAttribute('src', '/media/original/lesson.mp4');
+      player.setAttribute('captions-en', '/demo/media/en.vtt');
+      player.setAttribute('captions-am', '/demo/media/am.vtt');
+      player.setAttribute('captions-en-status', 'draft');
+      player.setAttribute('captions-am-status', 'draft');
+      player.setAttribute('chapters', '/demo/media/chapters.vtt');
+      player.setAttribute('chapters-am', '/demo/media/chapters-am.vtt');
+      player.setAttribute('sign-provider', 'kozha-bsl');
+      player.setAttribute('sign-visible', 'true');
+      const kozhaOrigin = new URL(location.origin);
+      kozhaOrigin.port = '8001';
+      player.setAttribute('kozha-origin', kozhaOrigin.origin);
+      document.getElementById('page-title').textContent = 'Lesson 1: Why accessible tech education matters';
+      document.getElementById('video-heading').textContent = 'Lesson video';
+      document.getElementById('about-heading').textContent = 'About this lesson';
+      document.getElementById('about-copy').textContent =
+        'In this short talk from the Digital Bridge training session, the speaker explains why ALX wants its learning platforms to work for everyone, including people with disabilities, refugees and internally displaced people.';
+      document.getElementById('breadcrumb-course').textContent = 'Digital Bridge';
+      document.getElementById('breadcrumb-section').textContent = 'Week 1';
+      document.getElementById('breadcrumb-current').textContent = 'Lesson 1';
+      document.getElementById('media-note').textContent =
+        'The owner-provided Digital Bridge clip plays locally with English captions adapted from the Zoom transcript; caption timing is estimated and needs review. Amharic captions are an unreviewed draft. The self-hosted Kozha BSL avatar is experimental and unverified.';
+      document.title = 'Accessible tech careers – Lesson 1 – Savanna (mock)';
+    } else if (source === 'qa') {
+      const player = document.getElementById('lesson-player');
+      player.setAttribute('src', '/media/qa/lesson.mp4');
+      player.setAttribute('captions-en', '/media/qa/captions-en.vtt');
+      player.setAttribute('sign-provider', 'kozha-bsl');
+      player.setAttribute('sign-visible', 'true');
+      const kozhaOrigin = new URL(location.origin);
+      kozhaOrigin.port = '8001';
+      player.setAttribute('kozha-origin', kozhaOrigin.origin);
+      document.getElementById('page-title').textContent = 'Synthetic captions and BSL test';
+      document.getElementById('video-heading').textContent = 'Caption and sign synchronization test';
+      document.getElementById('about-heading').textContent = 'About this test video';
+      document.getElementById('about-copy').textContent =
+        'This QA-only video uses CC0 flower footage with locally generated English narration and matching WebVTT captions. The BSL avatar output is experimental and unverified. This is not the Digital Bridge lesson.';
+      document.getElementById('breadcrumb-course').textContent = 'Fidel QA';
+      document.getElementById('breadcrumb-section').textContent = 'Accessibility test';
+      document.getElementById('breadcrumb-current').textContent = 'Synthetic narration';
+      document.getElementById('media-note').textContent =
+        'QA-only fixture: CC0 flower footage with synthetic English narration; the captions are timed to that narration. English captions can drive experimental, unverified BSL output. This is not the Digital Bridge lesson.';
+      document.title = 'Synthetic captions and BSL test – Savanna (mock)';
+    } else if (source === 'original') {
+      const player = document.getElementById('lesson-player');
+      player.setAttribute('src', '/media/original/lesson.mp4');
+      player.setAttribute('captions-en', '/media/original/captions-en.vtt');
+      player.setAttribute('sign-provider', 'kozha-bsl');
+      player.setAttribute('sign-visible', 'true');
+      const kozhaOrigin = new URL(location.origin);
+      kozhaOrigin.port = '8001';
+      player.setAttribute('kozha-origin', kozhaOrigin.origin);
+      document.getElementById('page-title').textContent = 'Original test video with draft captions';
+      document.getElementById('video-heading').textContent = 'Caption and sign synchronization test';
+      document.getElementById('about-heading').textContent = 'About these test captions';
+      document.getElementById('about-copy').textContent =
+        'English captions were generated locally with Whisper and require human review. The BSL avatar is experimental and unverified; a fluent signer must verify that its output matches the intended meaning.';
+      document.getElementById('breadcrumb-course').textContent = 'Fidel QA';
+      document.getElementById('breadcrumb-section').textContent = 'Caption test';
+      document.getElementById('breadcrumb-current').textContent = 'Owner-provided video';
+      document.getElementById('media-note').textContent =
+        'English captions were generated locally by Whisper as a draft. Review them against the source audio. The BSL output is experimental and unverified; it is not a human interpretation or EthSL.';
+      document.title = 'Original test video with draft captions – Savanna (mock)';
+    }
+  </script>
 </body>
 </html>

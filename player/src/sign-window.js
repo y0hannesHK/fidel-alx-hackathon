@@ -1,7 +1,12 @@
-// The Ethiopian Sign Language (EthSL) window.
+import { h } from './dom.js';
+import { t } from './strings.js';
+import { KozhaSignSyncController } from './kozha-sign-sync.js';
+import { SignSyncController } from './sign-sync.js';
+
+// Recorded sign-language video and optional experimental Kozha BSL avatar.
 //
-// Able Player creates the sign video window and keeps it in sync with the
-// main video (play, pause, seek, speed). Fidel adds:
+// Able Player creates the sign video window. Fidel's SignSyncController keeps
+// its media aligned with the lesson using playback events (no timer). Fidel adds:
 //   - "docked" layout: the window sits beside the video (default), so the
 //     signer never covers the slides. On narrow screens it wraps below.
 //   - "floating" layout: the window sits over the video, in a corner chosen
@@ -14,36 +19,128 @@ export const SIGN_SIZES = { small: 200, medium: 320, large: 480 };
 export const SIGN_CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 
 export class SignWindow {
-  constructor(player, host, dock) {
+  constructor(player, host, dock, { provider = 'video', kozhaOrigin, parentOrigin } = {}) {
     this.player = player;
     this.host = host; // <fidel-player>
     this.dock = dock; // container beside the video for docked layout
-    this.win = player.hasSignLanguage ? player.$signWindow?.[0] : null;
-    if (this.win) {
+    this.provider = provider;
+    this.status = null;
+    if (provider === 'kozha-bsl') {
+      this.createKozhaWindow(kozhaOrigin, parentOrigin);
+    } else {
+      this.win = player.hasSignLanguage ? player.$signWindow?.[0] : null;
+    }
+    if (this.win && provider === 'video') {
       // Able Player marks the window as a dialog, but it is not modal and
       // does not trap focus, so "region" describes it better.
       this.win.setAttribute('role', 'region');
-      this.startDriftCorrection();
+      this.syncController = new SignSyncController(player.media, player.signVideo, {
+        enabled: () => this.visible,
+        onState: (state) => this.updateStatus(state),
+      });
     }
   }
 
-  /** Able Player syncs the signer on play, pause, seek and speed changes.
-   *  Videos still drift apart over a long lesson, so once a second we pull
-   *  the signer back if it is more than 0.3 s off. */
-  startDriftCorrection() {
-    const main = this.player.media;
-    const sign = this.player.signVideo;
-    if (!main || !sign) return;
-    this.driftTimer = setInterval(() => {
-      if (!this.visible || main.paused || sign.readyState < 2) return;
-      if (Math.abs(sign.currentTime - main.currentTime) > 0.3) sign.currentTime = main.currentTime;
-      if (sign.playbackRate !== main.playbackRate) sign.playbackRate = main.playbackRate;
-      if (sign.paused) sign.play().catch(() => {});
-    }, 1000);
+  createKozhaWindow(kozhaOrigin, parentOrigin) {
+    this.win = h('div', {
+      class: 'fidel-kozha-sign-window',
+      role: 'region',
+      'aria-label': 'Experimental British Sign Language avatar',
+    });
+    this.win.style.display = 'none';
+    this.warning = h('p', { class: 'fidel-kozha-sign-warning', lang: 'en' });
+    this.win.append(this.warning);
+    this.status = h('p', { class: 'fidel-sign-status', role: 'status', 'aria-live': 'polite' }, 'Show the sign window to load the experimental BSL avatar.');
+    this.win.append(this.status);
+    this.dock.append(this.win);
+
+    try {
+      const base = new URL(kozhaOrigin);
+      if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password) {
+        throw new Error('Use an HTTP(S) URL without credentials.');
+      }
+      if (base.origin === new URL(parentOrigin).origin) {
+        throw new Error('The Kozha frame must use a separate origin from the Fidel player.');
+      }
+      this.warning.textContent = `Experimental BSL avatar using Kozha, the DictaSign BSL corpus, and CWASA. English captions are sent to ${base.origin}; use a service you control. Output is machine-generated, unverified, and may be inaccurate; it is not a human interpreter. Non-commercial use only.`;
+      this.targetOrigin = base.origin;
+      this.frameUrl = new URL('/fidel-sign/frame.html', base);
+      this.frameUrl.searchParams.set('parent', parentOrigin);
+      this.frameUrl.searchParams.set('v', '20261115-4');
+      this.frame = h('iframe', {
+        class: 'fidel-kozha-sign-frame',
+        title: 'Experimental British Sign Language avatar (Kozha)',
+        sandbox: 'allow-scripts allow-same-origin',
+        referrerpolicy: 'no-referrer',
+      });
+      this.win.append(this.frame);
+      this.syncController = new KozhaSignSyncController(
+        this.player.media,
+        this.frame.contentWindow,
+        this.targetOrigin,
+        {
+          enabled: () => this.visible,
+          onState: (state) => this.updateStatus(state),
+        }
+      );
+      this.frame.addEventListener('load', () => {
+        this.updateStatus({ type: 'loading', message: 'Loading the self-hosted Kozha BSL avatar…' });
+      });
+    } catch (error) {
+      this.updateStatus({ type: 'error', message: `Kozha BSL is not configured: ${error.message}` });
+    }
+  }
+
+  setCues(cues, options = {}) {
+    if (this.provider !== 'kozha-bsl') return;
+    const tracks = Array.isArray(cues) ? cues : [];
+    this.syncController?.setCues(tracks, options);
+    if (!tracks.length) {
+      this.updateStatus({
+        type: 'no-captions',
+        message: options.unavailableMessage || t(this.host.uiLang, 'signNoEnglishCaptions'),
+      });
+    }
+  }
+
+  updateStatus(state) {
+    if (this.provider === 'kozha-bsl') {
+      if (!this.status) return;
+      if (state.type === 'ready') {
+        clearTimeout(this.loadTimeout);
+        this.loadTimeout = null;
+      }
+      const message = state.message || {
+        ready: 'Experimental BSL avatar ready. Sign accuracy and timing are not human-verified.',
+        error: 'The local BSL avatar could not be loaded.',
+      }[state.type];
+      if (message) this.status.textContent = message;
+      this.status.setAttribute('role', state.type === 'error' ? 'alert' : 'status');
+      return;
+    }
+    if (state.type === 'ready') {
+      this.status?.remove();
+      this.status = null;
+      return;
+    }
+    if (state.type !== 'error' && (state.type !== 'loading' || !this.visible)) return;
+    if (!this.status) {
+      this.status = h('p', { class: 'fidel-sign-status', role: 'status', 'aria-live': 'polite' });
+      this.host.querySelector('.fidel-status')?.append(this.status);
+    }
+    if (state.type === 'error') {
+      this.status.setAttribute('role', 'alert');
+      this.status.textContent = t(this.host.uiLang, 'signVideoError');
+    } else {
+      this.status.setAttribute('role', 'status');
+      this.status.textContent = t(this.host.uiLang, 'signVideoLoading');
+    }
   }
 
   stop() {
-    clearInterval(this.driftTimer);
+    clearTimeout(this.loadTimeout);
+    this.syncController?.destroy();
+    if (this.provider === 'kozha-bsl') this.frame?.removeAttribute('src');
   }
 
   get available() {
@@ -57,7 +154,31 @@ export class SignWindow {
   /** Show or hide (uses Able Player's toggle so sync and prefs stay right). */
   setVisible(show) {
     if (!this.win || show === this.visible) return;
+    if (this.provider === 'kozha-bsl') {
+      this.win.style.display = show ? '' : 'none';
+      if (show) {
+        if (this.frame && !this.frame.hasAttribute('src')) {
+          this.updateStatus({ type: 'loading', message: 'Connecting to the self-hosted Kozha BSL service…' });
+          this.frame.src = this.frameUrl.href;
+          this.loadTimeout = setTimeout(() => {
+            if (!this.syncController?.ready && this.status?.getAttribute('role') !== 'alert') {
+              this.updateStatus({
+                type: 'error',
+                message: 'The self-hosted Kozha BSL service did not become ready. Check Docker and port 8001.',
+              });
+            }
+          }, 60000);
+        }
+        this.syncController?.setEnabled(true);
+      } else {
+        this.syncController?.setEnabled(false);
+      }
+      this.refresh();
+      return;
+    }
     this.player.handleSignToggle();
+    if (show) this.syncController.sync();
+    else this.updateStatus({ type: 'ready' });
     this.refresh();
   }
 
@@ -94,8 +215,14 @@ export class SignWindow {
     if (!this.visible) return;
     if (this.layout === 'docked') {
       // fidel.css handles the docked layout; clear Able Player's inline position.
-      this.win.style.removeProperty('top');
-      this.win.style.removeProperty('left');
+      if (this.provider === 'kozha-bsl') {
+        for (const property of ['position', 'width', 'height', 'top', 'left']) {
+          this.win.style.removeProperty(property);
+        }
+      } else {
+        this.win.style.removeProperty('top');
+        this.win.style.removeProperty('left');
+      }
       return;
     }
     const wrapper = this.player.$ableWrapper[0];
