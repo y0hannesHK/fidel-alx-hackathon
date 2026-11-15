@@ -20,7 +20,7 @@ def test_api_docs_are_available():
 def test_home_redirects_to_demo_page():
     response = client.get("/", follow_redirects=False)
     assert response.status_code == 307
-    assert response.headers["location"] == "/demo/savanna-mock/"
+    assert response.headers["location"] == "/demo/"
 
 
 def test_text_is_compressed_but_media_is_not():

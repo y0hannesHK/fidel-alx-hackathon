@@ -29,9 +29,14 @@ docker compose up --build -d
 
 Then open:
 
+**Landing page:** `/` is Fidel's landing page (`/demo/`, in English and
+Amharic): what Fidel does, who it is for, links to every demo, and how to add
+it to your site. Plain HTML and one small CSS file, no player loaded.
+
 | Address | What |
 |---|---|
-| http://localhost:8000/ | Mock Savanna lesson page with the Fidel player |
+| http://localhost:8000/ | Landing page (redirects to `/demo/`), with links to every demo |
+| http://localhost:8000/demo/savanna-mock/ | Mock Savanna lesson page with the Fidel player |
 | http://localhost:8000/demo/savanna-mock/jobs.html | Jobs page with Fidel job cards |
 | http://localhost:8000/studio/ | Fidel Studio (staff), sign in with `FIDEL_STAFF_TOKEN` |
 | http://localhost:8000/api/docs | Interactive API documentation |
@@ -1293,7 +1298,7 @@ caption is reviewed by a person before it counts as final.
 | `server/` | FastAPI server, pipeline, AI providers | `docker compose run --rm server pytest` |
 | `studio/` | Fidel Studio (staff page): plain HTML + JS, no build step | |
 | `e2e/` | Browser tests: Playwright + axe-core | `npm install`, `npx playwright install chromium`, `npm test` |
-| `demo/` | Mock Savanna pages and demo captions | |
+| `demo/` | Landing page (`index.html`, `landing.css`, `brand/` logos), mock Savanna pages and demo captions | |
 | `scripts/` | Demo clip, caption cutting, OpenAPI export | |
 | `tools/translation-eval/` | One-off test of English → Amharic machine translation | `sh tools/translation-eval/run.sh` |
 

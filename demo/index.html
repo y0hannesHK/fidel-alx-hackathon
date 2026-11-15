@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fidel: every lesson, in the way you learn</title>
+  <meta name="description" content="Fidel is an open, accessible video player and toolkit for learning platforms such as ALX Savanna: captions in English, Amharic and Afaan Oromo, sign language, audio description, transcripts and offline lessons for 3G.">
+  <link rel="icon" href="/demo/brand/fidel-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/demo/landing.css">
+  <script>
+    // Apply the remembered language before the page is drawn (no flash of English).
+    try { if (localStorage.getItem('fidel-landing-lang') === 'am') document.documentElement.lang = 'am'; } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#title"><span class="en">Skip to main content</span><span class="am" lang="am">ወደ ዋናው ይዘት ይዝለሉ</span></a>
+
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="home-link" href="/demo/">
+        <img class="en" src="/demo/brand/fidel-logo.svg" alt="Fidel home" width="86" height="40" loading="lazy">
+        <img class="am" lang="am" src="/demo/brand/fidel-logo-am.svg" alt="ፊደል መነሻ ገጽ" width="92" height="40" loading="lazy">
+      </a>
+      <div class="lang-switch" role="group" aria-labelledby="lang-label">
+        <span id="lang-label" class="lang-label"><span class="en">Language</span><span class="am" lang="am">ቋንቋ</span></span>
+        <button type="button" class="lang-button" data-set-lang="en" lang="en" aria-pressed="true">English<span class="sr-only am" lang="am"> (እንግሊዝኛ)</span></button>
+        <button type="button" class="lang-button" data-set-lang="am" lang="am" aria-pressed="false">አማርኛ<span class="sr-only en" lang="en"> (Amharic)</span></button>
+      </div>
+    </div>
+    <nav class="wrap site-nav">
+      <ul>
+        <li><a href="#who"><span class="en">Who it is for</span><span class="am" lang="am">ለማን ነው</span></a></li>
+        <li><a href="#what"><span class="en">What it does</span><span class="am" lang="am">ምን ይሰራል</span></a></li>
+        <li><a href="#try"><span class="en">Try it</span><span class="am" lang="am">ይሞክሩት</span></a></li>
+        <li><a href="#add"><span class="en">Add it to your site</span><span class="am" lang="am">ወደ ድረ-ገጽዎ ያክሉ</span></a></li>
+        <li><a href="#numbers"><span class="en">Measured numbers</span><span class="am" lang="am">የተለኩ ቁጥሮች</span></a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <div class="wrap">
+        <h1 id="title" tabindex="-1">
+          <img class="logo en" src="/demo/brand/fidel-logo.svg" alt="Fidel" width="341" height="159" loading="lazy">
+          <img class="logo am" lang="am" src="/demo/brand/fidel-logo-am.svg" alt="ፊደል" width="365" height="157" loading="lazy">
+          <span class="promise"><span class="en">Every lesson, in the way you learn: watch, listen, read or sign.</span><span class="am" lang="am">እያንዳንዱ ትምህርት፣ እርስዎ በሚማሩበት መንገድ፦ ይመልከቱ፣ ያዳምጡ፣ ያንብቡ ወይም በምልክት ቋንቋ ይከታተሉ።</span></span>
+        </h1>
+        <p class="lead"><span class="en">Fidel is an open video player and toolkit for learning platforms such as ALX Savanna. It makes lessons work for Deaf, blind and disabled learners, and on cheap phones with slow internet.</span><span class="am" lang="am">ፊደል እንደ ALX Savanna ላሉ የትምህርት መድረኮች የተሰራ ክፍት የቪዲዮ ማጫወቻና መሣሪያ ነው። ትምህርቶች መስማት ለተሳናቸው፣ ማየት ለተሳናቸው እና አካል ጉዳተኛ ለሆኑ ተማሪዎች፣ እንዲሁም ቀርፋፋ ኢንተርኔት ባላቸው ርካሽ ስልኮች ላይ እንዲሰሩ ያደርጋል።</span></p>
+        <p class="actions">
+          <a class="button primary" href="/demo/savanna-mock/"><span class="en">Try a lesson</span><span class="am" lang="am">ትምህርት ይሞክሩ</span></a>
+          <a class="button secondary" href="#add"><span class="en">Add Fidel to your site</span><span class="am" lang="am">ፊደልን ወደ ድረ-ገጽዎ ያክሉ</span></a>
+        </p>
+      </div>
+    </section>
+
+    <section id="who" class="band" aria-labelledby="who-title">
+      <div class="wrap">
+        <h2 id="who-title"><span class="en">Who Fidel is for</span><span class="am" lang="am">ፊደል ለማን ነው</span></h2>
+        <p><span class="en">Forty people who are blind, Deaf, live with a disability, or are refugees tried to follow an ALX lesson. Most could not finish. Fidel is built for them.</span><span class="am" lang="am">ማየት የተሳናቸው፣ መስማት የተሳናቸው፣ አካል ጉዳተኛ የሆኑ ወይም ስደተኛ የሆኑ አርባ ሰዎች የALX ትምህርትን ለመከታተል ሞከሩ። አብዛኞቹ መጨረስ አልቻሉም። ፊደል የተሰራው ለእነርሱ ነው።</span></p>
+        <ul class="who-list">
+          <li><strong><span class="en">Deaf and hard-of-hearing learners:</span><span class="am" lang="am">መስማት የተሳናቸው እና የመስማት ችግር ያለባቸው ተማሪዎች፦</span></strong> <span class="en">captions in three languages and a sign-language window.</span><span class="am" lang="am">በሶስት ቋንቋዎች ካፕሽን (የጽሑፍ ትርጉም) እና የምልክት ቋንቋ መስኮት።</span></li>
+          <li><strong><span class="en">Blind and low-vision learners:</span><span class="am" lang="am">ማየት የተሳናቸው እና ዝቅተኛ የማየት ችሎታ ያላቸው ተማሪዎች፦</span></strong> <span class="en">every control works with a screen reader, plus audio description, large captions and Braille.</span><span class="am" lang="am">እያንዳንዱ መቆጣጠሪያ በስክሪን አንባቢ ይሰራል፤ የድምጽ መግለጫ፣ ትልቅ ካፕሽን እና ብሬይልም አለ።</span></li>
+          <li><strong><span class="en">Learners with physical disabilities:</span><span class="am" lang="am">የአካል ጉዳት ያለባቸው ተማሪዎች፦</span></strong> <span class="en">everything works with a keyboard, with large buttons and no dragging.</span><span class="am" lang="am">ሁሉም ነገር በኪቦርድ ይሰራል፤ ቁልፎቹ ትልልቅ ናቸው፣ መጎተት አያስፈልግም።</span></li>
+          <li><strong><span class="en">Learners who find reading hard:</span><span class="am" lang="am">ማንበብ ለሚቸገሩ ተማሪዎች፦</span></strong> <span class="en">listen to the lesson, follow a transcript that highlights each line, and use it in Amharic.</span><span class="am" lang="am">ትምህርቱን ያዳምጡ፣ እያንዳንዱን መስመር የሚያጎላ ግልባጭ ይከተሉ፣ በአማርኛም ይጠቀሙ።</span></li>
+          <li><strong><span class="en">Refugees and returnees:</span><span class="am" lang="am">ስደተኞች እና ተመላሾች፦</span></strong> <span class="en">Amharic and Afaan Oromo, plain words, and lessons that work offline.</span><span class="am" lang="am">አማርኛ እና አፋን ኦሮሞ፣ ቀላል ቃላት፣ እንዲሁም ያለ ኢንተርኔት የሚሰሩ ትምህርቶች።</span></li>
+          <li><strong><span class="en">Learners on cheap phones and 3G:</span><span class="am" lang="am">ርካሽ ስልክ እና 3G ለሚጠቀሙ ተማሪዎች፦</span></strong> <span class="en">a low-data video, audio only, and a whole offline lesson in about 3.9 MB per 15 minutes.</span><span class="am" lang="am">አነስተኛ ዳታ የሚጠቀም ቪዲዮ፣ ድምጽ ብቻ፣ እና ለ15 ደቂቃ ሙሉ ከመስመር ውጭ ትምህርት 3.9 MB ገደማ።</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="what" aria-labelledby="what-title">
+      <div class="wrap">
+        <h2 id="what-title"><span class="en">What Fidel does</span><span class="am" lang="am">ፊደል ምን ይሰራል</span></h2>
+        <ul class="cards">
+          <li class="card">
+            <h3><span class="en">Captions in three languages</span><span class="am" lang="am">ካፕሽን በሶስት ቋንቋዎች</span></h3>
+            <p><span class="en">English, Amharic and Afaan Oromo. A machine writes the first draft; a person checks it. Learners are told when a caption is not checked yet.</span><span class="am" lang="am">እንግሊዝኛ፣ አማርኛ እና አፋን ኦሮሞ። የመጀመሪያውን ረቂቅ ማሽን ይጽፋል፤ ሰው ያረጋግጠዋል። ካፕሽኑ ገና ካልተረጋገጠ ተማሪዎች ይነገራቸዋል።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Ethiopian Sign Language window</span><span class="am" lang="am">የኢትዮጵያ ምልክት ቋንቋ መስኮት</span></h3>
+            <p><span class="en">The signer is shown beside the video, so the slides are never covered. Three sizes, and corner buttons instead of dragging.</span><span class="am" lang="am">የምልክት ቋንቋ አስተርጓሚው ከቪዲዮው ጎን ይታያል፤ ስላይዶቹን አይሸፍንም። ሶስት መጠኖች አሉት፤ ከመጎተት ይልቅ የማዕዘን ቁልፎች አሉት።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Audio description</span><span class="am" lang="am">የድምጽ መግለጫ</span></h3>
+            <p><span class="en">What is shown on screen, said in words. Read by the screen reader, or recorded by staff in Amharic.</span><span class="am" lang="am">በስክሪኑ ላይ የሚታየው በቃላት ይገለጻል። በስክሪን አንባቢ ይነበባል፣ ወይም ሠራተኞች በአማርኛ ይቀዱታል።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Transcript and search</span><span class="am" lang="am">ግልባጭ እና ፍለጋ</span></h3>
+            <p><span class="en">The whole lesson as text, in English and Amharic. Search it, then play the video from that line.</span><span class="am" lang="am">ሙሉው ትምህርት በጽሑፍ፣ በእንግሊዝኛ እና በአማርኛ። ይፈልጉ፣ ከዚያም ቪዲዮውን ከዚያ መስመር ጀምሮ ያጫውቱ።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Offline pack for 3G</span><span class="am" lang="am">ለ3G ከመስመር ውጭ ጥቅል</span></h3>
+            <p><span class="en">Download a lesson once, as one web page or a .zip, and learn with no internet. A low-data video and an audio-only file save data.</span><span class="am" lang="am">ትምህርቱን አንድ ጊዜ እንደ አንድ ድረ-ገጽ ወይም .zip ያውርዱ፣ ያለ ኢንተርኔት ይማሩ። አነስተኛ ዳታ የሚጠቀም ቪዲዮ እና ድምጽ-ብቻ ፋይል ዳታ ይቆጥባሉ።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Tagged PDF and Braille</span><span class="am" lang="am">ታግ የተደረገ PDF እና ብሬይል</span></h3>
+            <p><span class="en">The lesson to read: an accessible web page, a tagged PDF, and a Braille file (.brf) for embossers and Braille displays, in English and Amharic.</span><span class="am" lang="am">ለንባብ የሚሆን ትምህርት፦ ተደራሽ ድረ-ገጽ፣ ታግ የተደረገ PDF እና ለብሬይል ማተሚያዎችና ማሳያዎች የብሬይል ፋይል (.brf)፣ በእንግሊዝኛ እና በአማርኛ።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Keyboard and screen reader</span><span class="am" lang="am">ኪቦርድ እና ስክሪን አንባቢ</span></h3>
+            <p><span class="en">Every control is a real button with a name. Keys work, focus is always visible, and a Keyboard help button lists the keys.</span><span class="am" lang="am">እያንዳንዱ መቆጣጠሪያ ስም ያለው እውነተኛ ቁልፍ ነው። የኪቦርድ ቁልፎች ይሰራሉ፣ ትኩረቱ ሁልጊዜ ይታያል፣ የኪቦርድ እገዛ ቁልፍም ቁልፎቹን ይዘረዝራል።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Ethiopian calendar</span><span class="am" lang="am">የኢትዮጵያ ዘመን አቆጣጠር</span></h3>
+            <p><span class="en">Dates in both calendars, for example 30 Nov 2026 / <span lang="am">ህዳር 21 2019</span>.</span><span class="am" lang="am">ቀኖች በሁለቱም አቆጣጠሮች፣ ለምሳሌ ህዳር 21 2019 / <span lang="en">30 Nov 2026</span>።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Job cards and certificates</span><span class="am" lang="am">የሥራ ካርዶች እና ሰርተፊኬቶች</span></h3>
+            <p><span class="en">Job adverts that list workplace accommodations and can be listened to. Certificates that anyone can check on a public page.</span><span class="am" lang="am">የሥራ ቦታ ማመቻቸቶችን የሚዘረዝሩ እና ሊደመጡ የሚችሉ የሥራ ማስታወቂያዎች። ማንኛውም ሰው በይፋዊ ገጽ ሊያረጋግጣቸው የሚችሉ ሰርተፊኬቶች።</span></p>
+          </li>
+          <li class="card">
+            <h3><span class="en">Optional Amharic speech engines</span><span class="am" lang="am">አማራጭ የአማርኛ የንግግር ሞተሮች</span></h3>
+            <p><span class="en">Two extra engines, off unless you start them: draft captions for lessons spoken in Amharic or Afaan Oromo, and a machine voice that reads Amharic descriptions aloud.</span><span class="am" lang="am">እርስዎ ካላስጀመሯቸው በስተቀር የጠፉ ሁለት ተጨማሪ ሞተሮች፦ በአማርኛ ወይም በአፋን ኦሮሞ ለሚነገሩ ትምህርቶች ረቂቅ ካፕሽን፣ እና የአማርኛ መግለጫዎችን ጮክ ብሎ የሚያነብ የማሽን ድምጽ።</span></p>
+          </li>
+        </ul>
+        <p class="note"><span class="en">All AI runs on your own server. Fidel stores nothing about learners' disabilities, and has no tracking.</span><span class="am" lang="am">ሁሉም AI በራስዎ ሰርቨር ላይ ይሰራል። ፊደል ስለ ተማሪዎች አካል ጉዳት ምንም መረጃ አያስቀምጥም፤ ክትትልም የለውም።</span></p>
+      </div>
+    </section>
+
+    <section id="try" class="band" aria-labelledby="try-title">
+      <div class="wrap">
+        <h2 id="try-title"><span class="en">Try Fidel</span><span class="am" lang="am">ፊደልን ይሞክሩ</span></h2>
+        <ul class="try-list">
+          <li>
+            <a href="/demo/savanna-rebuild/"><span class="en">Savanna rebuilt with Fidel</span><span class="am" lang="am">በፊደል እንደገና የተገነባው Savanna</span></a>
+            <p><span class="en">ALX's learning pages, rebuilt with Fidel inside.</span><span class="am" lang="am">የALX የትምህርት ገጾች፣ ፊደልን አካትተው እንደገና የተገነቡ።</span></p>
+          </li>
+          <li>
+            <a href="/demo/savanna-mock/"><span class="en">Lesson demo</span><span class="am" lang="am">የትምህርት ማሳያ</span></a>
+            <p><span class="en">A lesson page with the Fidel player.</span><span class="am" lang="am">የፊደል ማጫወቻ ያለበት የትምህርት ገጽ።</span></p>
+          </li>
+          <li>
+            <a href="/demo/blank.html"><span class="en">Fidel on a blank page</span><span class="am" lang="am">ፊደል በባዶ ገጽ ላይ</span></a>
+            <p><span class="en">Only Fidel, no other styles: it works on any site.</span><span class="am" lang="am">ፊደል ብቻ፣ ሌላ ስታይል የለም፦ በማንኛውም ድረ-ገጽ ላይ ይሰራል።</span></p>
+          </li>
+          <li>
+            <a href="/demo/components.html"><span class="en">All Fidel components</span><span class="am" lang="am">ሁሉም የፊደል ክፍሎች</span></a>
+            <p><span class="en">Code blocks, word meanings, quizzes, steps and more.</span><span class="am" lang="am">የኮድ ብሎኮች፣ የቃላት ፍቺዎች፣ ጥያቄዎች፣ ደረጃዎች እና ሌሎችም።</span></p>
+          </li>
+          <li>
+            <a href="/demo/inputs.html"><span class="en">Fidel form fields</span><span class="am" lang="am">የፊደል የቅጽ መስኮች</span></a>
+            <p><span class="en">Form fields with clear labels and clear error messages.</span><span class="am" lang="am">ግልጽ መለያዎች እና ግልጽ የስህተት መልእክቶች ያላቸው የቅጽ መስኮች።</span></p>
+          </li>
+          <li>
+            <a href="/demo/savanna-mock/jobs.html"><span class="en">Job cards</span><span class="am" lang="am">የሥራ ካርዶች</span></a>
+            <p><span class="en">Job adverts with dates in both calendars and a summary to listen to.</span><span class="am" lang="am">በሁለቱም አቆጣጠሮች ቀን ያላቸው እና የሚደመጥ ማጠቃለያ ያላቸው የሥራ ማስታወቂያዎች።</span></p>
+          </li>
+          <li>
+            <a href="/studio/"><span class="en">Fidel Studio, for staff</span><span class="am" lang="am">ፊደል ስቱዲዮ፣ ለሠራተኞች</span></a>
+            <p><span class="en">Upload lessons, check the Amharic captions, publish. Needs the staff token.</span><span class="am" lang="am">ትምህርቶችን ይጫኑ፣ የአማርኛ ካፕሽኖችን ያረጋግጡ፣ ያትሙ። የሠራተኛ ቶከን ያስፈልጋል።</span></p>
+          </li>
+          <li>
+            <a href="/docs"><span class="en">API documentation</span><span class="am" lang="am">የAPI ሰነድ</span></a>
+            <p><span class="en">Every endpoint, to read and try in the browser.</span><span class="am" lang="am">ሁሉም የAPI መዳረሻዎች፣ በአሳሹ ውስጥ ለማንበብና ለመሞከር።</span></p>
+          </li>
+          <li>
+            <a href="https://github.com/y0hannesHK/fidel-alx-hackathon"><span class="en">Fidel source code on GitHub</span><span class="am" lang="am">የፊደል የምንጭ ኮድ በGitHub ላይ</span></a>
+            <p><span class="en">Open source, MIT licence.</span><span class="am" lang="am">ክፍት ምንጭ፣ የMIT ፈቃድ።</span></p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="add" aria-labelledby="add-title">
+      <div class="wrap">
+        <h2 id="add-title"><span class="en">Add Fidel to your site</span><span class="am" lang="am">ፊደልን ወደ ድረ-ገጽዎ ያክሉ</span></h2>
+        <p><span class="en">There are three levels. Start with one, and add the others when you need them.</span><span class="am" lang="am">ሶስት ደረጃዎች አሉ። በአንዱ ይጀምሩ፤ ሲያስፈልግዎ ሌሎቹን ያክሉ።</span></p>
+
+        <h3><span class="en">Level 1: one script tag</span><span class="am" lang="am">ደረጃ 1፦ አንድ የስክሪፕት ታግ</span></h3>
+        <p><span class="en">Add two lines to your page's head, then a player where the lesson goes. From the free jsDelivr CDN, with no Fidel server:</span><span class="am" lang="am">በገጽዎ head ውስጥ ሁለት መስመሮችን ያክሉ፣ ከዚያም ትምህርቱ በሚገባበት ቦታ ማጫወቻውን ያስቀምጡ። ከነጻው jsDelivr CDN፣ ያለ ፊደል ሰርቨር፦</span></p>
+        <div class="code">
+          <pre lang="en"><code id="code-cdn">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/y0hannesHK/fidel-alx-hackathon@v1.0.0-cdn/fidel.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/gh/y0hannesHK/fidel-alx-hackathon@v1.0.0-cdn/fidel.js" defer&gt;&lt;/script&gt;
+&lt;fidel-player src="lesson.mp4" captions-en="en.vtt" captions-am="am.vtt"&gt;&lt;/fidel-player&gt;</code></pre>
+          <p class="copy-row"><button type="button" class="button small" data-copy="code-cdn"><span class="en">Copy<span class="sr-only"> the CDN code</span></span><span class="am" lang="am">ቅዳ<span class="sr-only"> የCDN ኮዱን</span></span></button> <span class="copy-status" role="status"></span></p>
+        </div>
+        <p><span class="en">Or from your own Fidel server, which also serves lessons, jobs and certificates. The /embed/v1/ address never gets breaking changes:</span><span class="am" lang="am">ወይም ትምህርቶችን፣ ሥራዎችን እና ሰርተፊኬቶችን ከሚያቀርበው ከራስዎ የፊደል ሰርቨር። የ/embed/v1/ አድራሻ ነባሩን የሚያበላሽ ለውጥ አይደረግበትም፦</span></p>
+        <div class="code">
+          <pre lang="en"><code id="code-self">&lt;link rel="stylesheet" href="https://YOUR-FIDEL-HOST/embed/v1/fidel.css"&gt;
+&lt;script src="https://YOUR-FIDEL-HOST/embed/v1/fidel.js" defer&gt;&lt;/script&gt;
+&lt;fidel-player lesson="https://YOUR-FIDEL-HOST/api/v1/lessons/LESSON_ID"&gt;&lt;/fidel-player&gt;</code></pre>
+          <p class="copy-row"><button type="button" class="button small" data-copy="code-self"><span class="en">Copy<span class="sr-only"> the self-hosted code</span></span><span class="am" lang="am">ቅዳ<span class="sr-only"> የራስ ሰርቨር ኮዱን</span></span></button> <span class="copy-status" role="status"></span></p>
+        </div>
+
+        <h3><span class="en">Level 2: REST API and webhooks</span><span class="am" lang="am">ደረጃ 2፦ REST API እና ዌብሁኮች</span></h3>
+        <p><span class="en">Upload a lesson, follow its progress, read captions and transcripts, and issue certificates. Webhooks tell your server when a lesson is ready or its captions are checked.</span><span class="am" lang="am">ትምህርት ይጫኑ፣ ሂደቱን ይከታተሉ፣ ካፕሽኖችን እና ግልባጮችን ያንብቡ፣ ሰርተፊኬቶችን ይስጡ። ትምህርት ሲዘጋጅ ወይም ካፕሽኖቹ ሲረጋገጡ ዌብሁኮች ለሰርቨርዎ ያሳውቃሉ።</span></p>
+        <div class="code">
+          <pre lang="en"><code id="code-api">curl -H "Authorization: Bearer $FIDEL_STAFF_TOKEN" \
+     -F "video=@lesson.mp4" -F "title=Intro to HTML" -F "spoken_language=en" \
+     https://YOUR-FIDEL-HOST/api/v1/lessons</code></pre>
+          <p class="copy-row"><button type="button" class="button small" data-copy="code-api"><span class="en">Copy<span class="sr-only"> the API example</span></span><span class="am" lang="am">ቅዳ<span class="sr-only"> የAPI ምሳሌውን</span></span></button> <span class="copy-status" role="status"></span></p>
+        </div>
+        <p><a href="/docs"><span class="en">Read the API documentation</span><span class="am" lang="am">የAPI ሰነዱን ያንብቡ</span></a></p>
+
+        <h3><span class="en">Level 3: open standards</span><span class="am" lang="am">ደረጃ 3፦ ክፍት ደረጃዎች (ስታንዳርዶች)</span></h3>
+        <p><span class="en">Job cards add schema.org JobPosting data, and event cards add schema.org Event data, so job boards and search engines can read them. Fidel is built and tested for WCAG 2.2 AA; manual tests with screen readers are still to come.</span><span class="am" lang="am">የሥራ ካርዶች የschema.org JobPosting መረጃ፣ የዝግጅት ካርዶች ደግሞ የschema.org Event መረጃ ያክላሉ፤ በዚህም የሥራ ማስታወቂያ ድረ-ገጾች እና የፍለጋ ሞተሮች ሊያነቧቸው ይችላሉ። ፊደል ለWCAG 2.2 AA ተሰርቶ ተፈትኗል፤ በስክሪን አንባቢዎች የሚደረጉ የሰው ሙከራዎች ገና ይቀራሉ።</span></p>
+        <p><a href="https://github.com/y0hannesHK/fidel-alx-hackathon/blob/main/CONFORMANCE.md"><span class="en">Read the WCAG 2.2 AA conformance report</span><span class="am" lang="am">የWCAG 2.2 AA የተስማሚነት ሪፖርቱን ያንብቡ</span></a></p>
+      </div>
+    </section>
+
+    <section id="numbers" class="band" aria-labelledby="numbers-title">
+      <div class="wrap">
+        <h2 id="numbers-title"><span class="en">Measured numbers</span><span class="am" lang="am">የተለኩ ቁጥሮች</span></h2>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col"><span class="en">What</span><span class="am" lang="am">ምን</span></th>
+              <th scope="col"><span class="en">Size or time</span><span class="am" lang="am">መጠን ወይም ጊዜ</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><span class="en">fidel.js: player, job card, session viewer and certificate (gzipped)</span><span class="am" lang="am">fidel.js፦ ማጫወቻ፣ የሥራ ካርድ፣ የክፍለ ጊዜ መመልከቻ እና ሰርተፊኬት (በgzip የተጨመቀ)</span></th>
+              <td>163 KB</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="en">Other components, loaded only on pages that use them (gzipped)</span><span class="am" lang="am">ሌሎች ክፍሎች፣ በሚጠቀሙባቸው ገጾች ላይ ብቻ የሚጫኑ (በgzip የተጨመቀ)</span></th>
+              <td>68 KB + 8 KB</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="en">fidel.css (gzipped)</span><span class="am" lang="am">fidel.css (በgzip የተጨመቀ)</span></th>
+              <td>6.5 KB</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="en">Ethiopic font, loaded only when Amharic text is shown</span><span class="am" lang="am">የግዕዝ ፊደል ቅርጸ-ቁምፊ፣ የአማርኛ ጽሑፍ ሲታይ ብቻ የሚጫን</span></th>
+              <td>2 × 75 KB</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="en">Audio-only lesson</span><span class="am" lang="am">ድምጽ-ብቻ ትምህርት</span></th>
+              <td><span class="en">2.8 MB per 15 minutes</span><span class="am" lang="am">በ15 ደቂቃ 2.8 MB</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="en">Offline one-page lesson: audio, text and font</span><span class="am" lang="am">ከመስመር ውጭ የአንድ ገጽ ትምህርት፦ ድምጽ፣ ጽሑፍ እና ቅርጸ-ቁምፊ</span></th>
+              <td><span class="en">about 3.9 MB per 15 minutes</span><span class="am" lang="am">በ15 ደቂቃ 3.9 MB ገደማ</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="en">Offline .zip pack</span><span class="am" lang="am">ከመስመር ውጭ .zip ጥቅል</span></th>
+              <td><span class="en">about 3.3 MB per 15 minutes</span><span class="am" lang="am">በ15 ደቂቃ 3.3 MB ገደማ</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="en">Making captions and translations on a laptop, no graphics card</span><span class="am" lang="am">ካፕሽንና ትርጉም ማዘጋጀት፣ በላፕቶፕ፣ ያለ ግራፊክስ ካርድ</span></th>
+              <td><span class="en">about 30 seconds per minute of video</span><span class="am" lang="am">ለአንድ ደቂቃ ቪዲዮ 30 ሰከንድ ገደማ</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><span class="en"><strong>Fidel</strong> (<span lang="am">ፊደል</span>), by Team Fidel, for the Digital Bridge Accessibility Hackathon 2026, Track 2: accessible learning media. Hosted by ALX Ethiopia with AAAPD and Tomorrow is Better, under the LIWAY programme with SNV and Mercy Corps.</span><span class="am" lang="am"><strong>ፊደል</strong>፣ በቡድን ፊደል፣ ለDigital Bridge Accessibility Hackathon 2026፣ ዘርፍ 2፦ ተደራሽ የትምህርት ሚዲያ። አዘጋጆች፦ ALX ኢትዮጵያ ከAAAPD እና Tomorrow is Better ጋር፣ በSNV እና Mercy Corps የLIWAY ፕሮግራም ስር።</span></p>
+      <p><span class="en">Open source under the MIT licence. Built on Able Player.</span><span class="am" lang="am">በMIT ፈቃድ ክፍት ምንጭ። በAble Player ላይ የተገነባ።</span></p>
+      <ul class="footer-links">
+        <li><a href="https://github.com/y0hannesHK/fidel-alx-hackathon"><span class="en">Fidel on GitHub</span><span class="am" lang="am">ፊደል በGitHub ላይ</span></a></li>
+        <li><a href="https://github.com/y0hannesHK/fidel-alx-hackathon/blob/main/LICENSE"><span class="en">MIT licence</span><span class="am" lang="am">የMIT ፈቃድ</span></a></li>
+        <li><a href="https://github.com/y0hannesHK/fidel-alx-hackathon/blob/main/LICENSES.md"><span class="en">Third-party licences</span><span class="am" lang="am">የሶስተኛ ወገን ፈቃዶች</span></a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var KEY = 'fidel-landing-lang';
+      var root = document.documentElement;
+      var TEXT = {
+        en: { title: 'Fidel: every lesson, in the way you learn', copied: 'Copied.', selected: 'Code selected. Press Ctrl+C to copy.' },
+        am: { title: 'ፊደል፦ እያንዳንዱ ትምህርት፣ እርስዎ በሚማሩበት መንገድ', copied: 'ተቀድቷል።', selected: 'ኮዱ ተመርጧል። ለመቅዳት Ctrl+C ይጫኑ።' },
+      };
+      function lang() { return root.lang === 'am' ? 'am' : 'en'; }
+      function show(code) {
+        root.lang = code;
+        document.title = TEXT[code].title;
+        document.querySelectorAll('[data-set-lang]').forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.getAttribute('data-set-lang') === code));
+        });
+        document.querySelectorAll('.copy-status').forEach(function (s) { s.textContent = ''; });
+      }
+      show(lang());
+      document.addEventListener('click', function (event) {
+        var langButton = event.target.closest('[data-set-lang]');
+        if (langButton) {
+          show(langButton.getAttribute('data-set-lang'));
+          try { localStorage.setItem(KEY, lang()); } catch (e) {}
+          return;
+        }
+        var copyButton = event.target.closest('[data-copy]');
+        if (!copyButton) return;
+        var code = document.getElementById(copyButton.getAttribute('data-copy'));
+        var status = copyButton.parentNode.querySelector('.copy-status');
+        function say(key) { status.lang = lang(); status.textContent = TEXT[lang()][key]; }
+        function selectCode() {
+          var range = document.createRange();
+          range.selectNodeContents(code);
+          getSelection().removeAllRanges();
+          getSelection().addRange(range);
+          say('selected');
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(code.textContent).then(function () { say('copied'); }, selectCode);
+        } else {
+          selectCode();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

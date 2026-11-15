@@ -7,7 +7,8 @@
   /embed/v1/          the built player (fidel.js, fidel.css, fonts); stable for partners
   /embed/             same, latest (for testing)
   /studio/            Fidel Studio, the staff page
-  /demo/              demo pages: mock lesson page, blank.html (no host styles)
+  /                   redirects to the landing page, /demo/
+  /demo/              landing page (index.html), mock lesson page, blank.html (no host styles)
   /savanna/           ALX's Savanna starter pages with Fidel added, if set up
   /media/             demo media from data/demo (git-ignored)
   /api/docs, /docs    interactive API documentation (Swagger UI)
@@ -134,7 +135,7 @@ def docs_shortcut() -> RedirectResponse:
 
 @app.get("/", include_in_schema=False)
 def home() -> RedirectResponse:
-    return RedirectResponse(url="/demo/savanna-mock/")
+    return RedirectResponse(url="/demo/")
 
 
 def mount_if_present(url_path: str, folder: Path, name: str) -> None:

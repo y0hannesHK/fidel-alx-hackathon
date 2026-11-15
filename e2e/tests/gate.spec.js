@@ -99,6 +99,7 @@ const LEARNER_PAGES = [
   { name: 'blank page', url: () => '/demo/blank.html', ready: 'body' },
   { name: 'components page', url: () => '/demo/components.html', ready: 'main' },
   { name: 'form fields page', url: () => '/demo/inputs.html', ready: 'fidel-form form' },
+  { name: 'landing page', url: () => '/demo/', ready: 'main' },
   { name: 'lesson document (Amharic)', url: () => `/api/v1/lessons/${lessonId}/document.html?lang=am`, ready: 'main' },
 ];
 const STUDIO_PAGES = [
