@@ -306,7 +306,8 @@ test('<fidel-sign-term>: a clip that fails to load says so in words', async ({ p
     el.textContent = 'browser';
     document.querySelector('#package-c').append(el);
   });
-  await page.getByRole('button', { name: /^browser/ }).click();
+  // Scoped to this section: Package A's <fidel-word> on the same page also has a 'browser' button.
+  await page.locator('#package-c').getByRole('button', { name: /^browser/ }).click();
   const dialog = page.getByRole('dialog', { name: 'browser' });
   await expect(dialog).toContainText('No sign recorded yet for this word.');
   await expect(dialog.locator('figure')).toBeHidden();
