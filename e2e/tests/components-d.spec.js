@@ -105,6 +105,7 @@ async function openComponents(page) {
 // Each dialog on the page: how to open it, and its opener.
 const DIALOGS = [
   { name: 'caption report', opener: (page) => page.getByRole('button', { name: 'Report a caption problem' }) },
+  { name: 'event access request', opener: (page) => page.getByRole('button', { name: 'Request access support' }) },
 ];
 
 for (const zoom of ZOOMS) {
@@ -313,5 +314,65 @@ test.describe('D4: Amharic keyboard', () => {
 
     await page.getByRole('button', { name: 'Back to the text' }).click();
     await expect(field).toBeFocused();
+  });
+});
+
+test.describe('D5: live session card', () => {
+  test('access line in words, JSON-LD Event, Join only in its window, request, calendar file', async ({ page }) => {
+    await openComponents(page);
+    const card = page.locator('fidel-event-card[event-id="office-hours-demo"]');
+    await expect(card.getByRole('heading', { level: 4, name: 'Office hours: how to present' })).toBeVisible();
+    await expect(card.locator('.fidel-event-access li')).toHaveText([
+      'Live captions: yes', 'Ethiopian Sign Language interpreter: on request', 'Spoken in: English, Amharic']);
+    await expect(card.getByText('Ethiopian calendar:')).toBeVisible();
+    await expect(card.locator('[lang="am"]', { hasText: 'ኅዳር' }).or(card.locator('[lang="am"]', { hasText: 'ህዳር' }))).toBeVisible();
+
+    // Before the window: no Join link, and it says when it appears.
+    await expect(card.getByRole('link', { name: 'Join the session' })).toHaveCount(0);
+    await expect(card.getByText('The Join link appears 15 minutes before the start.')).toBeVisible();
+    // After the end (the Amharic card): the recording link.
+    const past = page.locator('fidel-event-card[event-id="info-session-demo"]');
+    await expect(past.getByRole('link', { name: 'ቅጂውን ይመልከቱ' })).toHaveAttribute('href', '/demo/savanna-mock/session.html');
+    // In the window: Join is shown.
+    await page.evaluate(() => {
+      const soon = document.createElement('fidel-event-card');
+      const start = new Date(Date.now() + 5 * 60000);
+      for (const [k, v] of Object.entries({ title: 'Starting soon', start: start.toISOString(),
+        end: new Date(start.getTime() + 3600000).toISOString(), 'join-url': 'https://meet.example.org/soon', 'event-id': 'soon' })) soon.setAttribute(k, v);
+      document.querySelector('fidel-event-card').after(soon);
+    });
+    await expect(page.locator('fidel-event-card[event-id="soon"]').getByRole('link', { name: 'Join the session' })).toBeVisible();
+
+    // schema.org Event JSON-LD, valid JSON.
+    const events = await page.evaluate(() => [...document.querySelectorAll('fidel-event-card script[type="application/ld+json"]')]
+      .map((s) => JSON.parse(s.textContent)));
+    const office = events.find((e) => e.name === 'Office hours: how to present');
+    expect(office).toMatchObject({ '@type': 'Event', startDate: '2026-12-04T16:00:00.000Z',
+      eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+      location: { '@type': 'VirtualLocation', url: 'https://meet.example.org/office-hours' }, inLanguage: ['en', 'am'] });
+    expect(office.description).toContain('Ethiopian Sign Language interpreter: on request');
+
+    // Request access support: only which support, never why.
+    const requested = page.evaluate(() => new Promise((resolve) =>
+      document.addEventListener('fidel-event-request', (e) => resolve(e.detail), { once: true })));
+    const opener = card.getByRole('button', { name: 'Request access support' });
+    await opener.click();
+    const dialog = page.getByRole('dialog', { name: 'Request access support' });
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    await expect(dialog.getByText('Choose at least one kind of support.')).toBeVisible();
+    await dialog.getByLabel('Sign language interpreter').check();
+    await dialog.getByRole('button', { name: 'Send' }).click();
+    expect(await requested).toEqual({ eventId: 'office-hours-demo', needs: ['sign-language'] });
+    await expect(card.locator('.fidel-report-message')).toHaveText('Request sent. The organisers receive your request.');
+    await expect(opener).toBeFocused();
+
+    // Add to calendar: an .ics download.
+    const download = page.waitForEvent('download');
+    await card.getByRole('button', { name: 'Add to calendar' }).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toBe('office-hours-demo.ics');
+    const ics = readFileSync(await file.path(), 'utf8');
+    expect(ics).toContain('DTSTART:20261204T160000Z');
+    expect(ics).toContain('SUMMARY:Office hours: how to present');
   });
 });
