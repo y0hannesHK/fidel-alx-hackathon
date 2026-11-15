@@ -49,8 +49,17 @@ for (const zoom of ZOOMS) {
     await codeBlock(page).getByRole('button', { name: 'Read line by line' }).click();
     await page.locator('#package-a details').evaluateAll((all) => all.forEach((d) => { d.open = true; }));
     expect(await seriousAxeIssues(page)).toEqual([]);
-    const { pixels, outermost } = await sidewaysScroll(page);
+    let { pixels, outermost } = await sidewaysScroll(page);
     expect(pixels, `sideways scrolling; sticking out: ${outermost.join(', ')}`).toBeLessThanOrEqual(1);
+    // Every dialog open once (English and Amharic interface).
+    for (const term of ['server', 'accessible']) {
+      await page.locator('fidel-word').getByRole('button', { name: term }).click();
+      await expect(page.getByRole('dialog', { name: term })).toBeVisible();
+      expect(await seriousAxeIssues(page)).toEqual([]);
+      ({ pixels, outermost } = await sidewaysScroll(page));
+      expect(pixels, `sideways scrolling with the ${term} dialog: ${outermost.join(', ')}`).toBeLessThanOrEqual(1);
+      await page.keyboard.press('Escape');
+    }
     await context.close();
   });
 }
@@ -137,6 +146,45 @@ test('described image: figure, alt, caption, lazy, full description in details',
   const bad = page.locator('fidel-described-image').nth(1);
   await expect(bad.locator('img')).toHaveAttribute('alt', '');
   await expect(bad.getByText(/no alt text/)).toBeVisible();
+});
+
+test('word: button opens a dialog with both meanings; Escape returns focus', async ({ page }) => {
+  await open(page);
+  const word = page.locator('fidel-word').getByRole('button', { name: 'server' });
+  await word.focus();
+  await page.keyboard.press('Enter');
+  const dialog = page.getByRole('dialog', { name: 'server' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'server' })).toBeVisible();
+  await expect(dialog.getByText('A computer that stores websites')).toBeVisible();
+  await expect(dialog.locator('[lang="am"]')).toContainText('ኮምፒውተር');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(word).toBeFocused();
+
+  // Close button, and the Amharic interface.
+  const am = page.locator('fidel-word[ui-lang="am"]').getByRole('button');
+  await am.click();
+  const amDialog = page.getByRole('dialog', { name: 'accessible' });
+  await expect(amDialog.getByText('በአማርኛ', { exact: true })).toBeVisible();
+  await amDialog.getByRole('button', { name: 'ዝጋ' }).click();
+  await expect(am).toBeFocused();
+});
+
+test('word: reads the glossary format when there are no attributes', async ({ page }) => {
+  await page.route('**/test-glossary.json', (route) => route.fulfill({
+    json: { terms: [{ en: 'Caption', am: 'የግርጌ ጽሑፍ', note: 'Words of the video shown as text.' }] },
+  }));
+  await open(page);
+  await page.evaluate(() => {
+    const p = document.createElement('p');
+    p.innerHTML = '<fidel-word term="caption" glossary="/test-glossary.json">caption</fidel-word>';
+    document.getElementById('a-word').after(p);
+  });
+  await page.getByRole('button', { name: 'caption', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'caption' });
+  await expect(dialog.getByText('Words of the video shown as text.')).toBeVisible();
+  await expect(dialog.getByText('የግርጌ ጽሑፍ')).toBeVisible();
 });
 
 test('Package A keyboard: Tab reaches every control and never gets stuck', async ({ page }) => {

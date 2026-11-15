@@ -221,6 +221,47 @@ fidel-word { display: inline; }
   font-weight: 600;
 }
 
+/* ---------- A4 <fidel-word> ---------------------------------------------------------- */
+/* Looks like the word it replaces, with a dotted underline; it is a real button. */
+.fidel-word-button {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  text-decoration: underline dotted 0.12em;
+  text-underline-offset: 0.2em;
+  cursor: help;
+}
+.fidel-word-button:hover { text-decoration-style: solid; background: var(--fidel-soft); }
+.fidel-word-dialog {
+  box-sizing: border-box;
+  width: min(30rem, calc(100vw - 1rem));
+  max-height: calc(100vh - 1rem);
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 400;
+  font-style: normal;
+  text-align: start;
+  color: var(--fidel-ink);
+  background: var(--fidel-paper);
+  border: 2px solid var(--fidel-ink);
+  border-radius: 0.5rem;
+}
+.fidel-word-dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+.fidel-word-title { margin: 0 0 0.75rem; font-size: 1.4rem; line-height: 1.3; }
+.fidel-word-part { margin-block-end: 1rem; }
+.fidel-word-label { margin: 0; font-weight: 700; }
+.fidel-word-meaning { margin: 0.25rem 0 0.5rem; }
+.fidel-word-close { margin-block-start: 0.25rem; }
+
 /* ---------- Windows high contrast / forced colours, reduced motion ---------------- */
 @media (forced-colors: active) {
   .fidel-a-button { border: 2px solid ButtonText; }
