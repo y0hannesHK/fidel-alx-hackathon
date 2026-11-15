@@ -375,6 +375,41 @@
     <!-- PACKAGE C END -->
 
     <!-- PACKAGE D START -->
+    <section aria-labelledby="package-d">
+      <h2 id="package-d">Package D: caption reports, Amharic keyboard, sign answers, live sessions</h2>
+
+      <h3 id="d-report">Report a caption problem</h3>
+      <p>Who this helps: every learner, especially Deaf learners who notice a wrong Amharic caption. Staff see the reports in Fidel Studio.</p>
+      <div id="report-player-slot"><p>Loading the lesson video…</p></div>
+      <fidel-caption-report for="report-player"></fidel-caption-report>
+      <p>Try it:</p>
+      <ul>
+        <li>Play the video, then press "Report a caption problem". The video pauses; the time and the caption shown are filled in.</li>
+        <li>Choose what is wrong, write a correction if you like, and press Send. Escape closes the dialog and the video plays on.</li>
+        <li>Turn your connection off and send a report: it is saved on the device and sent when you are back online.</li>
+      </ul>
+      <script>
+        // Host page code: the newest published lesson on this server (or
+        // ?lesson=ID), so the report can be sent; else the demo video.
+        (async () => {
+          const player = document.createElement('fidel-player');
+          player.id = 'report-player';
+          player.setAttribute('lang', 'en');
+          let id = new URLSearchParams(location.search).get('lesson');
+          if (!id) {
+            try { id = (await (await fetch('/api/v1/lessons')).json())[0]?.id; } catch { id = null; }
+          }
+          if (id) {
+            player.setAttribute('lesson', '/api/v1/lessons/' + id);
+          } else {
+            const demo = { src: '/media/lesson.mp4', 'src-webm': '/media/lesson.webm', 'captions-en': '/demo/media/en.vtt',
+              'captions-am': '/demo/media/am.vtt', 'captions-am-status': 'draft', chapters: '/demo/media/chapters.vtt' };
+            for (const [name, value] of Object.entries(demo)) player.setAttribute(name, value);
+          }
+          document.getElementById('report-player-slot').replaceWith(player);
+        })();
+      </script>
+    </section>
     <!-- PACKAGE D END -->
   </main>
 </body>
