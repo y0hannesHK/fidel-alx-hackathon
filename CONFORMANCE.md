@@ -161,6 +161,29 @@ Notes per package, for the WCAG criteria each component touches.
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->
+### Package B: data saver, offline status, download later, Ethiopian date, section language, display settings
+
+| Criterion | Level | Status | Notes |
+|---|---|---|---|
+| 1.3.1 Info and Relationships | A | Supports | Real `<button>`, `<a href>`, `<dialog>`, `<details>`, `<time datetime>`, `<fieldset>`/`<legend>` radios, `<label>`ed checkboxes. Language buttons are a labelled `role="group"`. |
+| 1.3.2 Meaningful Sequence | A | Supports | `<fidel-lang>` sets `dir="rtl"` on Arabic content. |
+| 1.4.1 Use of Color | A | Supports | Offline/online and the current language are said in words (and a ✓), not only colour. |
+| 1.4.3 / 1.4.11 Contrast | AA | Supports | axe clean; text ≥ 4.5:1, borders and focus rings ≥ 3:1. |
+| 1.4.4 Resize Text | AA | Supports | Sizes in `rem`; display settings add 125–200 % text to the target. Text sized in `px`/`rem` inside a host target does not grow with that setting (browser zoom still works). |
+| 1.4.10 Reflow | AA | Supports | No sideways scrolling at 320 px (400 %), also with 200 % text and wide spacing applied (e2e). |
+| 1.4.12 Text Spacing | AA | Supports | "Wide" spacing sets line-height 2 and word spacing 0.16em; no letter-spacing (Ethiopic). |
+| 2.1.1 Keyboard / 2.1.2 No Keyboard Trap | A | Supports | Every control reached with Tab (e2e); Escape closes the dialog. |
+| 2.2.2 Pause, Stop, Hide | A | Partially supports | "Stop motion" stops CSS animation and transitions and pauses autoplaying/looping videos in the target. It cannot stop animated GIFs or scripted animation in host content. |
+| 2.4.3 Focus Order | A | Supports | Focus returns to "Display settings" when the dialog closes; after queueing or cancelling a download, focus moves to the new button. |
+| 2.5.8 Target Size | AA | Supports | Buttons and links at least 44 × 44 px. |
+| 3.1.2 Language of Parts | AA | Supports | Each calendar in `<fidel-ethiopian-date>`, each language button and each version in `<fidel-lang>` has its own `lang`; buttons have `translate="no"`. |
+| 3.2.2 On Input | A | Supports | Display settings apply at once but only change presentation; nothing navigates. |
+| 4.1.2 Name, Role, Value | A | Supports | Native elements; current language by `aria-current="true"`. |
+| 4.1.3 Status Messages | AA | Supports | Offline/online (only on change), "is ready offline", "Showing Amharic" through the shared polite announcer. Not tested yet with NVDA/TalkBack. |
+
+Not an overlay: `<fidel-display-prefs>` only changes presentation of content
+that is already accessible, and only inside its `target` and Fidel's own
+components.
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->

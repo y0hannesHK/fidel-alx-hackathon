@@ -232,6 +232,101 @@ Live examples of every component: [`demo/components.html`](demo/components.html)
 <!-- PACKAGE A END -->
 
 <!-- PACKAGE B START -->
+#### Data, offline, dates and language (Package B)
+
+For learners on cheap phones and expensive data. Every component has
+`ui-lang="en|am"` (default: the page's `lang`, else English); its text is in
+`player/i18n/components-b.en.json` and `.am.json`.
+
+**`<fidel-data-saver>`**: shows the size before anything downloads, with a
+choice of the full video or a smaller version.
+
+```html
+<fidel-data-saver href="/files/lessons/ID/video.mp4" size="45000000"
+                  alt-href="/api/v1/lessons/ID/offline.html" alt-size="3100000"
+                  alt-label="audio and text version"></fidel-data-saver>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `href` | The big file. A video or audio file plays in place after "Load it"; any other file is a link. |
+| `size` | Its size in bytes. If missing, asked from the server with `HEAD` (`Content-Length`); else "Size unknown". |
+| `alt-href`, `alt-size`, `alt-label` | The smaller version (a link), its size, and what it is. |
+| `captions`, `captions-lang`, `captions-label` | Optional WebVTT captions for the video. |
+
+If the phone asks to save data (`navigator.connection.saveData`), the smaller
+version comes first and the component says why. Event:
+`fidel-data-saver-choice` `{ choice: "full" | "light" }`.
+
+**`<fidel-offline-status>`**: one always-visible line, "Online." or "You are
+offline. 3 lessons are saved on this phone.", and a "Saved lessons" list. It
+counts the same cache as the player's "Save for offline"
+(`fidel-saved-lessons-v1`). Screen readers hear it only when the connection
+changes. Event: `fidel-offline-status-change` `{ online }`.
+
+**`<fidel-download-later>`**: "Download when I'm online". The lesson waits in a
+queue (localStorage `fidel-download-queue`) and downloads into the same cache
+as soon as the phone is online, then says "Lesson 3 is ready offline".
+"Only on Wi-Fi" is offered only where the browser can tell (Android Chrome).
+
+```html
+<fidel-download-later href="/api/v1/lessons/ID/offline.html" label="Lesson 3" size="3100000"></fidel-download-later>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `href` | What to download. One-page lessons (`/api/v1/lessons/ID/offline.html`) are saved through the service worker, so they open with no internet; other same-site files go into the cache directly. |
+| `label` | Its name, shown and announced. |
+| `size` | Bytes, shown on the button. |
+
+Event: `fidel-download-ready` `{ href, label }`.
+
+**`<fidel-ethiopian-date>`**: a date in both calendars inside a real `<time>`.
+
+```html
+<fidel-ethiopian-date datetime="2026-11-15" ui-lang="am" format="short"></fidel-ethiopian-date>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `datetime` | `YYYY-MM-DD`. |
+| `format` | `short`: `15 Nov 2026 / ህዳር 6 2019`. `long`: `Sunday 15 November 2026 / እሑድ ህዳር 6 2019 ዓ.ም.` |
+| `ui-lang` | `en`: Gregorian first. `am`: Ethiopian first. |
+
+Uses the browser's Ethiopic calendar (`Intl`) when it has one, otherwise
+`player/src/ethiopian-calendar.js`; unit tests check both against known dates.
+
+**`<fidel-lang>`**: switch language for one section, not the whole page.
+
+```html
+<fidel-lang label="Lesson summary">
+  <div lang="en">…</div>
+  <div lang="am">…</div>
+  <div lang="om">…</div>
+</fidel-lang>
+```
+
+One button per version, in that language's own name (English, አማርኛ, Afaan
+Oromoo, ትግርኛ, Soomaali, العربية); the current one has `aria-current="true"`.
+The choice is remembered (prefs key `sectionLanguage`); Arabic gets
+`dir="rtl"`. Attribute: `label`. Event: `fidel-lang-change` `{ lang }`.
+
+**`<fidel-display-prefs>`**: a "Display settings" dialog: text size
+(100/125/150/200 %), line spacing, colours (high contrast, yellow on black),
+stop motion, thicker focus outline.
+
+```html
+<fidel-display-prefs target="#lesson"></fidel-display-prefs>
+```
+
+| Attribute | Meaning |
+|---|---|
+| `target` | CSS selector of the content to adjust. The settings are `fidel-dp-*` classes on those elements and on the Fidel components of the page; never on `<html>` or `<body>`. |
+
+Remembered in localStorage (`fidel-display-prefs`). It is not an overlay: it
+does not try to repair the host page, only changes how accessible content is
+shown. Text size scales text sized in `em`/`%` (text sized in `px` or `rem`
+inside the target does not grow). Event: `fidel-display-prefs-change`.
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->
