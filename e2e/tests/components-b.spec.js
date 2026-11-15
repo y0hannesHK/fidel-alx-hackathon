@@ -136,3 +136,29 @@ test('Ethiopian date: both calendars in a real <time>, ordered by language', asy
   await expect(dates.nth(2)).toHaveText('Sunday 15 November 2026 / እሑድ ህዳር 6 2019 ዓ.ም.');
   await expect(dates.nth(3)).toHaveText('10 Sep 2026 / ጳጉሜ 5 2018');
 });
+
+test('section language: buttons in their own language, one version shown, remembered', async ({ page }) => {
+  await ready(page);
+  const section = page.locator('fidel-lang');
+  const group = section.getByRole('group', { name: 'Language of “Lesson summary”' });
+  const english = group.getByRole('button', { name: 'English' });
+  const amharic = group.getByRole('button', { name: 'አማርኛ' });
+  await expect(english).toHaveAttribute('aria-current', 'true');
+  await expect(amharic).toHaveAttribute('lang', 'am');
+  await expect(amharic).toHaveAttribute('translate', 'no');
+  await expect(group.getByRole('button', { name: 'Afaan Oromoo' })).toBeVisible();
+  await expect(section.locator('div[lang="am"]')).toBeHidden();
+
+  await amharic.focus();
+  await page.keyboard.press('Enter');
+  await expect(amharic).toHaveAttribute('aria-current', 'true');
+  await expect(english).not.toHaveAttribute('aria-current', /.*/);
+  await expect(section.locator('div[lang="am"]')).toBeVisible();
+  await expect(section.locator('div[lang="en"]:not(.fidel-lang-bar)')).toBeHidden();
+  await expect.poll(() => politeText(page)).toBe('Showing Amharic');
+  await expect(section.locator('div[lang="ar"]')).toHaveAttribute('dir', 'rtl');
+
+  await page.reload();
+  await expect(page.locator('fidel-lang div[lang="am"]')).toBeVisible();
+  await expect(page.locator('fidel-lang').getByRole('button', { name: 'አማርኛ' })).toHaveAttribute('aria-current', 'true');
+});
