@@ -66,8 +66,8 @@ Known issues and agreed follow-ups, with the phase they are planned for.
   pluggable (`server/app/providers/`), so it can be added once a key exists.
   Must stay off by default and only run when the key is set.
 - **Amharic speech-to-text: measure caption quality.** Omnilingual ASR (optional
-  engine) is in, but its Amharic accuracy was only checked on one 20-second
-  clip with no reference text. Measure the character error rate on a few
+  engine) is in. On one 20-second clip an Amharic speaker judged the captions
+  good (15 Nov 2026), but there is no measured error rate yet. Measure the character error rate on a few
   reviewed Amharic lessons. Afaan Oromo and Tigrinya are supported by the model
   but untested: add them to `FIDEL_OMNIASR_LANGUAGES` only after a test.
 - **Somali voice: not offered.** ToucanTTS reaches Somali only through

@@ -41,8 +41,9 @@ The clip is 20 seconds long. The output is all in Ethiopic script, with no
 other language mixed in.
 
 - **Numbers:** one number came out half-converted: "በ2አ5ት".
-- **Accuracy:** not yet measured; that needs a reviewed transcript (see
-  BACKLOG).
+- **Accuracy:** an Amharic-speaking team member watched the clip with these
+  captions (15 Nov 2026) and found them good. A measured error rate still
+  needs a reviewed transcript (see BACKLOG).
 
 ### Points that matter for Fidel
 
