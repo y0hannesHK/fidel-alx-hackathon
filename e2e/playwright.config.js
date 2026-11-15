@@ -10,6 +10,9 @@ const baseURL = process.env.FIDEL_BASE_URL || 'http://localhost:8000';
 export default defineConfig({
   testDir: './tests',
   timeout: 60_000,
+  // 4 browsers at once: with 8, a laptop that also runs the server made random
+  // single tests time out (each passed alone). Override with --workers=N.
+  workers: 4,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL,
