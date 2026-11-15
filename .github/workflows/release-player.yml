@@ -23,16 +23,26 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # No outside actions (this repository only allows actions it owns): the
+    # code is fetched with git and Node.js is downloaded from nodejs.org.
     steps:
       - name: Get the code
-        uses: actions/checkout@v4
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q --depth 1 origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
+          git checkout -q "refs/tags/${GITHUB_REF_NAME}"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: player/package-lock.json
+      - name: Set up Node.js 22
+        run: |
+          file=$(curl -fsSL https://nodejs.org/dist/latest-v22.x/SHASUMS256.txt | awk '/linux-x64.tar.xz$/ {print $2}')
+          curl -fsSL "https://nodejs.org/dist/latest-v22.x/${file}" -o /tmp/node.tar.xz
+          curl -fsSL https://nodejs.org/dist/latest-v22.x/SHASUMS256.txt | grep " ${file}$" | sed "s#${file}#/tmp/node.tar.xz#" | sha256sum -c -
+          mkdir -p "$HOME/node" && tar -xJf /tmp/node.tar.xz -C "$HOME/node" --strip-components=1
+          echo "$HOME/node/bin" >> "$GITHUB_PATH"
+          "$HOME/node/bin/node" --version
 
       - name: Build and test the player
         working-directory: player
