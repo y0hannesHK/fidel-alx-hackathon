@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home – Savanna (accessible rebuild, demo)</title>
+  <link rel="stylesheet" href="/embed/v1/fidel.css">
+  <script src="/embed/v1/fidel.js" defer></script>
+  <link rel="stylesheet" href="savanna.css">
+</head>
+<body>
+  <a class="skip-link" href="#page-title" data-i18n="skip">Skip to main content</a>
+  <header class="site-header">
+    <div class="header-bar">
+      <button type="button" class="menu-toggle" aria-expanded="true" aria-controls="sidebar"><span class="bars" aria-hidden="true"></span><span data-i18n="menu">Menu</span></button>
+      <a class="brand" href="index.html">Savanna <span class="brand-note" data-i18n="brandNote">(accessible rebuild)</span></a>
+      <span class="built-with"><span data-i18n="builtWith">Built with</span> <img src="/demo/brand/fidel-logo.svg" alt="Fidel" width="60" height="28"></span>
+      <div class="lang-switch" role="group" aria-labelledby="lang-label">
+        <span id="lang-label" class="lang-label" data-i18n="language">Page language</span>
+        <button type="button" data-lang="en" lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="am" aria-pressed="false"><span lang="am">አማርኛ</span><span class="visually-hidden"> (Amharic)</span></button>
+      </div>
+    </div>
+    <p class="demo-note" data-i18n="demoNote">Demo: Savanna's pages rebuilt by Team Fidel for the Digital Bridge hackathon. Not an ALX product.</p>
+  </header>
+
+  <div class="layout">
+    <nav id="sidebar" class="sidebar" aria-label="Main" data-i18n-label="navMain">
+      <ul>
+        <li><a href="index.html" aria-current="page" data-i18n="navHome">Home (paced course)</a></li>
+        <li><a href="self-paced.html" data-i18n="navSelf">Self-paced course</a></li>
+        <li><a href="lesson.html" data-i18n="navLesson">Lesson</a></li>
+        <li><a href="jobs.html" data-i18n="navJobs">Jobs</a></li>
+      </ul>
+    </nav>
+
+    <main id="main">
+      <div class="course-bar">
+        <div class="switcher">
+          <p><span class="small" data-i18n="yourCourse">Your course</span><br>
+            <span class="course-name" id="course-name">Web Foundations (WF-100)</span><br>
+            <span class="small" id="course-cohort">Cohort November 2026, week 6 of 8</span></p>
+          <button type="button" class="btn" id="course-switch" aria-expanded="false" aria-controls="course-list"><span data-i18n="switchCourse">Switch course</span> <span aria-hidden="true">▾</span></button>
+          <ul class="switcher-list" id="course-list" hidden aria-label="Your courses"></ul>
+        </div>
+      </div>
+
+      <h1 id="page-title" tabindex="-1" data-i18n="greeting">Good day, Selam</h1>
+      <fidel-offline-status></fidel-offline-status>
+
+      <section class="card" aria-labelledby="weeks-title">
+        <h2 id="weeks-title" data-i18n="weeks">Course weeks</h2>
+        <p class="small" id="weeks-hint">Choose a week to see its tasks below.</p>
+        <ul class="chip-list" id="week-strip" aria-describedby="weeks-hint"></ul>
+        <div id="week-panel" aria-labelledby="week-panel-title"></div>
+      </section>
+
+      <div class="grid-2">
+        <section class="card" aria-labelledby="continue-title">
+          <h2 id="continue-title" data-i18n="continue">Continue where you left off</h2>
+          <p>Digital Skills for Everyone, Module 2. You stopped in lesson 4, a video of 2 minutes 39 seconds with captions and sign language.</p>
+          <p><a class="btn btn-primary" href="lesson.html">Continue lesson 4: Tech education as an equalizer</a></p>
+        </section>
+
+        <section class="card" aria-labelledby="score-title">
+          <h2 id="score-title" data-i18n="score">Your overall score</h2>
+          <div class="measure">
+            <label for="score-meter">Overall score: 74%</label>
+            <meter id="score-meter" min="0" max="100" low="50" high="70" optimum="100" value="74" aria-describedby="score-text">74%</meter>
+            <p id="score-text" class="small">You are on track. You need 70% to pass this course.</p>
+          </div>
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="deliverables-title">
+        <h2 id="deliverables-title" data-i18n="deliverables">Your deliverables</h2>
+        <ul class="task-list">
+          <li>
+            <h3 id="d1">Project: a personal web page</h3>
+            <p>Due Friday 20 November 2026. Graded, 10% of your score.</p>
+            <progress value="2" max="3" aria-labelledby="d1" aria-describedby="d1-text">2 of 3</progress>
+            <p id="d1-text">2 of 3 tasks done (67%).</p>
+            <p><a href="lesson.html">Resume the project lesson</a></p>
+          </li>
+          <li>
+            <h3 id="d2">Quiz: how the web works</h3>
+            <p>Due Sunday 22 November 2026. Graded, 5% of your score.</p>
+            <progress value="0" max="1" aria-labelledby="d2" aria-describedby="d2-text">0 of 1</progress>
+            <p id="d2-text">Not started: 0 of 1 task done.</p>
+            <p><a href="lesson.html">Open the lesson before the quiz</a></p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card" aria-labelledby="events-title">
+        <h2 id="events-title" data-i18n="events">Upcoming events</h2>
+        <div class="event-list">
+          <fidel-event-card title="Office hours: questions about your web page" event-id="rebuild-office-hours"
+            start="2026-11-20T18:00:00+03:00" end="2026-11-20T19:00:00+03:00"
+            join-url="https://meet.example.org/office-hours" captions="yes" sign-language="on-request"
+            languages="en,am" heading-level="3"></fidel-event-card>
+          <fidel-event-card title="Career talk: your first job in tech" event-id="rebuild-career-talk"
+            start="2026-11-27T10:00:00+03:00" end="2026-11-27T11:30:00+03:00"
+            join-url="https://meet.example.org/career-talk" captions="yes" sign-language="yes"
+            languages="am,en" heading-level="3"></fidel-event-card>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p data-i18n="footer">All people, courses and scores on these pages are made up.</p>
+    <fidel-help chat-url="https://t.me/example_help" email="help@example.org"
+                video-call-url="https://meet.example.org/interpreter" phone="+251 11 000 0000"
+                hours="Monday to Friday, 8:30 to 17:00"></fidel-help>
+  </footer>
+
+  <script src="savanna.js"></script>
+  <script src="home.js"></script>
+</body>
+</html>
