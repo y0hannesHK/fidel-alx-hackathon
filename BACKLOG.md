@@ -95,4 +95,25 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 <!-- PACKAGE B END -->
 
 <!-- PACKAGE C START -->
+**Package C** (all six components are finished and on the demo page):
+- **Sign clips are placeholders.** The demo's "log in" sign is the colour-bar
+  test clip (`/media/sign.webm`). Record real Ethiopian Sign Language clips with
+  interpreters (and Deaf co-designers agreeing on signs for new tech words).
+  The glossary has no `sign` field yet; `<fidel-sign-term glossary="…">` reads one
+  if it is added.
+- **Amharic to review** (written by an AI, not a native speaker): every string
+  in `player/i18n/components-c.am.json`, the two `meaning-am` texts and the
+  Amharic `hours` example in `demo/components.html`. In particular: "ክፍለ ጊዜ"
+  (session), "ማንቂያ" (alert), "ጊዜዬ ፈጽሞ አያልቅ" (never time me out), "ግልባጭ" (transcript).
+- `<fidel-session-keeper>` times from page load (or `start()`); it does not
+  watch the learner's activity. The host should call `start()` whenever its own
+  session is renewed. It cannot extend the host's session by itself: the host must act on `fidel-session-extend`.
+- `<fidel-visual-alert>` is in the page flow; an alert can be off-screen if
+  the element is placed far from where the learner is. Consider an optional
+  "show near the top" mode that does not cover focused items.
+- `<fidel-step-nav>`: the arrows (← →) do not flip for right-to-left pages yet.
+- `<fidel-lesson-map>`: chapter titles come from the VTT file, which is English unless `chapters-am` is given;
+  the "Where am I?" answer is spoken but has no separate visible copy (the
+  progress text is visible).
+- People's tests (NVDA, TalkBack, Braille display) are not done yet: docs/manual-testing.md.
 <!-- PACKAGE C END -->

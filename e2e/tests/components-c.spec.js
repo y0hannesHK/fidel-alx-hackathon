@@ -295,3 +295,19 @@ test('<fidel-help>: only the routes given, text first, voice last; Escape return
   await s.getByRole('button', { name: 'እርዳታ ያግኙ' }).click();
   await expect(page.locator('dialog[open]').getByRole('link')).toHaveText(['የጽሑፍ ውይይት', 'ኢሜይል']);
 });
+
+test('<fidel-sign-term>: a clip that fails to load says so in words', async ({ page }) => {
+  await open(page);
+  await page.evaluate(() => {
+    const el = document.createElement('fidel-sign-term');
+    el.setAttribute('term', 'browser');
+    el.setAttribute('sign', '/media/no-such-sign.webm');
+    el.setAttribute('meaning-en', 'The program you use to open websites.');
+    el.textContent = 'browser';
+    document.querySelector('#package-c').append(el);
+  });
+  await page.getByRole('button', { name: /^browser/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'browser' });
+  await expect(dialog).toContainText('No sign recorded yet for this word.');
+  await expect(dialog.locator('figure')).toBeHidden();
+});
