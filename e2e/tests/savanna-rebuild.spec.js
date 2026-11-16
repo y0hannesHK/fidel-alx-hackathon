@@ -1,4 +1,4 @@
-// Savanna's pages rebuilt by Team Fidel (/demo/savanna-rebuild/): a demo,
+// Savanna's pages rebuilt by Team GNU (/demo/savanna-rebuild/): a demo,
 // not ALX's product. Checks the gate on each page (axe at 100/200/400 % zoom
 // and in Amharic, no sideways scrolling at 320 px, Tab never stuck), the main
 // task on the lesson page by keyboard, and the page widgets (course switcher,
@@ -321,7 +321,7 @@ test('the language switch and the sidebar are real buttons and are remembered', 
 test('every page says it is a demo, shows Fidel, and has no ALX logo', async ({ page }) => {
   for (const url of ['lesson.html', 'index.html', 'self-paced.html', 'jobs.html']) {
     await page.goto(BASE + url);
-    await expect(page.locator('.demo-note')).toHaveText("Demo: Savanna's pages rebuilt by Team Fidel for the Digital Bridge hackathon. Not an ALX product.");
+    await expect(page.locator('.demo-note')).toHaveText("Demo: Savanna's pages rebuilt by Team GNU for the Digital Bridge hackathon. Not an ALX product.");
     await expect(page.getByRole('banner').getByRole('img', { name: 'Fidel' })).toBeVisible();
     await expect(page.getByRole('banner')).toContainText('Savanna (accessible rebuild)');
     await expect(page.locator('img[src*="alx" i]')).toHaveCount(0);

@@ -65,7 +65,7 @@ lesson video in Studio instead (next section).
 
 ### Savanna rebuilt with Fidel (`/demo/savanna-rebuild/`)
 
-A demo, **not ALX's product**: Team Fidel's own pages, written from scratch
+A demo, **not ALX's product**: Team GNU's own pages, written from scratch
 (plain HTML, one CSS file, small scripts; no Bootstrap, no ALX code, logo or
 images), with Fidel built in. Every page says so in a visible note. The
 learner (Selam) and all course data are made up.
@@ -166,7 +166,7 @@ session viewer and certificate. The other component tags (`<fidel-quiz>`,
 `<fidel-input>`, … see "More components") are in `fidel-components.js` and
 `fidel-components.css`, and `fidel.js` loads them **by itself, only when the
 page uses one of those tags**. A lesson page with only a player downloads
-163 KB instead of 231 KB (gzipped). A page that creates component tags from
+159 KB instead of 226 KB (gzipped). A page that creates component tags from
 its own script before they are needed (like Studio) can load the second file
 directly:
 
@@ -1443,8 +1443,11 @@ What changes:
 
 ## Hardware and models
 
-- **CPU only works.** Measured on a laptop (Intel i5-12500H, 16 GB RAM): about
-  30 seconds of processing per minute of video with Whisper `small` + MADLAD.
+- **CPU only works.** Measured on a laptop (Intel i5-12500H, 16 GB RAM), 16 Nov
+  2026: about 85 seconds of processing per minute of video with Whisper `small`
+  and MADLAD translating into Amharic and Afaan Oromo (captions about 11 s, each
+  translation about 27 s, video versions about 9 s). Translating into one
+  language only (`FIDEL_TRANSLATE_TO=am`) saves about a third.
 - **Memory**: MADLAD needs about 4 GB of RAM while translating; give Docker at
   least 8 GB. **Disk**: about 4 GB for models, plus lesson files.
 - **Quick or small setups**: `FIDEL_WHISPER_MODEL=base` (145 MB download) and
@@ -1464,14 +1467,14 @@ caption is reviewed by a person before it counts as final.
 
 | What | Value |
 |---|---|
-| `fidel.js` (Able Player + jQuery + DOMPurify + Fidel player, job card, session viewer, certificate), gzipped | 163 KB |
-| `fidel-components.js` + `.css` (43 component tags; loaded only on pages that use them), gzipped | 68 KB + 8 KB |
-| `fidel.css`, gzipped | 6.5 KB |
+| `fidel.js` (Able Player + jQuery + DOMPurify + Fidel player, job card, session viewer, certificate), gzipped | 159 KB |
+| `fidel-components.js` + `.css` (43 component tags; loaded only on pages that use them), gzipped | 67 KB + 8 KB |
+| `fidel.css`, gzipped | 7 KB |
 | Ethiopic font (2 weights, loaded only when Amharic text is shown) | 2 × 75 KB |
 | Audio-only lesson (Opus 24 kbps) | 187 KB per minute (2.8 MB per 15 minutes) |
 | Offline one-page lesson (audio + text + font) | 778 KB for 2 min 39 s, about **3.9 MB per 15 minutes** |
-| Offline .zip pack | about 3.3 MB per 15 minutes |
-| Processing, CPU only, Whisper small + MADLAD | about 30 s per minute of video |
+| Offline .zip pack | 593 KB for 2 min 39 s, about 2.9 MB per 15 minutes |
+| Processing, CPU only (Intel i5-12500H laptop), Whisper small + MADLAD into Amharic and Afaan Oromo | about 85 s per minute of video: video versions 9 s, captions 11 s, each translation 27 s |
 
 ## Privacy
 
@@ -1522,7 +1525,7 @@ sign-language window.
 - [Able Player](https://github.com/ableplayer/ableplayer) (MIT), the accessible
   media player Fidel is built on, and every library and model in
   [LICENSES.md](LICENSES.md).
-- Built by our team for the Digital Bridge Accessibility Hackathon 2026
+- Built by **Team GNU** for the Digital Bridge Accessibility Hackathon 2026
   (ALX Ethiopia, with AAAPD and Tomorrow is Better, under the LIWAY programme
   with SNV and Mercy Corps). Team: *(names to be added)*.
 - Our co-designer: credited here only with their consent.

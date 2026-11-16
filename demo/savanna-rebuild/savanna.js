@@ -1,5 +1,5 @@
 // Savanna (accessible rebuild): shared page code for the four demo pages.
-// Team Fidel's own code, written from scratch (no Bootstrap, no ALX script).
+// Team GNU's own code, written from scratch (no Bootstrap, no ALX script).
 //
 //  - English / Amharic switch for the page chrome: real buttons with
 //    aria-pressed. Elements with data-i18n="key" (text) or
@@ -24,7 +24,7 @@
     brandNote: '(ተደራሽ ሆኖ እንደገና የተሠራ)',
     builtWith: 'የተገነባው በ',
     language: 'የገጹ ቋንቋ',
-    demoNote: 'ማሳያ፦ የSavanna ገጾች በFidel ቡድን ለDigital Bridge ሃካቶን እንደገና የተሠሩ ናቸው። የALX ምርት አይደለም።',
+    demoNote: 'ማሳያ፦ የSavanna ገጾች በGNU ቡድን ለDigital Bridge ሃካቶን እንደገና የተሠሩ ናቸው። የALX ምርት አይደለም።',
     navMain: 'ዋና ማውጫ',
     navHome: 'መነሻ (በሳምንት የሚሄድ ኮርስ)',
     navSelf: 'በራስ ፍጥነት የሚሄድ ኮርስ',

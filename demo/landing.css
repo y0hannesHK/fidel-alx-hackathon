@@ -274,7 +274,8 @@ th, td {
 }
 thead th { background: var(--cream); }
 tbody th { font-weight: 400; }
-td { font-weight: 700; white-space: nowrap; }
+/* Values may wrap: some are a sentence long, and must reflow at 200% and 400% zoom. */
+td { font-weight: 700; min-width: 7rem; }
 
 /* --- Footer ------------------------------------------------------------- */
 .site-footer { padding: 2rem 0 2.5rem; border-top: 0.375rem solid var(--coral); }
