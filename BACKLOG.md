@@ -4,12 +4,13 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 ## Open
 
-- **LTI 1.3: test on a real Moodle** (phase 5 of the LTI plan): Moodle in
-  Docker on a laptop; register Fidel, add a lesson with the picker, launch as a
-  student inside the course frame and in a new window, finish, check the
-  gradebook; NVDA on the lesson page and the picker. Checklist in
-  docs/manual-testing.md, "LTI". Until then LTI is tested only against a
-  simulated platform.
+- **LTI 1.3 on Moodle: the rest of the checklist.** Done (16 Nov, automated,
+  e2e/tests/moodle.spec.js): Moodle 4.5 registers Fidel, the picker adds a
+  lesson, a student opens it in the course frame, marks it complete, and the
+  gradebook shows 100. Still to do (docs/manual-testing.md, "LTI"): Moodle's
+  "New window" container, Chrome with third-party cookies blocked, the gradebook
+  down then Try again, Moodle in Amharic, and NVDA on the picker and the lesson
+  page; screenshots for the README.
 - **LTI Amharic text to review** (written with machine help): the messages in
   `server/app/lti/pages.py` (problems, picker), `server/app/lti/lti-lesson.js`
   (saving to the course) and `server/app/templates/lti-lesson.html`.

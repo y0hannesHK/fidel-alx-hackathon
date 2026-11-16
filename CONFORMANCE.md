@@ -165,9 +165,9 @@ depends on what staff add (explained).
   captions; the player says clearly when Amharic captions are not yet checked.
 - **Amharic speech**: phones rarely have an Amharic voice, so Amharic audio
   description and job summaries need recordings made by staff.
-- **LTI pages tested against a simulated platform only.** The automated checks
-  below pass; a test inside a real Moodle course, and NVDA on these pages, are
-  not yet done.
+- **LTI pages: no screen-reader check yet.** The automated checks below pass,
+  and the whole flow works inside a real Moodle 4.5 course (automated test);
+  NVDA on these pages, inside Moodle, is not yet done.
 
 ## Narrator findings (15 November 2026)
 
@@ -193,9 +193,9 @@ complete", "Saved to your course", "Try again"), the teacher's lesson picker,
 the problem pages, and Studio's LMS connections page. Automated: axe 0
 critical/serious; no sideways scrolling at 200% and 400% zoom; the picker,
 "Mark as complete" and "Try again" by keyboard only; Studio's page in the gate
-at 100/200/400% zoom (e2e/tests/lti.spec.js, lti-launch.spec.js). Tested
-against a simulated platform; a real Moodle and screen-reader checks: not yet
-done.
+at 100/200/400% zoom (e2e/tests/lti.spec.js, lti-launch.spec.js). The flow
+also runs inside a real Moodle 4.5 course (e2e/tests/moodle.spec.js).
+Screen-reader checks: not yet done.
 
 | Criterion | Status | Notes |
 |---|---|---|

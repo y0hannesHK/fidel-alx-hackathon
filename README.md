@@ -1201,10 +1201,11 @@ A teacher adds a Fidel lesson to a course in a learning platform (LMS) such as
 Moodle. Learners open it from the course, already signed in, with no Fidel
 account. When they finish, **"completed" appears in the course gradebook.**
 
-**Status: built and tested against a simulated platform; not yet tried on a
-real Moodle.** Automated tests use a fake platform with its own keys (see
-"Tests" below). A test with a real Moodle is next; until it is done, expect
-small fixes.
+**Status: works with Moodle 4.5.** Tested end to end on a real Moodle 4.5
+(LTS) on 16 November 2026: an admin registers Fidel, a teacher adds a lesson
+with Fidel's picker, a student opens it inside the course and marks it complete,
+and Moodle's gradebook shows 100 (`e2e/tests/moodle.spec.js`). Not yet tried:
+Canvas, Moodle's "New window" launch, and a screen reader inside Moodle.
 
 | Included | Not yet |
 |---|---|
@@ -1231,7 +1232,8 @@ new one, and the LMS reads the new public key from `/lti/jwks` by itself.
 #### Register Fidel in Moodle
 
 Moodle 4.x: **Site administration › Plugins › Activity modules › External tool ›
-Manage tools › configure a tool manually.** In Fidel Studio, open **LMS
+Manage tools › configure a tool manually.** Click **Expand all** first: the
+Services and Privacy settings are in folded sections. In Fidel Studio, open **LMS
 connections**: it shows each of Fidel's addresses with a Copy button.
 
 | Moodle field | Value |
@@ -1246,7 +1248,9 @@ connections**: it shows each of Fidel's addresses with a Copy button.
 | Supports Deep Linking (Content-Item Message) | ticked |
 | Content Selection URL | `https://FIDEL/lti/deep-link` |
 | Services › IMS LTI Assignment and Grade Services | "Use this service for grade sync only" |
-| Privacy › Share launcher's name / email with tool | Never (Fidel does not use them) |
+| Privacy › Share launcher's name with tool, Share launcher's email with tool | Never (Fidel does not use them) |
+| Privacy › Accept grades from the tool | As specified in Deep Linking definition or Delegate to teacher (or Always) |
+| Tool configuration usage | Show in activity chooser and as a preconfigured tool |
 | Default launch container | Embed, without blocks (or New window: see "Cookies" below) |
 
 Save. Then click **View configuration details** (the list icon next to the
@@ -1363,6 +1367,12 @@ answer; the learner sees "Not saved to your course yet" and can try again.
   docker compose run -d --rm -e FIDEL_LTI_ENABLED=true -p 8011:8000 --name fidel-lti-test server
   cd e2e && FIDEL_BASE_URL=http://localhost:8011 npx playwright test tests/lti.spec.js tests/lti-launch.spec.js
   ```
+- **Real Moodle 4.5** (`e2e/tests/moodle.spec.js`): Moodle in Docker
+  (`docker-compose.lti-test.yml`, test only; `sh scripts/moodle-test-setup.sh`
+  makes a course and a student). The admin fills Moodle's tool form with the
+  values above, the teacher picks a lesson, the student marks it complete, and
+  the test reads the grade from Moodle's database. How to run it: the comment
+  at the top of the file.
 
 ## AI engines and running fully offline
 

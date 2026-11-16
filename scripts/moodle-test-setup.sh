@@ -9,7 +9,8 @@ set -e
 cd "$(dirname "$0")/.."
 # Git Bash on Windows would turn /opt/... into C:/Program Files/Git/opt/...
 export MSYS_NO_PATHCONV=1
-moodle() { docker compose -f docker-compose.lti-test.yml exec -T moodle "$@"; }
+# As "daemon", the web server's user: files a root command makes (caches) would lock Moodle out.
+moodle() { docker compose -f docker-compose.lti-test.yml exec -T -u daemon moodle "$@"; }
 moodle php /opt/bitnami/moodle/admin/cli/cfg.php --name=curlsecurityblockedhosts --set=""
 moodle php /opt/bitnami/moodle/admin/cli/cfg.php --name=curlsecurityallowedport --set=""
 # This test Moodle runs on plain http: a "secure only" session cookie would be
