@@ -4,6 +4,19 @@ Known issues and agreed follow-ups, with the phase they are planned for.
 
 ## Open
 
+- **LTI 1.3: test on a real Moodle** (phase 5 of the LTI plan): Moodle in
+  Docker on a laptop; register Fidel, add a lesson with the picker, launch as a
+  student inside the course frame and in a new window, finish, check the
+  gradebook; NVDA on the lesson page and the picker. Checklist in
+  docs/manual-testing.md, "LTI". Until then LTI is tested only against a
+  simulated platform.
+- **LTI Amharic text to review** (written with machine help): the messages in
+  `server/app/lti/pages.py` (problems, picker), `server/app/lti/lti-lesson.js`
+  (saving to the course) and `server/app/templates/lti-lesson.html`.
+- **LTI later**: quiz scores from `<fidel-quiz>` (now only "completed"); class
+  lists (Names and Role Provisioning Service); a test on Canvas; a Studio button
+  to make a new key pair (now: delete `data/lti/`).
+
 - **REMINDER (B1, a teammate is doing it): interface text in JSON files**
   (`i18n/en.json`, `am.json`; adding a language = one file, as the Team
   Technical Guide asks). Then: `translate="no"` on language names, "Fidel" and

@@ -248,3 +248,33 @@ Open `demo/components.html?lesson=ID` with a published lesson that has sound and
 - [ ] Display settings → Reading font → Easy-read font: English text changes to Atkinson Hyperlegible, Amharic text stays in Noto Sans Ethiopic, code stays monospace, the player's button icons still show.
 - [ ] Amharic reviewer: read every string in `player/i18n/components-e.am.json` in place (`ui-lang="am"`).
 <!-- PACKAGE E END -->
+
+## LTI: a Fidel lesson inside a real Moodle course
+
+Setup: README, "LTI 1.3" (register Fidel in Moodle, then the platform in Studio,
+LMS connections). One teacher and one student account in a test course; one
+published Fidel lesson.
+
+- [ ] Teacher: Add an activity › External tool › Fidel › Select content. The
+      lesson picker opens; with the keyboard only, search, choose a lesson, Add
+      to course. The activity appears in the course with the lesson's title.
+- [ ] Teacher: the same, then Cancel: nothing is added, Moodle shows its form again.
+- [ ] Student, launch container "Embed": the lesson opens inside the course,
+      already signed in; the player is in Moodle's language (switch Moodle to
+      Amharic and open again).
+- [ ] Student: watch to the end. "Saved to your course: lesson completed" shows
+      and is read out; the Moodle gradebook shows 100 for the student.
+- [ ] Student, a second lesson: press "Mark as complete" instead; the gradebook
+      shows 100.
+- [ ] Launch container "New window": the same works.
+- [ ] Chrome with third-party cookies blocked (chrome://settings/cookies), Embed:
+      either it works, or the page offers "Open in a new window" and that works.
+- [ ] Stop Moodle's web server for a moment after opening a lesson, finish it:
+      "Not saved to your course yet" and "Try again"; start Moodle, Try again: saved.
+- [ ] Studio: remove the platform; the student opens the activity: the page
+      says the platform is not connected (reason `unknown_platform`).
+- [ ] NVDA (Chrome or Firefox): the picker (search, count announced, radio
+      group named "Published lessons", Add), the lesson page (title, "Opened
+      from…", player, Mark as complete, the saved message announced).
+- [ ] Note every difference from the README's steps (field names, menus) and fix
+      the README.

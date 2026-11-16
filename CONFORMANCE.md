@@ -12,7 +12,7 @@ The parts below are the ones WCAG requires in a conformance claim
 | **1. Date** | 16 November 2026 |
 | **2. Guidelines** | Web Content Accessibility Guidelines 2.2, https://www.w3.org/TR/WCAG22/ . WCAG 2.2 includes every WCAG 2.0 and 2.1 success criterion at levels A and AA (except 4.1.1 Parsing, which 2.2 made obsolete; we report it below for WCAG 2.0 readers: https://www.w3.org/TR/2008/REC-WCAG20-20081211/ ). |
 | **3. Level** | AA (target). **Status: draft**. Automated testing is complete and passing, and a team member has tested with Windows Narrator (problems found were fixed, see below). Testing with NVDA, TalkBack and our co-designer is not yet done. Until it is, this is a self-assessment, not a final claim. |
-| **4. Pages covered** | Fidel is a product installed on a partner's server and embedded in their pages, so most of it has no fixed address. As WCAG allows for such products, we state that these parts **would conform when installed**: the player (`<fidel-player>`), the job card (`<fidel-job-card>`), the offline lesson page (`/api/v1/lessons/{id}/offline.html`), the certificate check page (`/verify/{id}`) and Fidel Studio (`/studio/`). The component library (`<fidel-…>` tags) is covered the same way. Tested on our demo install: the landing page `/demo/`; the Savanna rebuild `/demo/savanna-rebuild/` (paced and self-paced homepages, lesson, jobs); `/demo/savanna-mock/` (lesson, `lesson.html`, `jobs.html`, `session.html`); `/demo/blank.html`; `/demo/components.html`; `/demo/inputs.html`; ALX's Savanna lesson page with our patch; `/verify/{id}`; `/studio/`. The host page around Fidel is not covered. |
+| **4. Pages covered** | Fidel is a product installed on a partner's server and embedded in their pages, so most of it has no fixed address. As WCAG allows for such products, we state that these parts **would conform when installed**: the player (`<fidel-player>`), the job card (`<fidel-job-card>`), the offline lesson page (`/api/v1/lessons/{id}/offline.html`), the certificate check page (`/verify/{id}`) and Fidel Studio (`/studio/`). The component library (`<fidel-…>` tags) is covered the same way. Tested on our demo install: the landing page `/demo/`; the Savanna rebuild `/demo/savanna-rebuild/` (paced and self-paced homepages, lesson, jobs); `/demo/savanna-mock/` (lesson, `lesson.html`, `jobs.html`, `session.html`); `/demo/blank.html`; `/demo/components.html`; `/demo/inputs.html`; ALX's Savanna lesson page with our patch; `/verify/{id}`; `/studio/` (including LMS connections); the LTI pages Fidel shows inside a course (sign-in, lesson page, lesson picker, problem pages; see "LTI pages" below). The host page around Fidel is not covered. |
 | **5. Technologies relied upon** | HTML, CSS, JavaScript, WAI-ARIA, SVG (icons), WebVTT (captions, descriptions, chapters), HTML audio/video. |
 
 **Used but not relied upon** (everything still works without them): service
@@ -165,6 +165,9 @@ depends on what staff add (explained).
   captions; the player says clearly when Amharic captions are not yet checked.
 - **Amharic speech**: phones rarely have an Amharic voice, so Amharic audio
   description and job summaries need recordings made by staff.
+- **LTI pages tested against a simulated platform only.** The automated checks
+  below pass; a test inside a real Moodle course, and NVDA on these pages, are
+  not yet done.
 
 ## Narrator findings (15 November 2026)
 
@@ -180,6 +183,30 @@ Narrator did wrong, and what we changed:
 
 The walk-through of the accessibility tree also found transcript chapter titles
 that could be focused but had no role; they are buttons now.
+
+## LTI pages (lessons opened from Moodle or Canvas)
+
+Pages Fidel shows inside a course page or a new window when LTI 1.3 is switched
+on (README, "LTI 1.3"): the sign-in page ("Signing in…", "Open in a new
+window"), the in-course lesson page (the normal `<fidel-player>`, "Mark as
+complete", "Saved to your course", "Try again"), the teacher's lesson picker,
+the problem pages, and Studio's LMS connections page. Automated: axe 0
+critical/serious; no sideways scrolling at 200% and 400% zoom; the picker,
+"Mark as complete" and "Try again" by keyboard only; Studio's page in the gate
+at 100/200/400% zoom (e2e/tests/lti.spec.js, lti-launch.spec.js). Tested
+against a simulated platform; a real Moodle and screen-reader checks: not yet
+done.
+
+| Criterion | Status | Notes |
+|---|---|---|
+| 1.3.1 Info and Relationships | Supports | Picker: a `<fieldset>` with `<legend>` around native radio buttons, each with a `<label>`; the search box has a `<label>` and its hint is tied to it (`aria-describedby`). |
+| 1.4.1 Use of Color | Supports | Results and problems are words ("✓ Saved to your course", "Not saved…") with a border, not colour alone. |
+| 1.4.10 Reflow | Supports | Tested at 200% and 400% zoom (320 CSS px): no sideways scrolling on the lesson page, the picker and the problem page. |
+| 2.1.1 Keyboard | Supports | Picker: Tab to search, type, Tab to the list, Space to choose, Tab to "Add to course", Enter; Enter in the search box does not submit. "Mark as complete" and "Try again" are native buttons. |
+| 2.2.1 Timing Adjustable | Supports (essential limit) | The sign-in must finish within 10 minutes and the picker within an hour: these limits are part of the security checks (a one-time sign-in), so they count as essential. Both happen without the learner's action in under a second; if a limit passes, the page says so in words and how to start again. |
+| 3.1.1 / 3.1.2 Language | Supports | The lesson page and the picker follow the course's language (Amharic or English); every message is in both languages, each part marked `lang`. |
+| 3.3.1 Error Identification | Supports | Every refused launch says what happened and what to do, in English and Amharic, with a reason code for administrators; "Add to course" with nothing chosen says "Choose a lesson first." |
+| 4.1.3 Status Messages | Supports | "Signing you in…", "Checking your sign-in…", "Saving to your course…", "Saved to your course" and the filtered lesson count are `role="status"`; problems are `role="alert"`. |
 
 ## Component library (`demo/components.html`)
 

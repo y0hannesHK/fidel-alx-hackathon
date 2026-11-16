@@ -1195,29 +1195,174 @@ engines read (and `<fidel-job-card>` adds it to the page), for example:
 schema.org has no property for workplace accommodations, so they are written in
 `jobBenefits` and, as keys, in the small `fidel:` extension.
 
-### How LTI 1.3 would connect (not built)
+### LTI 1.3: Fidel lessons inside Moodle or Canvas
 
-LTI 1.3 lets a learning platform such as Moodle or Canvas open Fidel inside a
-course with the learner already signed in. We have not built it: the guide says
-a clear plan is better than a broken attempt, and we had no LMS to test with.
-This is how it would plug into Fidel's existing parts:
+A teacher adds a Fidel lesson to a course in a learning platform (LMS) such as
+Moodle. Learners open it from the course, already signed in, with no Fidel
+account. When they finish, **"completed" appears in the course gradebook.**
 
-1. **Registration.** The LMS admin registers Fidel as a tool: login URL
-   `/lti/login`, launch URL `/lti/launch`, and Fidel's public key set at
-   `/lti/jwks`. Fidel stores the platform's issuer, client id and key-set URL.
-2. **Launch.** A learner clicks the activity. The LMS sends a signed message (a
-   JWT, signed with the platform's private key). Fidel checks the signature with
-   the platform's public keys, and checks issuer, audience, expiry and a one-time
-   nonce; if any check fails, nothing opens.
-3. **Content.** The launch names a Fidel lesson (chosen by the teacher through
-   LTI Deep Linking). Fidel shows the same page a learner sees today: the
-   `<fidel-player lesson="…">`, so nothing in the player changes.
-4. **Grades (LTI Advantage).** Fidel's `fidel-complete` event would send
-   "completed" back to the LMS gradebook through the Assignment and Grade
-   Services API, the same moment our webhooks already report.
+**Status: built and tested against a simulated platform; not yet tried on a
+real Moodle.** Automated tests use a fake platform with its own keys (see
+"Tests" below). A test with a real Moodle is next; until it is done, expect
+small fixes.
 
-Libraries to use: PyLTI1p3 (MIT) for the launch checks. Effort: about a day,
-plus testing against a Moodle instance.
+| Included | Not yet |
+|---|---|
+| Launch: a learner opens a lesson from the course | Class lists from the LMS (Names and Role Provisioning Service) |
+| Deep Linking: the teacher picks a lesson from a list | Quiz scores (only "completed" is sent) |
+| Grades: "completed, 100 out of 100" to the gradebook (Assignment and Grade Services) | Settings per course; LTI 1.1 |
+
+#### Switch it on
+
+LTI is **off by default**. When it is off, every `/lti/` address answers
+"not found". In `.env`:
+
+```
+FIDEL_LTI_ENABLED=true
+FIDEL_PUBLIC_URL=https://fidel.example.org
+```
+
+`FIDEL_PUBLIC_URL` must be the address the LMS reaches Fidel at: Fidel builds
+the addresses you give the LMS from it. Restart Fidel (`docker compose up -d`).
+On first start Fidel makes its own key pair and keeps it in `data/lti/`
+(git-ignored). Back it up with the rest of `data/`: if it is lost, Fidel makes a
+new one, and the LMS reads the new public key from `/lti/jwks` by itself.
+
+#### Register Fidel in Moodle
+
+Moodle 4.x: **Site administration › Plugins › Activity modules › External tool ›
+Manage tools › configure a tool manually.** In Fidel Studio, open **LMS
+connections**: it shows each of Fidel's addresses with a Copy button.
+
+| Moodle field | Value |
+|---|---|
+| Tool name | Fidel |
+| Tool URL | `https://FIDEL/lti/launch` |
+| LTI version | LTI 1.3 |
+| Public key type | Keyset URL |
+| Public keyset | `https://FIDEL/lti/jwks` |
+| Initiate login URL | `https://FIDEL/lti/login` |
+| Redirection URI(s) | `https://FIDEL/lti/launch` and `https://FIDEL/lti/deep-link`, one per line |
+| Supports Deep Linking (Content-Item Message) | ticked |
+| Content Selection URL | `https://FIDEL/lti/deep-link` |
+| Services › IMS LTI Assignment and Grade Services | "Use this service for grade sync only" |
+| Privacy › Share launcher's name / email with tool | Never (Fidel does not use them) |
+| Default launch container | Embed, without blocks (or New window: see "Cookies" below) |
+
+Save. Then click **View configuration details** (the list icon next to the
+tool) and copy these into **Studio › LMS connections › Add a platform**:
+
+| Moodle shows | Fidel Studio field |
+|---|---|
+| Platform ID | Platform ID (issuer) |
+| Client ID | Client ID |
+| Deployment ID | Deployment ID |
+| Public keyset URL (`…/mod/lti/certs.php`) | Public keyset URL |
+| Access token URL (`…/mod/lti/token.php`) | Access token URL |
+| Authentication request URL (`…/mod/lti/auth.php`) | Authentication request URL |
+
+Addresses must start with `https://`. Plain `http://` is accepted only for a
+test platform on the same computer (`localhost`, `127.0.0.1`, or a Docker
+service name).
+
+#### What teachers and learners see
+
+- **Teacher:** in a course, *Add an activity › External tool › Fidel › Select
+  content*. Fidel shows its **lesson picker**: published lessons only, a search
+  box, radio buttons, *Add to course* and *Cancel*, usable by keyboard alone.
+  The chosen lesson becomes an activity with a gradebook column out of 100.
+- **Learner:** opens the activity and gets the normal Fidel lesson page, the
+  same `<fidel-player>` as everywhere else, in the course's language (Amharic if
+  Moodle's language is Amharic, else English). When they watch to the end, or
+  press **Mark as complete** (for learners who read the transcript or listen
+  instead), Fidel sends "completed". The page says **"Saved to your course"**,
+  or what went wrong and a **Try again** button; screen readers hear it too.
+- Every problem page says what happened and what to do, in English and
+  Amharic, with a short reason code for the course administrator.
+
+#### Cookies inside the course page
+
+Browsers often block cookies for sites shown inside another site's page, and
+the LTI sign-in relies on one. Fidel handles it in three ways, in order:
+
+1. On https, the sign-in cookie is `SameSite=None; Secure; Partitioned`, which
+   current Chrome keeps inside a course page.
+2. If the LMS offers it, Fidel keeps the sign-in check in the **LMS's own
+   storage** (LTI client-side storage, `lti_storage_target`).
+3. If neither works, the page offers **Open in a new window**.
+
+If learners see "Your browser blocked Fidel's sign-in check" often, set the
+tool's launch container to **New window**.
+
+#### Security checks
+
+Nothing opens unless every check passes:
+
+- the message is signed with the platform's key (RS256 only; keys read from its
+  keyset address, cached for 10 minutes, read again for a new key id);
+- it comes from the registered platform (`iss`), is meant for Fidel (`aud`,
+  `azp`), and is current (`exp`, `iat`, one minute of leeway for clocks);
+- it carries the one-time `nonce` Fidel made for this sign-in. Sign-ins are kept
+  on the server, used once, and must finish within 10 minutes;
+- the deployment is registered, the LTI version is 1.3.0, and the message type
+  fits the address (`/lti/launch` lessons, `/lti/deep-link` the picker);
+- the launch comes from the same browser that started the sign-in.
+
+Fidel signs its own messages (the gradebook token request, the picker's
+answer) with its key; the LMS checks them at `/lti/jwks`.
+
+#### Addresses
+
+| Address | Who calls it | What it does |
+|---|---|---|
+| `GET /lti/jwks` | the LMS | Fidel's public key set |
+| `GET` or `POST /lti/login` | the LMS, in the learner's browser | starts a sign-in (OpenID Connect) |
+| `POST /lti/launch` | the LMS, in the learner's browser | checks the signed launch, shows the lesson |
+| `POST /lti/complete` | the lesson page | sends "completed" to the gradebook |
+| `POST /lti/deep-link` | the LMS, in the teacher's browser | checks the request, shows the picker |
+| `POST /lti/deep-link/choose` | the picker | signs the chosen lesson and takes it back to the LMS |
+| `GET /api/v1/lti/tool` | Studio (staff token) | on or off, and the addresses above |
+| `GET`, `POST /api/v1/lti/platforms`, `DELETE /api/v1/lti/platforms/{id}` | Studio (staff token) | registered platforms |
+
+#### When something goes wrong
+
+The problem page shows a reason code under "Details for your course
+administrator":
+
+| Code | Meaning | Fix |
+|---|---|---|
+| `unknown_platform` | No platform with this Platform ID and Client ID | Add it in Studio › LMS connections |
+| `unknown_deployment` | The deployment id is not registered | Add it to the platform's Deployment ID in Studio |
+| `platform_keys_unreachable` | Fidel could not read the LMS's keyset address | Check the address, and that Fidel's server can reach the LMS |
+| `unknown_key`, `bad_signature` | The message was not signed with the LMS's published key | Check the Public keyset URL |
+| `wrong_issuer`, `wrong_audience` | Platform ID or Client ID differ from the message | Copy them again from "View configuration details" |
+| `expired`, `issued_in_the_future` | Clocks differ by more than a minute | Set the server clocks (NTP) |
+| `sign_in_used` | The sign-in expired (10 minutes) or was used already | Open the activity again |
+| `cookie_blocked` | The browser blocked the sign-in check in the frame | Use "New window" for the tool |
+| `wrong_message_type` | A lesson sent to the picker address, or the other way round | Check Tool URL and Content Selection URL |
+| `no_lesson` | The activity names no lesson, or it is not published | Pick the lesson again, or publish it |
+
+Grade problems are logged on the server (`fidel.lti`) with the platform's
+answer; the learner sees "Not saved to your course yet" and can try again.
+
+#### Tests
+
+- **Server** (`server/tests/test_lti_*.py`, pytest): a fake platform with its
+  own RSA keys sends a good launch and bad ones (wrong signature, `HS256` and
+  unsigned tokens, expired, wrong audience, issuer, nonce, version or message
+  type, unknown deployment, platform or key, reused sign-in, another browser);
+  it also plays the gradebook (checks the token request and the exact score
+  message) and the picker's return address.
+- **Browser** (`e2e/tests/lti.spec.js`, `e2e/tests/lti-launch.spec.js`): Studio's
+  page; a real sign-in round trip at the top level and inside a course frame
+  (platform storage, new window); the video played to the end and "Mark as
+  complete" reaching a small fake gradebook; the picker by keyboard only; axe,
+  200% and 400% zoom on every page. They need a server with LTI on:
+
+  ```
+  docker compose run -d --rm -e FIDEL_LTI_ENABLED=true -p 8011:8000 --name fidel-lti-test server
+  cd e2e && FIDEL_BASE_URL=http://localhost:8011 npx playwright test tests/lti.spec.js tests/lti-launch.spec.js
+  ```
 
 ## AI engines and running fully offline
 
@@ -1328,9 +1473,17 @@ caption is reviewed by a person before it counts as final.
   in the learner's own browser.
 - **Nothing leaves your server**: all AI runs locally; fonts and scripts are
   self-hosted; no third-party requests. The only outgoing traffic is the
-  one-time model download, run by staff.
+  one-time model download, run by staff, and, if LTI is switched on, Fidel's
+  calls to the LMS that you registered (its public keys and its gradebook).
 - Certificate pages are marked `noindex`; certificate links are random and
   cannot be guessed. Staff actions need the staff token.
+- **LTI (only if switched on)**: for each lesson opened from a course, Fidel
+  keeps the LMS's id for the learner (an opaque id such as `42`, not a name) and
+  the gradebook column's address, so it can send "completed". **Deleted after
+  24 hours.** Names and emails from the LMS are never stored or used (set
+  "Share launcher's name / email" to Never in Moodle). Sign-in checks (random
+  state and nonce) are deleted after an hour. Fidel sends the LMS only that id
+  and the score.
 
 ## Development
 
