@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{TITLE_EN}} – Fidel</title>
+<style>
+@font-face { font-family: "Fidel Ethiopic"; src: url("/embed/v1/fonts/noto-sans-ethiopic-400.woff2") format("woff2"); unicode-range: U+1200-139F, U+2D80-2DDF, U+AB00-AB2F; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 1.05rem; line-height: 1.5; color: #1a1a1a; background: #f5f6f8; }
+:lang(am) { font-family: "Fidel Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif; line-height: 1.7; }
+main { max-width: 40rem; margin: 0 auto; padding: 1rem; }
+.card { background: #fff; border: 1px solid #c4c8cf; border-radius: 8px; padding: 1rem 1.25rem; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 1rem; }
+.status { padding: 0.75rem 1rem; border-radius: 6px; font-weight: 600; border: 3px solid; margin: 0 0 1rem; }
+.status p { margin: 0.25rem 0; }
+.status.ok { background: #e6f4ea; border-color: #1e7b34; color: #0f4d1f; }
+.status.bad { background: #fdecee; border-color: #a00020; color: #6e0016; }
+.status.wait { background: #eef3fa; border-color: #0b4f9c; color: #0a2f5c; }
+.detail { color: #444; font-size: 0.95rem; overflow-wrap: anywhere; }
+a, .button { color: #0b4f9c; }
+.button { display: inline-flex; align-items: center; min-height: 44px; padding: 0.5rem 1rem; font: inherit; font-weight: 600; color: #fff; background: #0b4f9c; border: 2px solid #0b4f9c; border-radius: 6px; text-decoration: none; cursor: pointer; }
+:focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1 tabindex="-1">{{TITLE_EN}} <span lang="am">/ {{TITLE_AM}}</span></h1>
+    {{BODY}}
+  </div>
+</main>
+{{SCRIPT}}
+</body>
+</html>

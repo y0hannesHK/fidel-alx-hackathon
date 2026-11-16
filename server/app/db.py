@@ -105,6 +105,19 @@ CREATE TABLE IF NOT EXISTS lti_platforms (
     created_at      TEXT NOT NULL,
     UNIQUE (issuer, client_id)
 );
+
+-- LTI 1.3 sign-ins in progress (api/lti.py): kept on the server, not in a cookie,
+-- because browsers often block cookies inside a course page's frame.
+-- A state is used once; rows are deleted an hour after they were made.
+CREATE TABLE IF NOT EXISTS lti_nonces (
+    state           TEXT PRIMARY KEY,       -- random; comes back with the launch
+    nonce           TEXT NOT NULL UNIQUE,   -- random; must be inside the platform's signed message
+    platform_id     TEXT NOT NULL REFERENCES lti_platforms(id) ON DELETE CASCADE,
+    storage_target  TEXT,                   -- the platform's storage frame (lti_storage_target), if offered
+    created_at      INTEGER NOT NULL,       -- seconds since 1970
+    expires_at      INTEGER NOT NULL,       -- the launch must come before this
+    used            INTEGER NOT NULL DEFAULT 0
+);
 """
 
 # Columns added after the first version. Older databases get them on start.
@@ -311,6 +324,31 @@ class Database:
             query, args = query + " AND client_id = ?", args + [client_id]
         with self.connect() as db:
             return [self._platform(r) for r in db.execute(query, args)]
+
+    def get_lti_platform(self, platform_id: str) -> dict | None:
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM lti_platforms WHERE id = ?", (platform_id,)).fetchone()
+        return self._platform(row) if row else None
+
+    def add_lti_login(self, login: dict) -> None:
+        """A sign-in starts: remember its state and nonce (and forget ones older than an hour)."""
+        with self.connect() as db:
+            db.execute("DELETE FROM lti_nonces WHERE created_at < ?", (login["created_at"] - 3600,))
+            db.execute(
+                "INSERT INTO lti_nonces (state, nonce, platform_id, storage_target, created_at, expires_at) "
+                "VALUES (:state, :nonce, :platform_id, :storage_target, :created_at, :expires_at)", login)
+
+    def get_lti_login(self, state: str) -> dict | None:
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM lti_nonces WHERE state = ?", (state,)).fetchone()
+        return dict(row) if row else None
+
+    def claim_lti_login(self, state: str, at: int) -> bool:
+        """Mark a sign-in used. False if it was used already or has expired:
+        two requests with the same state can never both get through."""
+        with self.connect() as db:
+            return db.execute("UPDATE lti_nonces SET used = 1 WHERE state = ? AND used = 0 AND expires_at > ?",
+                              (state, at)).rowcount == 1
 
     def delete_lti_platform(self, platform_id: str) -> bool:
         with self.connect() as db:
