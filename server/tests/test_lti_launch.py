@@ -256,3 +256,23 @@ def test_page_data_cannot_break_out_of_the_script(lms):
     client, _ = lms
     response, _, _ = start_login(client, login_hint="</script><script>alert(1)</script>")
     assert "</script><script>alert(1)" not in response.text
+
+
+def test_https_sign_in_sets_a_partitioned_cookie_and_works(lms):
+    """On https the state cookie is SameSite=None; Secure; Partitioned. (Starlette's
+    own partitioned=True needs Python 3.14 and broke every https sign-in on 3.11.)"""
+    from fastapi.testclient import TestClient as Client
+    from app.main import app as fidel
+    _, platform = lms
+    with Client(fidel, base_url="https://testserver") as client:
+        response, state, nonce = start_login(client, target_link_uri="https://testserver/lti/launch")
+        assert response.status_code == 200, response.text
+        cookie = response.headers["set-cookie"]
+        assert f"fidel_lti_state_{state}={state}" in cookie
+        for part in ("Secure", "SameSite=None", "Partitioned", "HttpOnly", "Path=/lti/", "Max-Age=600"):
+            assert part in cookie, part
+        launched = client.post("/lti/launch", data={"id_token": platform.sign(platform.claims(
+            nonce, **{"https://purl.imsglobal.org/spec/lti/claim/target_link_uri": "https://testserver/lti/launch"})),
+            "state": state})
+        assert launched.status_code == 200, launched.text
+        assert "Max-Age=0" in launched.headers["set-cookie"]  # removed again

@@ -232,12 +232,20 @@ async def login(request: Request):
     response = pages.login_page({"state": state, "authUrl": auth_url, "storageTarget": storage_target,
                                  "platformOrigin": origin(platform["auth_login_url"])},
                                 f"{base}/lti/login?{urlencode(again)}")
-    secure = base.startswith("https://")
-    # Inside a course page's frame the cookie is "third-party": SameSite=None and
-    # Partitioned (Chrome keeps partitioned cookies when it blocks the rest).
-    response.set_cookie(COOKIE + state, state, max_age=LOGIN_SECONDS, path="/lti/", httponly=True, secure=secure,
-                        samesite="none" if secure else "lax", partitioned=secure)
+    state_cookie(response, state, base, LOGIN_SECONDS)
     return response
+
+
+def state_cookie(response, state: str, base: str, max_age: int) -> None:
+    """Set (or, with max_age 0, remove) the sign-in cookie. Inside a course page's
+    frame it is "third-party": on https it is SameSite=None and Partitioned (Chrome
+    keeps partitioned cookies when it blocks the rest). Written by hand: Starlette's
+    set_cookie(partitioned=True) needs Python 3.14 and raised an error on 3.11,
+    which broke every https sign-in."""
+    value = state if max_age else ""
+    cookie = f"{COOKIE}{state}={value}; Max-Age={max_age}; Path=/lti/; HttpOnly"
+    cookie += "; Secure; SameSite=None; Partitioned" if base.startswith("https://") else "; SameSite=Lax"
+    response.headers.append("set-cookie", cookie)
 
 
 def lesson_id_from(claims: dict) -> str | None:
@@ -312,7 +320,7 @@ async def launch(request: Request):
                        "user_id": user_id or "", "lineitem": lineitem if grades else None, "scopes": scopes,
                        "created_at": now, "expires_at": now + LAUNCH_SECONDS})
     response = pages.lesson_page(platform["name"], lesson, launch_token, language_of(claims), grades)
-    response.delete_cookie(COOKIE + state, path="/lti/")
+    state_cookie(response, state, base_url(request), 0)
     return response
 
 
@@ -382,7 +390,7 @@ async def deep_link(request: Request):
         "lang": language_of(claims),
     }, pair.private_key, algorithm="RS256", headers={"kid": pair.kid})
     response = pages.picker_page(db.list_lessons(), context, language_of(claims))
-    response.delete_cookie(COOKIE + state, path="/lti/")
+    state_cookie(response, state, base_url(request), 0)
     return response
 
 
