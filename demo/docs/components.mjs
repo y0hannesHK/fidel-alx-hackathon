@@ -84,8 +84,8 @@ export const COMPONENTS = [
       ['sign', 'URL', 'none', 'Sign-language video (WebM or MP4), shown beside or over the video.'],
       ['offline-page, offline-page-video, offline-pack', 'URL', 'none', 'Offline downloads: one-page lesson (audio and text), the same with video, and a .zip pack.'],
       ['offline-page-size, offline-page-video-size, offline-pack-size', 'bytes', 'none', 'Sizes shown on the download buttons (filled in from the lesson).'],
-      ['document-html-en, document-pdf-en, document-brf-en (and -am)', 'URL', 'none', 'The lesson document as a web page, tagged PDF and Braille (filled in from the lesson).'],
-      ['lang', '`en`, `am`', '`en`', 'Language of the player\'s interface.'],
+      ['document-html-en, document-html-am, document-pdf-en, document-pdf-am, document-brf-en, document-brf-am', 'URL', 'none', 'The lesson document as a web page, tagged PDF and Braille (filled in from the lesson).'],
+      ['lang', '`en`, `am`', '`en`', 'Default language of the player\'s interface. A learner\'s own choice in the player is remembered and wins.'],
     ],
     events: [
       ['fidel-ready', '`{ lang, captionLanguages, hasSignLanguage }`', 'The player is built.'],
@@ -134,7 +134,7 @@ export const COMPONENTS = [
       ['chat', 'URL (Zoom chat .txt)', 'none', 'The chat log saved from Zoom.'],
       ['chat-offset', '`m:ss` or `h:mm:ss`', '`0:00`', 'Zoom chat times count from the meeting start. Give how much later the recording started, e.g. `19:05`; messages from before are dropped.'],
       ['anonymize', 'boolean', 'off', 'Shows Participant 1, 2… instead of names.'],
-      HEADING(2),
+      HEADING(3),
       ['lang', '`en`, `am`', '`en`', 'Interface language.'],
     ],
     events: [['fidel-session-ready', '`{ messages }`', 'The chat is loaded; `messages` is the number of messages.']],
@@ -164,7 +164,7 @@ export const COMPONENTS = [
     attributes: [
       FOR_PLAYER,
       ['audio', 'URL', 'none', 'An audio-only file, if the player\'s lesson has none.'],
-      HEADING(3),
+      HEADING(3, '`2` to `5`'),
       UI_LANG,
     ],
     events: [['fidel-lesson-format', '`{ format }` (`watch`, `listen`, `read`, `sign`, `simple`)', 'The learner chose a format.']],
@@ -301,7 +301,7 @@ export const COMPONENTS = [
     attributes: [
       FOR_PLAYER,
       ['lesson-id', 'text', 'none', 'Notes are kept per id (`fidel-notes:<lesson-id>` in localStorage).'],
-      HEADING(3),
+      HEADING(3, '`2` to `5`'),
       ['title-text', 'text', 'none', 'First line of the downloaded .txt file.'],
       UI_LANG,
     ],
@@ -659,7 +659,7 @@ export const COMPONENTS = [
       ['questions', 'JSON', 'none', 'Questions as `[{"question","options","answer","explanation","ownWay"}]`; or use child markup.'],
       ['label', 'text', 'none', 'Title of the quiz.'],
       ['time-limit', 'seconds', 'none (no time limit)', 'Adds a timer with a warning 1 minute before the end, "Add 5 minutes" and "Switch the timer off".'],
-      HEADING(3),
+      HEADING(3, '`2` to `5`'),
       UI_LANG,
     ],
     events: [
@@ -780,7 +780,7 @@ export const COMPONENTS = [
       ['label', 'text', 'none', 'The heading of the box.'],
       ['upload-url', 'URL', 'none', 'Where Send POSTs the video (multipart field `video`). Without it, the page gets the video as an event.'],
       ['max-seconds', 'seconds', '`120`', 'Longest recording.'],
-      HEADING(3),
+      HEADING(3, '`2` to `5`'),
       UI_LANG,
     ],
     events: [['fidel-sign-answer-ready', '`{ blob, durationSeconds, mimeType }`', 'Without `upload-url`: the recording for the page.']],
@@ -1151,7 +1151,7 @@ export const COMPONENTS = [
       ['max-seconds', 'seconds', '`120`', 'Longest recording.'],
       ['upload-url', 'URL', 'none', 'Where Send POSTs the recording (multipart field `audio`). Without it, the page gets an event.'],
       ['no-send', 'boolean', 'off', 'Hides Send (a parent such as `<fidel-question>` sends it).'],
-      HEADING(3),
+      HEADING(3, '`2` to `5`'),
       UI_LANG,
     ],
     events: [
@@ -1177,8 +1177,8 @@ export const COMPONENTS = [
     helps: 'Disabled job seekers (workplace accommodations in words), learners who find reading hard (Listen), and search engines (schema.org JobPosting).',
     attributes: [
       ['job', 'URL', 'none', 'A job on a Fidel server (`/api/v1/jobs/ID`).'],
-      ['lang', '`en`, `am`', '`en`', 'Interface language.'],
-      HEADING(2),
+      ['lang', '`en`, `am`', "the page's `lang`, else `en`", 'Interface language.'],
+      HEADING(3),
     ],
     events: [
       ['fidel-job-ready', '`{ id, title }`', 'The job is shown.'],
@@ -1209,8 +1209,8 @@ export const COMPONENTS = [
     helps: 'Learners showing their certificate to employers, and employers checking it.',
     attributes: [
       ['certificate', 'URL', 'none', 'A certificate on a Fidel server (`/api/v1/certificates/ID`).'],
-      ['lang', '`en`, `am`', '`en`', 'Interface language.'],
-      HEADING(2),
+      ['lang', '`en`, `am`', "the page's `lang`, else `en`", 'Interface language.'],
+      HEADING(3),
     ],
     events: [['fidel-certificate-ready', '`{ status }` (`valid`, `revoked`, `missing`)', 'The check finished.']],
     example: `<fidel-certificate certificate="https://YOUR-FIDEL-HOST/api/v1/certificates/CERT_ID"></fidel-certificate>`,

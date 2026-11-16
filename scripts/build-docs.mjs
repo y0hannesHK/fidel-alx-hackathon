@@ -234,7 +234,7 @@ ${groups}
 function componentPage(c) {
   const g = groupOf(c.group);
   const attrRows = c.attributes.map(([name, values, def, meaning]) => [
-    name.split(', ').map((n) => n.startsWith('(') ? md(n) : `<code>${esc(n)}</code>`).join(', '),
+    name.split(', ').map((n) => n.startsWith('(') ? md(n) : n.replace(/^(\S+)( \(.*\))?$/,(m, attr, note) => `<code>${esc(attr)}</code>${note ? md(note) : ''}`)).join(', '),
     values ? md(values) : '—', def ? md(def) : '—', md(meaning),
   ]);
   const eventRows = c.events.map(([name, detail, when]) => [`<code>${esc(name.split(' (')[0])}</code>${name.includes(' (') ? ' ' + md('(' + name.split(' (').slice(1).join(' (')) : ''}`, md(detail), md(when)]);
