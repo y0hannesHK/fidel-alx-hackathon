@@ -238,6 +238,10 @@ main > section { padding: 2.75rem 0; }
   font-weight: 700;
 }
 .try-list p { margin-bottom: 0.75rem; }
+.try-list .logins { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.25rem 1rem; margin: 0 0 0.75rem; }
+.try-list .logins dt { font-weight: 700; }
+.try-list .logins dd { margin: 0; overflow-wrap: anywhere; }
+.try-list .logins code { font-size: 1em; }
 
 /* Code: wraps instead of scrolling sideways (320 px, 400% zoom). */
 .code { margin: 0 0 1.5rem; max-width: 52rem; }

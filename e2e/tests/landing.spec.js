@@ -53,8 +53,9 @@ test('every "Try it" link answers 200', async ({ page, request }) => {
   for (const href of hrefs) {
     if (NOT_YET_MERGED.includes(href)) continue; // see NOT_YET_MERGED above
     if (href.startsWith('http')) {
-      // External (GitHub): only check the address is the project's.
-      expect(href).toBe('https://github.com/y0hannesHK/fidel-alx-hackathon');
+      // External (GitHub, the demo Moodle): only check the address is one of ours.
+      expect(['https://github.com/y0hannesHK/fidel-alx-hackathon',
+        'https://fidel-moodle.duckdns.org/course/view.php?id=2']).toContain(href);
       continue;
     }
     const response = await request.get(href);
