@@ -301,6 +301,11 @@ says which version a page has loaded.
 ### More components
 
 Live examples of every component: [`demo/components.html`](demo/components.html).
+The full reference, one page per tag with a live example, code to copy,
+attributes, events and accessibility notes, is at `/demo/docs/`
+([`demo/docs/`](demo/docs/)). It is generated from `demo/docs/components.mjs`:
+after changing a component's attributes or events, update that file and run
+`node scripts/build-docs.mjs`, then commit the generated HTML.
 
 <!-- PACKAGE A START -->
 #### Reading and understanding (Package A)
