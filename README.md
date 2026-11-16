@@ -243,17 +243,19 @@ does not receive our accessibility fixes, and small edits can break them
 | `poster` | Image shown before playing. |
 | `captions-en`, `captions-am`, `captions-om`, `captions-am-status`, `captions-om-status` | Captions in English, Amharic, Afaan Oromo (WebVTT); status `draft` shows the "not yet reviewed" notice. |
 | `chapters-en` (or `chapters`), `chapters-am` | Chapter titles (WebVTT). |
-| `descriptions-en` (or `descriptions`), `descriptions-am` | Audio description text (WebVTT). |
+| `descriptions-en` (or `descriptions`), `descriptions-am`, `descriptions-om` | Audio description text (WebVTT). |
 | `description-recordings` | JSON: recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
 | `sign` | Sign-language video (WebM or MP4). |
 | `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
+| `offline-page-size`, `offline-page-video-size`, `offline-pack-size` | Sizes in bytes, shown on the download buttons (filled in from the lesson). |
+| `document-html-en`, `document-html-am`, `document-pdf-en`, `document-pdf-am`, `document-brf-en`, `document-brf-am` | The lesson document as a web page, tagged PDF and Braille (filled in from the lesson). |
 | `lang` | Default interface language: `en` or `am`. |
 
-`<fidel-job-card>`: `job` (URL), `lang` (`en`/`am`), `heading-level` (2–6).
-`<fidel-certificate>`: `certificate` (URL), `lang`, `heading-level`.
+`<fidel-job-card>`: `job` (URL), `lang` (`en`/`am`), `heading-level` (2–6, default 3).
+`<fidel-certificate>`: `certificate` (URL), `lang`, `heading-level` (2–6, default 3).
 `<fidel-session-viewer>`: the player's attributes plus `chat` (Zoom chat .txt),
 `chat-offset` (Zoom chat times count from the meeting start; give how much later
-the recording started, e.g. `19:05`), `anonymize`, `heading-level`.
+the recording started, e.g. `19:05`), `anonymize`, `heading-level` (2–6, default 3).
 
 **Events (settings in, events out).** Components tell the host page what
 happens, so it can, for example, mark a lesson as done. Events bubble, carry no
@@ -756,7 +758,7 @@ Event: none (the field's `input` event).
 | `recording-url` | after the end: "Watch the recording" (e.g. a page with `<fidel-session-viewer>`) |
 | `request-url` | where access requests are POSTed as JSON `{eventId, needs, other?}` (optional) |
 | `reply-by` | `email`: the card then says "The organisers will reply by email" |
-| `event-id`, `heading-level`, `ui-lang` | id used in events and the .ics file; heading level (default 3); `en` or `am` |
+| `event-id`, `heading-level`, `ui-lang` | id used in events and the .ics file; heading level (2–6, default 3); `en` or `am` |
 
 Date and time in both calendars, the length, and the access line in words
 ("Live captions: yes", "Ethiopian Sign Language interpreter: on request",
@@ -783,7 +785,7 @@ calendars can read it.
 | `label` | the heading of the box |
 | `upload-url` | where Send POSTs the video (multipart field `video`); without it, the video is given to the page in an event |
 | `max-seconds` | longest recording (default 120) |
-| `heading-level`, `ui-lang` | heading level (default 3); `en` or `am` |
+| `heading-level`, `ui-lang` | heading level (2–5, default 3); `en` or `am` |
 
 Start camera (only then is the camera asked for: video, no sound), "Camera
 on" with Stop camera, Record after a 3-2-1 countdown in text, Stop recording
@@ -913,7 +915,7 @@ Properties and methods: `value`, `validity` (`{ valid, message }`),
 in the form. If any is wrong: stops the submit, shows "2 fields need fixing"
 with a link to each field, moves focus to its heading, keeps everything typed.
 Turns off the browser's own pop-up checks on that form (`novalidate`).
-Attribute `heading-level` (default 2).
+Attribute `heading-level` (2–6, default 2).
 
 **`<fidel-form>`** (wraps your `<form>`; adds the error summary itself)
 
@@ -982,13 +984,13 @@ and is never asked why. All of them are in the "Package E" section of
 
 | Tag | Attributes | Events |
 |---|---|---|
-| `<fidel-lesson-formats>` | `for` (player id), `audio` (an audio-only file if the lesson has none), `heading-level`, `ui-lang` | `fidel-lesson-format` `{ format }` |
+| `<fidel-lesson-formats>` | `for` (player id), `audio` (an audio-only file if the lesson has none), `heading-level` (2–5, default 3), `ui-lang` | `fidel-lesson-format` `{ format }` |
 | `<fidel-question>` | `for`, `api` (send to the Fidel server; without it the page gets the question), `lesson` (id; default from the player's `lesson` URL), `ui-lang` | `fidel-question-ready` `{ time, kind, text \| blob, mimeType }`, `fidel-question-sent` `{ lessonId, time, kind }` |
-| `<fidel-voice-note>` | `label`, `max-seconds` (default 120), `upload-url` (POST multipart field `audio`), `no-send`, `heading-level`, `ui-lang` | `fidel-voice-note-ready` `{ blob, mimeType, durationSeconds }`, `fidel-voice-note-recorded` `{ mimeType, durationSeconds, size }` |
-| `<fidel-callout>` | `type` (`tip`, `warning`, `example`, `note`), `heading`, `heading-level` (default 3), `ui-lang`; content = the children | none |
+| `<fidel-voice-note>` | `label`, `max-seconds` (default 120), `upload-url` (POST multipart field `audio`), `no-send`, `heading-level` (2–5, default 3), `ui-lang` | `fidel-voice-note-ready` `{ blob, mimeType, durationSeconds }`, `fidel-voice-note-recorded` `{ mimeType, durationSeconds, size }` |
+| `<fidel-callout>` | `type` (`tip`, `warning`, `example`, `note`), `heading`, `heading-level` (2–6, default 3), `ui-lang`; content = the children | none |
 | `<fidel-table>` | `sortable="true"`, `show-warnings` (visible note when the `<caption>` is missing), `ui-lang`; wraps a real `<table>` | `fidel-table-sort` `{ column, direction }` |
-| `<fidel-notes>` | `for`, `lesson-id` (notes are kept per id), `heading-level`, `title-text` (first line of the .txt), `ui-lang` | `fidel-notes-change` `{ count }` |
-| `<fidel-quiz>` | `questions` (JSON) or child markup, `label`, `time-limit` (seconds; none by default), `heading-level`, `ui-lang` | `fidel-quiz-done` `{ score, total }`, `fidel-quiz-own-answer` `{ question, kind, text \| blob, mimeType }` |
+| `<fidel-notes>` | `for`, `lesson-id` (notes are kept per id), `heading-level` (2–5, default 3), `title-text` (first line of the .txt), `ui-lang` | `fidel-notes-change` `{ count }` |
+| `<fidel-quiz>` | `questions` (JSON) or child markup, `label`, `time-limit` (seconds; none by default), `heading-level` (2–5, default 3), `ui-lang` | `fidel-quiz-done` `{ score, total }`, `fidel-quiz-own-answer` `{ question, kind, text \| blob, mimeType }` |
 | `<fidel-progress>` | `for`, `label`, `ui-lang` | none (listens to `fidel-progress` and `fidel-complete`) |
 | `<fidel-mark-complete>` | `lesson-id`, `for`, `manual` (usable before the end), `ui-lang` | `fidel-mark-complete` `{ done }` |
 | `<fidel-skip-link>` | `target` (CSS selector, default `#main`), `label` (default "Skip to the lesson") | none |
