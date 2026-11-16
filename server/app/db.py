@@ -118,6 +118,21 @@ CREATE TABLE IF NOT EXISTS lti_nonces (
     expires_at      INTEGER NOT NULL,       -- the launch must come before this
     used            INTEGER NOT NULL DEFAULT 0
 );
+
+-- LTI 1.3 lessons opened from a course (api/lti.py), so "completed" can be sent to
+-- its gradebook. Only the platform's id for the learner (no name, no email), and
+-- deleted 24 hours after the launch.
+CREATE TABLE IF NOT EXISTS lti_launches (
+    token           TEXT PRIMARY KEY,       -- random; only the learner's lesson page has it
+    platform_id     TEXT NOT NULL REFERENCES lti_platforms(id) ON DELETE CASCADE,
+    lesson_id       TEXT NOT NULL,
+    user_id         TEXT NOT NULL,          -- the platform's id for the learner ("sub")
+    lineitem        TEXT,                   -- the gradebook column's address; empty = no grades
+    scopes          TEXT NOT NULL,          -- JSON list: what the platform lets Fidel do
+    created_at      INTEGER NOT NULL,
+    expires_at      INTEGER NOT NULL,
+    completed_at    INTEGER                 -- when "completed" reached the gradebook
+);
 """
 
 # Columns added after the first version. Older databases get them on start.
@@ -349,6 +364,31 @@ class Database:
         with self.connect() as db:
             return db.execute("UPDATE lti_nonces SET used = 1 WHERE state = ? AND used = 0 AND expires_at > ?",
                               (state, at)).rowcount == 1
+
+    def add_lti_launch(self, launch: dict) -> None:
+        """A lesson opened from a course; launches past their time are deleted now."""
+        with self.connect() as db:
+            db.execute("DELETE FROM lti_launches WHERE expires_at <= ?", (launch["created_at"],))
+            db.execute(
+                "INSERT INTO lti_launches (token, platform_id, lesson_id, user_id, lineitem, scopes, created_at, "
+                "expires_at) VALUES (:token, :platform_id, :lesson_id, :user_id, :lineitem, :scopes, :created_at, "
+                ":expires_at)", {**launch, "scopes": json.dumps(launch["scopes"])})
+
+    def get_lti_launch(self, token: str, at: int) -> dict | None:
+        """The launch, if it has not expired."""
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM lti_launches WHERE token = ? AND expires_at > ?", (token, at)).fetchone()
+        return {**dict(row), "scopes": json.loads(row["scopes"])} if row else None
+
+    def set_lti_launch_completed(self, token: str, at: int) -> None:
+        with self.connect() as db:
+            db.execute("UPDATE lti_launches SET completed_at = ? WHERE token = ?", (at, token))
+
+    def delete_expired_lti_records(self, at: int) -> None:
+        """At start: launches past 24 hours, sign-ins older than an hour."""
+        with self.connect() as db:
+            db.execute("DELETE FROM lti_launches WHERE expires_at <= ?", (at,))
+            db.execute("DELETE FROM lti_nonces WHERE created_at < ?", (at - 3600,))
 
     def delete_lti_platform(self, platform_id: str) -> bool:
         with self.connect() as db:

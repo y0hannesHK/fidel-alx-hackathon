@@ -1,9 +1,12 @@
 """LTI 1.3: learning platforms (Moodle, Canvas) open Fidel lessons.
 
 Phase 1: Fidel's identity and the list of platforms. Phase 2: signing in.
+Phase 3: the lesson opens, and "completed" goes to the course's gradebook.
 
   GET|POST /lti/login               the platform starts a sign-in; Fidel sends the browser back with a state and nonce
-  POST /lti/launch                  the platform's signed message; every check in lti/launch.py, or nothing opens
+  POST /lti/launch                  the platform's signed message; every check in lti/launch.py, or nothing opens;
+                                    then the lesson page (the normal player)
+  POST /lti/complete                the lesson page: watched to the end; Fidel sends "completed" (lti/ags.py)
   GET  /lti/jwks                    Fidel's public key set; the platform reads it to check Fidel's signatures
   GET  /api/v1/lti/tool             (staff) on or off, and Fidel's addresses to paste into the platform
   GET  /api/v1/lti/platforms        (staff) registered platforms
@@ -28,13 +31,14 @@ from pydantic import BaseModel, Field, field_validator
 
 from ..config import settings
 from ..db import Database
-from ..lti import keys, launch as checks, pages
+from ..lti import ags, keys, launch as checks, pages
 from .auth import require_staff
 
 log = logging.getLogger("fidel.lti")
 db = Database(settings.data_dir / "fidel.db")
 
 LOGIN_SECONDS = 600  # the platform must send the launch within 10 minutes of the login
+LAUNCH_SECONDS = 24 * 3600  # a launch can send "completed" for a day, then it is deleted
 COOKIE = "fidel_lti_state_"  # + the state; binds the launch to the browser that started the sign-in
 
 # Test platforms often run on this computer or in Docker, without HTTPS.
@@ -282,6 +286,56 @@ async def launch(request: Request):
     lesson = db.get_lesson(lesson_id) if lesson_id else None
     if not lesson or not lesson["published"]:
         return pages.problem("no_lesson", f"lesson {lesson_id!r}")
-    response = pages.signed_in_page(platform["name"], lesson, f"/demo/savanna-mock/lesson.html?id={lesson_id}")
+    # Remember only what sending "completed" needs: no name, no email.
+    endpoint = claims.get(ags.AGS_CLAIM) if isinstance(claims.get(ags.AGS_CLAIM), dict) else {}
+    scopes = [s for s in endpoint.get("scope", []) if isinstance(s, str)]
+    lineitem = endpoint.get("lineitem") if isinstance(endpoint.get("lineitem"), str) else None
+    user_id = claims.get("sub")
+    grades = bool(lineitem and ags.SCORE_SCOPE in scopes and user_id)
+    launch_token = secrets.token_urlsafe(32)
+    db.add_lti_launch({"token": launch_token, "platform_id": platform["id"], "lesson_id": lesson_id,
+                       "user_id": user_id or "", "lineitem": lineitem if grades else None, "scopes": scopes,
+                       "created_at": now, "expires_at": now + LAUNCH_SECONDS})
+    response = pages.lesson_page(platform["name"], lesson, launch_token, language_of(claims), grades)
     response.delete_cookie(COOKIE + state, path="/lti/")
     return response
+
+
+def language_of(claims: dict) -> str:
+    """The course's language (launch_presentation.locale, e.g. "am" or "am-ET"): Amharic or English."""
+    presentation = claims.get(checks.LAUNCH_PRESENTATION)
+    locale = presentation.get("locale", "") if isinstance(presentation, dict) else ""
+    return "am" if str(locale).lower().startswith("am") else "en"
+
+
+# --- "Completed" to the gradebook (phase 3) ------------------------------------------------
+
+class Completion(BaseModel):
+    launch: str = Field(min_length=20, max_length=100, description="The launch token from the lesson page")
+
+
+@public.post("/complete")
+def complete(body: Completion):
+    """The lesson page: the learner watched to the end. Sends "completed, 100%" to
+    the course's gradebook. (A plain def: FastAPI runs it in a worker thread, so
+    waiting for the platform holds up nothing else.)"""
+    now = int(time.time())
+    launch = db.get_lti_launch(body.launch, now)
+    if launch is None:
+        return JSONResponse({"detail": "This launch is unknown or older than a day. Open the lesson again from "
+                                       "your course.", "reason": "launch_expired"}, status_code=404)
+    if not launch["lineitem"]:
+        db.set_lti_launch_completed(body.launch, now)
+        return {"saved": False, "reason": "no_gradebook"}
+    platform = db.get_lti_platform(launch["platform_id"])
+    if platform is None:
+        return JSONResponse({"detail": "This course's platform is no longer connected.", "reason": "launch_expired"},
+                            status_code=404)
+    try:
+        ags.send_completed(platform, launch["lineitem"], launch["user_id"])
+    except ags.GradeError as error:
+        log.warning("LTI grade not sent (%s): %s", platform["name"], error)
+        return JSONResponse({"detail": "Fidel could not send the grade to the course. Try again.",
+                             "reason": error.reason}, status_code=502)
+    db.set_lti_launch_completed(body.launch, now)
+    return {"saved": True}

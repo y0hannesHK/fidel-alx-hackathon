@@ -1,7 +1,10 @@
-// LTI 1.3, phase 2: signing in from a learning platform, in a real browser.
+// LTI 1.3, phases 2 and 3: a lesson opened from a learning platform, in a real
+// browser: signing in, the lesson page, and "completed" in the gradebook.
 // A fake platform (addresses intercepted by Playwright) starts the sign-in,
 // signs the launch with its own key and posts it to Fidel. Fidel reads the
-// platform's public key from a file under /media/ (data/demo/).
+// platform's public key from a file under /media/ (data/demo/). The platform's
+// token address and gradebook are a small server started by this test; the Fidel
+// container reaches it at host.docker.internal.
 //
 // Needs a server with FIDEL_LTI_ENABLED=true (skipped otherwise), e.g.
 //   docker compose run -d --rm -e FIDEL_LTI_ENABLED=true -p 8011:8000 --name fidel-lti-test server
@@ -9,6 +12,7 @@
 // and the staff token (FIDEL_STAFF_TOKEN or ../.env).
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { generateKeyPairSync, sign } from 'node:crypto';
+import { createServer } from 'node:http';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -43,20 +47,44 @@ function signToken(claims) {
 
 let enabled = false;
 let lessonId;
+let lessonTitle;
 const platformIds = [];
+
+// The platform's token address and gradebook. Records each score; answers with
+// the queued status codes first (to test "Try again"), then 200.
+const scores = [];
+const scoreAnswers = [];
+let gradebookUrl;
+const gradebook = createServer((req, res) => {
+  let body = '';
+  req.on('data', (chunk) => { body += chunk; });
+  req.on('end', () => {
+    if (req.url === '/token') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ access_token: 'e2e-token', token_type: 'Bearer', expires_in: 3600 }));
+    }
+    const code = scoreAnswers.shift() || 200;
+    if (code === 200) scores.push({ url: req.url, type: req.headers['content-type'], score: JSON.parse(body) });
+    res.writeHead(code, { 'Content-Type': 'application/json' });
+    res.end('{}');
+  });
+});
 
 test.beforeAll(async ({ request }) => {
   enabled = (await (await request.get('/api/v1/lti/tool', { headers: STAFF })).json()).enabled;
   if (!enabled) return;
   const lessons = await (await request.get('/api/v1/lessons')).json();
   lessonId = lessons[0]?.id;
+  lessonTitle = lessons[0]?.title;
+  await new Promise((resolve) => gradebook.listen(0, '127.0.0.1', resolve));
+  gradebookUrl = `http://host.docker.internal:${gradebook.address().port}`;
   writeFileSync(`../data/demo/${KEY_FILE}`, JSON.stringify({ keys: [{ ...publicKey.export({ format: 'jwk' }), kid: KID, alg: 'RS256', use: 'sig' }] }));
   for (const issuer of [SAME_SITE, OTHER_SITE]) {
     const response = await request.post('/api/v1/lti/platforms', {
       headers: STAFF,
       data: {
         name: `E2E platform ${issuer}`, issuer, client_id: 'e2e-client', deployment_ids: ['1'],
-        auth_login_url: `${issuer}/auth`, auth_token_url: `${issuer}/token`,
+        auth_login_url: `${issuer}/auth`, auth_token_url: `${gradebookUrl}/token`,
         // Read by the Fidel server itself, inside its container (port 8000 there).
         key_set_url: `http://localhost:8000/media/${KEY_FILE}`,
       },
@@ -69,6 +97,7 @@ test.beforeAll(async ({ request }) => {
 test.afterAll(async ({ request }) => {
   for (const id of platformIds) await request.delete(`/api/v1/lti/platforms/${id}`, { headers: STAFF });
   rmSync(`../data/demo/${KEY_FILE}`, { force: true });
+  gradebook.close();
 });
 
 /** The fake platform: its sign-in address answers with a signed launch, posted to Fidel. */
@@ -85,6 +114,10 @@ async function fakePlatform(context, issuer, { lesson = lessonId } = {}) {
         'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '1',
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': { id: 'e2e-activity' },
         'https://purl.imsglobal.org/spec/lti/claim/custom': { lesson_id: lesson },
+        'https://purl.imsglobal.org/spec/lti-ags/claim/endpoint': {
+          scope: ['https://purl.imsglobal.org/spec/lti-ags/scope/score'],
+          lineitem: `${gradebookUrl}/lineitems/7/lineitem?type_id=1`,
+        },
       });
       return route.fulfill({
         contentType: 'text/html',
@@ -131,14 +164,59 @@ async function axeIssues(page) {
   return results.violations.filter((v) => ['critical', 'serious'].includes(v.impact)).map((v) => v.id);
 }
 
-test('top-level sign-in: login, the platform signs the launch, the lesson is offered', async ({ page, context, baseURL }) => {
+/** Watch to the end, quickly: jump to just before the end and play (muted). */
+async function watchToTheEnd(page) {
+  const video = page.locator('fidel-player video').first();
+  await expect.poll(() => video.evaluate((v) => v.readyState), { timeout: 20_000 }).toBeGreaterThan(0);
+  await video.evaluate((v) => {
+    v.muted = true;
+    v.currentTime = Math.max(0, v.duration - 0.3);
+    return v.play();
+  });
+}
+
+test('top-level: the lesson opens, and finishing it saves "completed" to the gradebook', async ({ page, context, baseURL }) => {
   test.skip(!enabled, 'Start the server with FIDEL_LTI_ENABLED=true to run this.');
   test.skip(!lessonId, 'Needs a published lesson.');
   await fakePlatform(context, SAME_SITE);
   await page.goto(loginUrl(baseURL, SAME_SITE));
-  await expect(page.getByRole('status')).toContainText(`Signed in through E2E platform ${SAME_SITE}.`);
-  await expect(page.getByRole('link', { name: /Open the lesson/ })).toHaveAttribute('href', `/demo/savanna-mock/lesson.html?id=${lessonId}`);
+  await expect(page.getByRole('heading', { level: 1, name: lessonTitle })).toBeVisible();
+  await expect(page.getByText(`Opened from E2E platform ${SAME_SITE}.`)).toBeVisible();
+  await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 20_000 });
   expect(await axeIssues(page)).toEqual([]);
+  for (const zoom of [{ width: 640, height: 400 }, { width: 320, height: 200 }, { width: 1280, height: 800 }]) {
+    await page.setViewportSize(zoom); // 200%, 400%, then back to 100%
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  }
+
+  scores.length = 0;
+  await watchToTheEnd(page);
+  await expect(page.locator('#lti-result')).toContainText('Saved to your course: lesson completed.', { timeout: 20_000 });
+  await expect(page.locator('#lti-result')).toHaveAttribute('role', 'status');
+  expect(scores).toHaveLength(1);
+  expect(scores[0].url).toBe('/lineitems/7/lineitem/scores?type_id=1');
+  expect(scores[0].type).toBe('application/vnd.ims.lis.v1.score+json');
+  expect(scores[0].score).toMatchObject({ userId: 'e2e-learner', scoreGiven: 100, scoreMaximum: 100,
+    activityProgress: 'Completed', gradingProgress: 'FullyGraded' });
+});
+
+test('the gradebook is down: "Try again" (by keyboard) saves it when it is back', async ({ page, context, baseURL }) => {
+  test.skip(!enabled, 'Start the server with FIDEL_LTI_ENABLED=true to run this.');
+  test.skip(!lessonId, 'Needs a published lesson.');
+  await fakePlatform(context, SAME_SITE);
+  await page.goto(loginUrl(baseURL, SAME_SITE));
+  await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 20_000 });
+  scores.length = 0;
+  scoreAnswers.push(500);
+  await watchToTheEnd(page);
+  await expect(page.locator('#lti-result')).toContainText('Not saved to your course yet', { timeout: 20_000 });
+  const retry = page.getByRole('button', { name: /Try again/ });
+  await retry.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#lti-result')).toContainText('Saved to your course: lesson completed.');
+  await expect(retry).toBeHidden();
+  expect(scores).toHaveLength(1);
 });
 
 test('inside a course page that blocks the cookie: the platform\'s storage is used', async ({ page, context, baseURL }) => {
@@ -148,7 +226,8 @@ test('inside a course page that blocks the cookie: the platform\'s storage is us
   const login = loginUrl(baseURL, OTHER_SITE, { lti_storage_target: '_parent' });
   await page.goto(`${OTHER_SITE}/course?login=${encodeURIComponent(login)}`);
   const frame = page.frameLocator('iframe[title="Fidel lesson"]');
-  await expect(frame.getByRole('status')).toContainText(`Signed in through E2E platform ${OTHER_SITE}.`, { timeout: 15_000 });
+  await expect(frame.getByText(`Opened from E2E platform ${OTHER_SITE}.`)).toBeVisible({ timeout: 15_000 });
+  await expect(frame.locator('fidel-player')).toHaveAttribute('lesson', `/api/v1/lessons/${lessonId}`);
 });
 
 test('inside a course page that blocks the cookie, with no platform storage: "Open in a new window"', async ({ page, context, baseURL }) => {

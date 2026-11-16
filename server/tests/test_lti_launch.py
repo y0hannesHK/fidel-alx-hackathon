@@ -96,8 +96,8 @@ def test_good_launch_opens_the_lesson(lms):
 
     launched = client.post("/lti/launch", data={"id_token": platform.sign(platform.claims(nonce)), "state": state})
     assert launched.status_code == 200, launched.text
-    assert "Signed in through Fake LMS" in launched.text and "Fake lesson for LTI" in launched.text
-    assert f"lesson.html?id={LESSON_ID}" in launched.text
+    assert "Opened from Fake LMS" in launched.text and "<h1>Fake lesson for LTI</h1>" in launched.text
+    assert f'lesson="/api/v1/lessons/{LESSON_ID}"' in launched.text  # the normal player
     assert launched.headers["cache-control"] == "no-store"
 
 
@@ -125,7 +125,7 @@ def test_bad_launches_are_refused(lms, changes, reason, code):
     response = launch_with(lms, **changes)
     assert response.status_code == code, response.text
     assert problem_reason(response) == reason
-    assert 'role="alert"' in response.text and "Signed in" not in response.text
+    assert 'role="alert"' in response.text and "<fidel-player" not in response.text
     assert 'lang="am"' in response.text  # the message is in Amharic too
 
 
@@ -224,7 +224,7 @@ def test_platform_storage_is_used_when_the_cookie_is_blocked(lms):
                     "page": "launch-check"}
     # The page's script read the state back from the platform and sends the launch on.
     launched = client.post("/lti/launch", data={"id_token": token, "state": state, "platform_storage": "checked"})
-    assert launched.status_code == 200 and "Signed in through Fake LMS" in launched.text
+    assert launched.status_code == 200 and "Opened from Fake LMS" in launched.text
 
 
 def test_platform_reports_an_error(lms):

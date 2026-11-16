@@ -16,6 +16,7 @@
 """
 
 import logging
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -42,6 +43,7 @@ async def lifespan(app: FastAPI):
     # LTI: make Fidel's key pair now (once; it is kept in data/lti/), not during a learner's launch.
     if settings.lti_enabled:
         lti_keys.key_pair()
+        lti.db.delete_expired_lti_records(int(time.time()))  # launches past a day, old sign-ins
     yield
 
 

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{TITLE}} – Fidel</title>
+<link rel="stylesheet" href="/embed/v1/fidel.css">
+<script src="/embed/v1/fidel.js" defer></script>
+<style>
+@font-face { font-family: "Fidel Ethiopic"; src: url("/embed/v1/fonts/noto-sans-ethiopic-400.woff2") format("woff2"); unicode-range: U+1200-139F, U+2D80-2DDF, U+AB00-AB2F; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 1.05rem; line-height: 1.5; color: #1a1a1a; background: #fff; }
+:lang(am) { font-family: "Fidel Ethiopic", "Noto Sans Ethiopic", "Nyala", sans-serif; line-height: 1.7; }
+main { max-width: 60rem; margin: 0 auto; padding: 1rem; }
+h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 0.5rem; }
+.from, .note { color: #444; margin: 0 0 0.75rem; }
+.status { padding: 0.75rem 1rem; border-radius: 6px; font-weight: 600; border: 3px solid; margin: 1rem 0; }
+.status:empty { display: none; }
+.status p { margin: 0.25rem 0; }
+.status.ok { background: #e6f4ea; border-color: #1e7b34; color: #0f4d1f; }
+.status.bad { background: #fdecee; border-color: #a00020; color: #6e0016; }
+.status.wait { background: #eef3fa; border-color: #0b4f9c; color: #0a2f5c; }
+.button { display: inline-flex; align-items: center; min-height: 44px; padding: 0.5rem 1rem; font: inherit; font-weight: 600; color: #fff; background: #0b4f9c; border: 2px solid #0b4f9c; border-radius: 6px; cursor: pointer; }
+:focus-visible { outline: 3px solid #0b4f9c; outline-offset: 2px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>{{TITLE}}</h1>
+  {{INTRO}}
+  <fidel-player id="lesson-player" lesson="/api/v1/lessons/{{LESSON_ID}}" lang="{{LANG}}"></fidel-player>
+  <div id="lti-result" class="status" role="status"></div>
+  <p><button type="button" class="button" id="lti-retry" hidden>Try again <span lang="am">/ እንደገና ሞክር</span></button></p>
+</main>
+{{SCRIPT}}
+</body>
+</html>

@@ -14,7 +14,9 @@ from pathlib import Path
 from fastapi.responses import HTMLResponse
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "lti.html"
+LESSON_TEMPLATE = Path(__file__).resolve().parent.parent / "templates" / "lti-lesson.html"
 SCRIPT = Path(__file__).resolve().parent / "lti-page.js"
+LESSON_SCRIPT = Path(__file__).resolve().parent / "lti-lesson.js"
 
 AGAIN_EN = "Go back to your course and open the activity again."
 AGAIN_AM = "ወደ ኮርስዎ ተመልሰው እንቅስቃሴውን እንደገና ይክፈቱ።"
@@ -125,10 +127,21 @@ def launch_check_page(data: dict, form: dict) -> HTMLResponse:
     return render("Checking your sign-in", "መግቢያዎን በማረጋገጥ ላይ", body, data={**data, "page": "launch-check"})
 
 
-def signed_in_page(platform_name: str, lesson: dict, lesson_url: str) -> HTMLResponse:
-    """Phase 2: the launch passed every check. (Phase 3 opens the lesson here.)"""
+def lesson_page(platform_name: str, lesson: dict, launch_token: str, lang: str, grades: bool) -> HTMLResponse:
+    """The launch passed every check: the normal Fidel player, in the course's language.
+    The launch token is only in this page (for "completed"), never in an address."""
     e = html.escape
-    body = (status_box("ok", f"✓ Signed in through {platform_name}.", f"✓ በ{platform_name} በኩል ገብተዋል።", role="status")
-            + f'<p>Lesson <span lang="am">/ ትምህርት</span>: <strong>{e(lesson["title"])}</strong></p>'
-            + f'<p><a class="button" href="{e(lesson_url)}">Open the lesson <span lang="am">/ ትምህርቱን ክፈት</span></a></p>')
-    return render("Signed in", "ገብተዋል", body)
+    intro = (f'<p class="from"><span lang="en">Opened from {e(platform_name)}.</span> '
+             f'<span lang="am">ከ{e(platform_name)} የተከፈተ።</span></p>')
+    if grades:
+        intro += ('<p class="note"><span lang="en">When you watch the video to the end, Fidel tells your course '
+                  'that you completed this lesson.</span> <span lang="am">ቪዲዮውን እስከ መጨረሻው ሲመለከቱ፣ ፊደል '
+                  'ትምህርቱን እንደጨረሱ ለኮርስዎ ያሳውቃል።</span></p>')
+    payload = json.dumps({"launch": launch_token}).replace("<", "\\u003c")
+    script = (f'<script type="application/json" id="lti-data">{payload}</script>\n'
+              f"<script>\n{LESSON_SCRIPT.read_text(encoding='utf-8')}</script>")
+    values = {"{{LANG}}": lang, "{{TITLE}}": e(lesson["title"]), "{{INTRO}}": intro,
+              "{{LESSON_ID}}": e(lesson["id"]), "{{SCRIPT}}": script}
+    page = re.sub(r"\{\{[A-Z_]+\}\}", lambda m: values.get(m.group(0), ""),
+                  LESSON_TEMPLATE.read_text(encoding="utf-8"))
+    return HTMLResponse(page, headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
