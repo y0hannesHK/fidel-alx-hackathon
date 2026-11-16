@@ -32,9 +32,13 @@ TARGET_LINK_URI = LTI + "target_link_uri"
 CUSTOM = LTI + "custom"
 LAUNCH_PRESENTATION = LTI + "launch_presentation"
 
-# Phase 2 handles lessons opened from a course. Deep Linking (a teacher picking a
-# lesson) comes in phase 4.
-MESSAGE_TYPES = {"LtiResourceLinkRequest"}
+DEEP_LINKING_SETTINGS = "https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"
+
+# Each Fidel address takes one kind of message: /lti/launch a lesson opened from a
+# course, /lti/deep-link a teacher choosing a lesson (Deep Linking).
+LESSON = "LtiResourceLinkRequest"
+DEEP_LINKING = "LtiDeepLinkingRequest"
+MESSAGE_TYPES = {LESSON}
 LEEWAY = 60  # seconds: platform and Fidel clocks may differ a little
 KEY_SET_MAX_AGE = 600  # seconds: read the platform's keys again after this
 KEY_SET_MIN_AGE = 30  # but at most this often when an unknown key id appears
@@ -97,7 +101,7 @@ def platform_key(url: str, kid: str | None):
 
 # --- The checks --------------------------------------------------------------------------
 
-def check_id_token(token: str, platform: dict, nonce: str) -> dict:
+def check_id_token(token: str, platform: dict, nonce: str, message_types=frozenset(MESSAGE_TYPES)) -> dict:
     """The verified claims, or LaunchError."""
     try:
         header = jwt.get_unverified_header(token)
@@ -137,8 +141,15 @@ def check_id_token(token: str, platform: dict, nonce: str) -> dict:
         raise LaunchError("unknown_deployment", f"deployment {claims.get(DEPLOYMENT_ID)!r} is not registered")
     if claims.get(VERSION) != "1.3.0":
         raise LaunchError("wrong_version", f"LTI version {claims.get(VERSION)!r}; 1.3.0 required")
-    if claims.get(MESSAGE_TYPE) not in MESSAGE_TYPES:
-        raise LaunchError("wrong_message_type", f"{claims.get(MESSAGE_TYPE)!r} is not handled")
-    if not isinstance(claims.get(RESOURCE_LINK), dict) or not claims[RESOURCE_LINK].get("id"):
-        raise LaunchError("missing_claim", "resource_link.id")
+    if claims.get(MESSAGE_TYPE) not in message_types:
+        raise LaunchError("wrong_message_type", f"{claims.get(MESSAGE_TYPE)!r} is not handled at this address")
+    if claims[MESSAGE_TYPE] == LESSON:
+        if not isinstance(claims.get(RESOURCE_LINK), dict) or not claims[RESOURCE_LINK].get("id"):
+            raise LaunchError("missing_claim", "resource_link.id")
+    if claims[MESSAGE_TYPE] == DEEP_LINKING:
+        settings = claims.get(DEEP_LINKING_SETTINGS)
+        if not isinstance(settings, dict) or not isinstance(settings.get("deep_link_return_url"), str):
+            raise LaunchError("missing_claim", "deep_linking_settings.deep_link_return_url")
+        if not settings["deep_link_return_url"].startswith(("https://", "http://")):
+            raise LaunchError("bad_claim", "deep_link_return_url is not a web address")
     return claims

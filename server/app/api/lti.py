@@ -2,11 +2,14 @@
 
 Phase 1: Fidel's identity and the list of platforms. Phase 2: signing in.
 Phase 3: the lesson opens, and "completed" goes to the course's gradebook.
+Phase 4: a teacher picks a lesson for the course (Deep Linking).
 
   GET|POST /lti/login               the platform starts a sign-in; Fidel sends the browser back with a state and nonce
   POST /lti/launch                  the platform's signed message; every check in lti/launch.py, or nothing opens;
                                     then the lesson page (the normal player)
   POST /lti/complete                the lesson page: watched to the end; Fidel sends "completed" (lti/ags.py)
+  POST /lti/deep-link               a teacher adds a Fidel activity: the same checks, then the lesson picker
+  POST /lti/deep-link/choose        the picker's answer, signed by Fidel and sent back to the platform
   GET  /lti/jwks                    Fidel's public key set; the platform reads it to check Fidel's signatures
   GET  /api/v1/lti/tool             (staff) on or off, and Fidel's addresses to paste into the platform
   GET  /api/v1/lti/platforms        (staff) registered platforms
@@ -23,6 +26,8 @@ import re
 import secrets
 import time
 from urllib.parse import parse_qs, urlencode, urlsplit
+
+import jwt
 
 from fastapi import APIRouter, Depends, HTTPException, Path as PathParam, Request, status
 from fastapi.concurrency import run_in_threadpool
@@ -244,10 +249,10 @@ def lesson_id_from(claims: dict) -> str | None:
     return candidate if re.fullmatch(r"[a-f0-9]{12}", candidate) else None
 
 
-@public.post("/launch", response_class=HTMLResponse)
-async def launch(request: Request):
-    """Step 2: the platform's signed message (id_token) arrives with the state.
-    Every check passes, or nothing opens."""
+async def _signed_message(request: Request, action: str, message_types: set[str]):
+    """Step 2, for /lti/launch and /lti/deep-link: the platform's signed message
+    (id_token) arrives with the state. Returns (claims, platform, state, now) if
+    every check passes, else the page to show (a problem, or the storage check)."""
     form = await _fields(request)
     if form.get("error"):
         return pages.problem("platform_error", f"{form['error']}: {form.get('error_description', '')}".strip(": "))
@@ -268,7 +273,7 @@ async def launch(request: Request):
             platform = db.get_lti_platform(started["platform_id"])
             return pages.launch_check_page({"state": state, "storageTarget": started["storage_target"],
                                             "platformOrigin": origin(platform["auth_login_url"]) if platform else ""},
-                                           {"id_token": token, "state": state})
+                                           {"id_token": token, "state": state}, action)
 
     if not db.claim_lti_login(state, now):  # used once, even if two requests race
         return pages.problem("sign_in_used", "state already used")
@@ -277,10 +282,20 @@ async def launch(request: Request):
         return pages.problem("unknown_platform", "the platform was removed")
     try:
         # In a worker thread: it may download the platform's keys, which must not hold up other requests.
-        claims = await run_in_threadpool(checks.check_id_token, token, platform, started["nonce"])
+        claims = await run_in_threadpool(checks.check_id_token, token, platform, started["nonce"], message_types)
     except checks.LaunchError as error:
         log.warning("LTI launch refused (%s): %s", platform["name"], error)
         return pages.problem(error.reason, error.detail)
+    return claims, platform, state, now
+
+
+@public.post("/launch", response_class=HTMLResponse)
+async def launch(request: Request):
+    """A lesson opened from a course. Every check passes, or nothing opens."""
+    checked = await _signed_message(request, "/lti/launch", {checks.LESSON})
+    if isinstance(checked, HTMLResponse):
+        return checked
+    claims, platform, state, now = checked
 
     lesson_id = lesson_id_from(claims)
     lesson = db.get_lesson(lesson_id) if lesson_id else None
@@ -339,3 +354,81 @@ def complete(body: Completion):
                              "reason": error.reason}, status_code=502)
     db.set_lti_launch_completed(body.launch, now)
     return {"saved": True}
+
+
+# --- A teacher picks a lesson (phase 4, Deep Linking) ------------------------------------
+
+DL = "https://purl.imsglobal.org/spec/lti-dl/claim/"
+PICKER_SECONDS = 3600  # the teacher has an hour to choose
+
+
+@public.post("/deep-link", response_class=HTMLResponse)
+async def deep_link(request: Request):
+    """The teacher clicked "Add an activity" › Fidel: the same checks as a launch,
+    then a list of published lessons to choose from."""
+    checked = await _signed_message(request, "/lti/deep-link", {checks.DEEP_LINKING})
+    if isinstance(checked, HTMLResponse):
+        return checked
+    claims, platform, state, now = checked
+    settings_claim = claims[checks.DEEP_LINKING_SETTINGS]
+    if "ltiResourceLink" not in settings_claim.get("accept_types", ["ltiResourceLink"]):
+        return pages.problem("wrong_message_type", "the platform does not accept links to activities here")
+    # What the answer needs, signed by Fidel so the picker's form cannot change it.
+    pair = keys.key_pair()
+    context = jwt.encode({
+        "iss": "fidel", "aud": "fidel-deep-link", "iat": now, "exp": now + PICKER_SECONDS,
+        "platform_id": platform["id"], "deployment_id": claims[checks.DEPLOYMENT_ID],
+        "return_url": settings_claim["deep_link_return_url"], "data": settings_claim.get("data"),
+        "lang": language_of(claims),
+    }, pair.private_key, algorithm="RS256", headers={"kid": pair.kid})
+    response = pages.picker_page(db.list_lessons(), context, language_of(claims))
+    response.delete_cookie(COOKIE + state, path="/lti/")
+    return response
+
+
+@public.post("/deep-link/choose", response_class=HTMLResponse)
+async def deep_link_choose(request: Request):
+    """The picker's answer: Fidel signs the chosen lesson (or "cancelled") and the
+    browser takes it back to the platform, which adds the activity."""
+    form = await _fields(request)
+    pair = keys.key_pair()
+    try:
+        context = jwt.decode(form.get("context", ""), pair.private_key.public_key(), algorithms=["RS256"],
+                             audience="fidel-deep-link", issuer="fidel")
+    except jwt.ExpiredSignatureError:
+        return pages.problem("sign_in_used", "the lesson picker was open for more than an hour")
+    except jwt.PyJWTError as problem:
+        return pages.problem("bad_request", f"picker context: {problem}")
+    platform = db.get_lti_platform(context["platform_id"])
+    if platform is None:
+        return pages.problem("unknown_platform", "the platform was removed")
+
+    items = []
+    if form.get("action") != "cancel":
+        lesson = db.get_lesson(form.get("lesson", "")) if re.fullmatch(r"[a-f0-9]{12}", form.get("lesson", "")) else None
+        if not lesson or not lesson["published"]:
+            return pages.picker_page(db.list_lessons(), form["context"], context.get("lang", "en"),
+                                     error=True, status_code=400)
+        items.append({
+            "type": "ltiResourceLink",
+            "title": lesson["title"],
+            "text": "A Fidel lesson: watch, listen, read or sign.",
+            "url": f"{base_url(request)}/lti/launch",
+            "custom": {"lesson_id": lesson["id"]},
+            # A gradebook column for "completed" (100 = completed).
+            "lineItem": {"scoreMaximum": 100, "label": lesson["title"], "resourceId": lesson["id"]},
+        })
+    now = int(time.time())
+    claims = {
+        "iss": platform["client_id"], "aud": platform["issuer"], "iat": now, "exp": now + 300,
+        "nonce": secrets.token_urlsafe(16),
+        checks.MESSAGE_TYPE: "LtiDeepLinkingResponse", checks.VERSION: "1.3.0",
+        checks.DEPLOYMENT_ID: context["deployment_id"],
+        DL + "content_items": items,
+    }
+    if context.get("data") is not None:
+        claims[DL + "data"] = context["data"]  # must go back unchanged
+    if not items:
+        claims[DL + "msg"] = "No Fidel lesson was added."
+    answer = jwt.encode(claims, pair.private_key, algorithm="RS256", headers={"kid": pair.kid})
+    return pages.deep_link_return_page(context["return_url"], answer, chosen=items[0]["title"] if items else None)

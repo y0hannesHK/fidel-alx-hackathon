@@ -31,6 +31,8 @@ h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 0.5rem; }
   <h1>{{TITLE}}</h1>
   {{INTRO}}
   <fidel-player id="lesson-player" lesson="/api/v1/lessons/{{LESSON_ID}}" lang="{{LANG}}"></fidel-player>
+  <!-- For learners who read the transcript or listen instead of watching to the end. -->
+  <fidel-mark-complete id="mark-complete" for="lesson-player" lesson-id="lti-{{LESSON_ID}}" manual ui-lang="{{UI_LANG}}"></fidel-mark-complete>
   <div id="lti-result" class="status" role="status"></div>
   <p><button type="button" class="button" id="lti-retry" hidden>Try again <span lang="am">/ እንደገና ሞክር</span></button></p>
 </main>

@@ -1,5 +1,6 @@
 // The lesson page opened from a course (inlined into it). When the player
-// says the lesson was watched to the end (fidel-complete), tell the Fidel
+// says the lesson was watched to the end (fidel-complete), or the learner
+// presses "Mark as complete", tell the Fidel
 // server, which sends "completed" to the course's gradebook. The result is
 // shown and announced in words (role="status"); if it fails, "Try again".
 (function () {
@@ -65,5 +66,9 @@
   }
 
   document.getElementById('lesson-player').addEventListener('fidel-complete', send);
+  // "Mark as complete" (pressed, not un-pressed) counts too: not everyone watches to the end.
+  document.getElementById('mark-complete').addEventListener('fidel-mark-complete', function (event) {
+    if (event.detail && event.detail.done) send();
+  });
   retry.addEventListener('click', send);
 })();

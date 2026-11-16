@@ -62,6 +62,30 @@
       if (stored || window.top === window || cookiesWork()) location.replace(data.authUrl);
       else show('lti-new-window');
     });
+  } else if (data.page === 'picker') {
+    // Filter the lessons as the teacher types; the count is announced after a short pause.
+    var search = document.getElementById('lesson-search');
+    var count = document.getElementById('lesson-count');
+    var items = document.querySelectorAll('.lesson-option');
+    var timer;
+    search.addEventListener('input', function () {
+      var words = search.value.trim().toLowerCase();
+      var shown = 0;
+      for (var i = 0; i < items.length; i++) {
+        var match = items[i].getAttribute('data-title').indexOf(words) !== -1;
+        items[i].hidden = !match;
+        if (match) shown++;
+      }
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        count.textContent = data.count.replace('{n}', shown).replace('{total}', data.total);
+      }, 500);
+    });
+    search.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') event.preventDefault(); // Enter searches; it does not add a lesson
+    });
+  } else if (data.page === 'return') {
+    document.getElementById('lti-return').submit();
   } else if (data.page === 'launch-check') {
     ask({ subject: 'lti.get_data', key: 'state_' + data.state }, function (response) {
       if (response && response.value === data.state) document.getElementById('lti-continue').submit();

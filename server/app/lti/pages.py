@@ -109,14 +109,14 @@ def login_page(data: dict, login_url: str) -> HTMLResponse:
     return render("Signing in", "በመግባት ላይ", body, data={**data, "page": "login"})
 
 
-def launch_check_page(data: dict, form: dict) -> HTMLResponse:
+def launch_check_page(data: dict, form: dict, action: str = "/lti/launch") -> HTMLResponse:
     """The cookie was blocked: check the state in the platform's storage, then send the launch on."""
     e = html.escape
     fields = "".join(f'<input type="hidden" name="{e(k)}" value="{e(v)}">' for k, v in form.items())
     body = (
         '<div id="lti-wait">'
         + status_box("wait", "Checking your sign-in…", "መግቢያዎን በማረጋገጥ ላይ…", role="status")
-        + f'<form id="lti-continue" method="post" action="/lti/launch">{fields}'
+        + f'<form id="lti-continue" method="post" action="{e(action)}">{fields}'
           f'<input type="hidden" name="platform_storage" value="checked">'
           f'<noscript><p>Fidel needs JavaScript to check this sign-in inside the course page. '
           f'<span lang="am">ፊደል ይህን መግቢያ ለማረጋገጥ JavaScript ያስፈልገዋል።</span></p></noscript></form>'
@@ -134,14 +134,80 @@ def lesson_page(platform_name: str, lesson: dict, launch_token: str, lang: str, 
     intro = (f'<p class="from"><span lang="en">Opened from {e(platform_name)}.</span> '
              f'<span lang="am">ከ{e(platform_name)} የተከፈተ።</span></p>')
     if grades:
-        intro += ('<p class="note"><span lang="en">When you watch the video to the end, Fidel tells your course '
-                  'that you completed this lesson.</span> <span lang="am">ቪዲዮውን እስከ መጨረሻው ሲመለከቱ፣ ፊደል '
-                  'ትምህርቱን እንደጨረሱ ለኮርስዎ ያሳውቃል።</span></p>')
+        intro += ('<p class="note"><span lang="en">When you watch the video to the end, or press "Mark as '
+                  'complete" (for example after reading or listening), Fidel tells your course that you completed '
+                  'this lesson.</span> <span lang="am">ቪዲዮውን እስከ መጨረሻው ሲመለከቱ ወይም "እንደተጠናቀቀ ምልክት አድርግ"ን '
+                  'ሲጫኑ፣ ፊደል ትምህርቱን እንደጨረሱ ለኮርስዎ ያሳውቃል።</span></p>')
     payload = json.dumps({"launch": launch_token}).replace("<", "\\u003c")
     script = (f'<script type="application/json" id="lti-data">{payload}</script>\n'
               f"<script>\n{LESSON_SCRIPT.read_text(encoding='utf-8')}</script>")
-    values = {"{{LANG}}": lang, "{{TITLE}}": e(lesson["title"]), "{{INTRO}}": intro,
+    values = {"{{LANG}}": lang, "{{TITLE}}": e(lesson["title"]), "{{INTRO}}": intro, "{{UI_LANG}}": lang,
               "{{LESSON_ID}}": e(lesson["id"]), "{{SCRIPT}}": script}
     page = re.sub(r"\{\{[A-Z_]+\}\}", lambda m: values.get(m.group(0), ""),
                   LESSON_TEMPLATE.read_text(encoding="utf-8"))
     return HTMLResponse(page, headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+
+
+PICKER_TEXT = {
+    "en": {"title": "Choose a Fidel lesson", "intro": "The lesson you choose is added to your course as an activity. "
+           "Learners open it from the course, and \"completed\" goes to the gradebook.",
+           "search": "Search lessons", "hint": "Type part of a title. The list below shows only lessons that match.",
+           "legend": "Published lessons", "added": "Added", "add": "Add to course", "cancel": "Cancel",
+           "none": "There are no published lessons yet. Publish one in Fidel Studio first.",
+           "error": "Choose a lesson first.", "count": "{n} of {total} lessons shown."},
+    "am": {"title": "የፊደል ትምህርት ይምረጡ", "intro": "የመረጡት ትምህርት በኮርስዎ ውስጥ እንደ እንቅስቃሴ ይጨመራል። "
+           "ተማሪዎች ከኮርሱ ይከፍቱታል፣ \"ተጠናቋል\" ደግሞ ወደ ውጤት መዝገቡ ይሄዳል።",
+           "search": "ትምህርቶችን ይፈልጉ", "hint": "የርዕሱን ከፊል ይጻፉ። ከታች ያለው ዝርዝር የሚዛመዱትን ብቻ ያሳያል።",
+           "legend": "የታተሙ ትምህርቶች", "added": "የተጨመረው", "add": "ወደ ኮርሱ ጨምር", "cancel": "ተወው",
+           "none": "እስካሁን የታተመ ትምህርት የለም። መጀመሪያ በፊደል ስቱዲዮ አንዱን ያትሙ።",
+           "error": "መጀመሪያ ትምህርት ይምረጡ።", "count": "ከ{total} ትምህርቶች {n} ይታያሉ።"},
+}
+
+
+def picker_page(lessons: list[dict], context: str, lang: str, error: bool = False,
+                status_code: int = 200) -> HTMLResponse:
+    """An accessible list of published lessons: a search box, radio buttons, Add and Cancel."""
+    e = html.escape
+    t = PICKER_TEXT.get(lang, PICKER_TEXT["en"])
+    if not lessons:
+        body = (status_box("bad", PICKER_TEXT["en"]["none"], PICKER_TEXT["am"]["none"], role="alert")
+                + f'<form method="post" action="/lti/deep-link/choose"><input type="hidden" name="context" '
+                  f'value="{e(context)}"><button class="button" name="action" value="cancel">{e(t["cancel"])}'
+                  f"</button></form>")
+        return render(PICKER_TEXT["en"]["title"], PICKER_TEXT["am"]["title"], body, status_code=status_code)
+    options = "".join(
+        f'<li class="lesson-option" data-title="{e(lesson["title"].lower())}"><input type="radio" name="lesson" '
+        f'id="lesson-{e(lesson["id"])}" value="{e(lesson["id"])}"{" required" if i == 0 else ""}>'
+        f'<label for="lesson-{e(lesson["id"])}">{e(lesson["title"])} '
+        f'<span class="detail">({e(t["added"])} {e(lesson["created_at"][:10])})</span></label></li>'
+        for i, lesson in enumerate(lessons))
+    problem_box = status_box("bad", PICKER_TEXT["en"]["error"], PICKER_TEXT["am"]["error"], role="alert") if error else ""
+    body = (
+        f'<p lang="{lang}">{e(t["intro"])}</p>'
+        + problem_box
+        + f'<form method="post" action="/lti/deep-link/choose" lang="{lang}">'
+          f'<input type="hidden" name="context" value="{e(context)}">'
+          f'<p class="field"><label for="lesson-search">{e(t["search"])}</label>'
+          f'<span class="hint" id="lesson-search-hint">{e(t["hint"])}</span>'
+          f'<input type="search" id="lesson-search" aria-describedby="lesson-search-hint lesson-count" '
+          f'autocomplete="off"></p>'
+          f'<p id="lesson-count" class="detail" role="status"></p>'
+          f'<fieldset><legend>{e(t["legend"])}</legend><ul class="lesson-list">{options}</ul></fieldset>'
+          f'<p class="actions"><button class="button" name="action" value="add">{e(t["add"])}</button> '
+          f'<button class="button secondary" name="action" value="cancel" formnovalidate>{e(t["cancel"])}</button></p>'
+          f"</form>")
+    title_en, title_am = PICKER_TEXT["en"]["title"], PICKER_TEXT["am"]["title"]
+    return render(title_en, title_am, body, status_code=status_code,
+                  data={"page": "picker", "count": t["count"], "total": len(lessons)})
+
+
+def deep_link_return_page(return_url: str, answer: str, chosen: str | None) -> HTMLResponse:
+    """Takes Fidel's signed answer back to the platform (a form POST, sent at once)."""
+    e = html.escape
+    english = f"Adding “{chosen}” to your course…" if chosen else "Going back to your course…"
+    amharic = f"“{chosen}”ን ወደ ኮርስዎ በመጨመር ላይ…" if chosen else "ወደ ኮርስዎ በመመለስ ላይ…"
+    body = (status_box("wait", english, amharic, role="status")
+            + f'<form id="lti-return" method="post" action="{e(return_url)}">'
+              f'<input type="hidden" name="JWT" value="{e(answer)}">'
+              f'<p><button class="button">Continue <span lang="am">/ ቀጥል</span></button></p></form>')
+    return render("Back to your course", "ወደ ኮርስዎ", body, data={"page": "return"})

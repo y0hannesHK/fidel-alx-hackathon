@@ -1,5 +1,6 @@
-// LTI 1.3, phases 2 and 3: a lesson opened from a learning platform, in a real
-// browser: signing in, the lesson page, and "completed" in the gradebook.
+// LTI 1.3, phases 2 to 4: a lesson opened from a learning platform, in a real
+// browser: signing in, the lesson page, "completed" in the gradebook (watched to
+// the end, or "Mark as complete"), and the teacher's lesson picker (Deep Linking).
 // A fake platform (addresses intercepted by Playwright) starts the sign-in,
 // signs the launch with its own key and posts it to Fidel. Fidel reads the
 // platform's public key from a file under /media/ (data/demo/). The platform's
@@ -100,10 +101,37 @@ test.afterAll(async ({ request }) => {
   gradebook.close();
 });
 
-/** The fake platform: its sign-in address answers with a signed launch, posted to Fidel. */
+/** The fake platform: its sign-in address answers with a signed launch, posted to
+ * Fidel (a lesson, or the teacher's picker when the target is /lti/deep-link).
+ * Fidel's answer from the picker arrives at /return and is kept in `received`. */
+const received = [];
 async function fakePlatform(context, issuer, { lesson = lessonId } = {}) {
   await context.route(`${issuer}/**`, async (route) => {
     const url = new URL(route.request().url());
+    if (url.pathname === '/return') {
+      received.push(new URLSearchParams(route.request().postData()).get('JWT'));
+      return route.fulfill({ contentType: 'text/html', body: '<!DOCTYPE html><html lang="en"><title>Course</title><h1>Activity added</h1></html>' });
+    }
+    if (url.pathname === '/auth' && url.searchParams.get('redirect_uri').endsWith('/lti/deep-link')) {
+      const q = url.searchParams;
+      const now = Math.floor(Date.now() / 1000);
+      const token = signToken({
+        iss: issuer, aud: q.get('client_id'), sub: 'e2e-teacher', iat: now, exp: now + 60, nonce: q.get('nonce'),
+        'https://purl.imsglobal.org/spec/lti/claim/message_type': 'LtiDeepLinkingRequest',
+        'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
+        'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '1',
+        'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings': {
+          deep_link_return_url: `${issuer}/return`, accept_types: ['ltiResourceLink'], data: 'e2e-data',
+        },
+      });
+      return route.fulfill({
+        contentType: 'text/html',
+        body: `<!DOCTYPE html><html lang="en"><title>Platform</title><body>
+          <form method="post" action="${q.get('redirect_uri')}">
+          <input type="hidden" name="id_token" value="${token}"><input type="hidden" name="state" value="${q.get('state')}">
+          </form><script>document.forms[0].submit()</script></body></html>`,
+      });
+    }
     if (url.pathname === '/auth') {
       const q = url.searchParams;
       const now = Math.floor(Date.now() / 1000);
@@ -217,6 +245,81 @@ test('the gradebook is down: "Try again" (by keyboard) saves it when it is back'
   await expect(page.locator('#lti-result')).toContainText('Saved to your course: lesson completed.');
   await expect(retry).toBeHidden();
   expect(scores).toHaveLength(1);
+});
+
+test('"Mark as complete" (by keyboard) also saves "completed"', async ({ page, context, baseURL }) => {
+  test.skip(!enabled, 'Start the server with FIDEL_LTI_ENABLED=true to run this.');
+  test.skip(!lessonId, 'Needs a published lesson.');
+  await fakePlatform(context, SAME_SITE);
+  await page.goto(loginUrl(baseURL, SAME_SITE));
+  await expect(page.getByText(/or press "Mark as complete"/)).toBeVisible();
+  const button = page.getByRole('button', { name: 'Mark as complete' });
+  await expect(button).toBeVisible({ timeout: 20_000 });
+  scores.length = 0;
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#lti-result')).toContainText('Saved to your course: lesson completed.', { timeout: 20_000 });
+  expect(scores).toHaveLength(1);
+  expect(scores[0].score.activityProgress).toBe('Completed');
+});
+
+test('a teacher picks a lesson by keyboard only, and it goes back to the course signed', async ({ page, context, baseURL }) => {
+  test.skip(!enabled, 'Start the server with FIDEL_LTI_ENABLED=true to run this.');
+  test.skip(!lessonId, 'Needs a published lesson.');
+  await fakePlatform(context, SAME_SITE);
+  received.length = 0;
+  await page.goto(loginUrl(baseURL, SAME_SITE, { target_link_uri: `${baseURL}/lti/deep-link` }));
+  await expect(page.getByRole('heading', { level: 1, name: /Choose a Fidel lesson/ })).toBeVisible();
+  expect(await axeIssues(page)).toEqual([]);
+  for (const zoom of [{ width: 640, height: 400 }, { width: 320, height: 200 }, { width: 1280, height: 800 }]) {
+    await page.setViewportSize(zoom);
+    await page.waitForTimeout(200);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  }
+
+  // Tab to the search box, type part of the title: the list narrows and the count is said.
+  await page.keyboard.press('Tab');
+  const search = page.getByRole('searchbox', { name: 'Search lessons' });
+  await expect(search).toBeFocused();
+  await page.keyboard.type(lessonTitle.slice(0, 12));
+  await page.keyboard.press('Enter'); // Enter must not add anything yet
+  await expect(page.getByRole('status').filter({ hasText: /lessons shown/ })).toBeVisible();
+  // Tab into the list, choose with Space, Tab to "Add to course", Enter.
+  await page.keyboard.press('Tab');
+  const radio = page.getByRole('radio', { name: new RegExp(lessonTitle.slice(0, 12)) }).first();
+  await expect(radio).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(radio).toBeChecked();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Add to course' })).toBeFocused();
+  await page.keyboard.press('Enter');
+
+  await expect(page.getByRole('heading', { name: 'Activity added' })).toBeVisible();
+  expect(received).toHaveLength(1);
+  const answer = JSON.parse(Buffer.from(received[0].split('.')[1], 'base64url').toString());
+  expect(answer['https://purl.imsglobal.org/spec/lti/claim/message_type']).toBe('LtiDeepLinkingResponse');
+  expect(answer['https://purl.imsglobal.org/spec/lti-dl/claim/data']).toBe('e2e-data');
+  const [item] = answer['https://purl.imsglobal.org/spec/lti-dl/claim/content_items'];
+  expect(item).toMatchObject({ type: 'ltiResourceLink', url: `${baseURL}/lti/launch`, custom: { lesson_id: lessonId } });
+});
+
+test('the picker: nothing is added without a choice, and Cancel goes back with nothing', async ({ page, context, baseURL }) => {
+  test.skip(!enabled, 'Start the server with FIDEL_LTI_ENABLED=true to run this.');
+  test.skip(!lessonId, 'Needs a published lesson.');
+  await fakePlatform(context, SAME_SITE);
+  await page.goto(loginUrl(baseURL, SAME_SITE, { target_link_uri: `${baseURL}/lti/deep-link` }));
+  // The browser's own required-field check stops "Add" with nothing chosen (the
+  // server's own message, "Choose a lesson first.", is checked in pytest).
+  received.length = 0;
+  await page.getByRole('button', { name: 'Add to course' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: /Choose a Fidel lesson/ })).toBeVisible();
+  expect(received).toHaveLength(0);
+  // Cancel goes back to the course with nothing added.
+  await page.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByRole('heading', { name: 'Activity added' })).toBeVisible();
+  const answer = JSON.parse(Buffer.from(received[0].split('.')[1], 'base64url').toString());
+  expect(answer['https://purl.imsglobal.org/spec/lti-dl/claim/content_items']).toEqual([]);
 });
 
 test('inside a course page that blocks the cookie: the platform\'s storage is used', async ({ page, context, baseURL }) => {
