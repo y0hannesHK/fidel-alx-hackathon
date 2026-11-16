@@ -14,6 +14,7 @@ import pytest
 TEST_DATA = Path(tempfile.mkdtemp(prefix="fidel-test-"))
 os.environ["FIDEL_DATA_DIR"] = str(TEST_DATA)
 os.environ["FIDEL_STAFF_TOKEN"] = "test-token"
+os.environ["FIDEL_LTI_ENABLED"] = "true"  # tests/test_lti_*.py; one test switches it off
 
 STAFF = {"Authorization": "Bearer test-token"}
 

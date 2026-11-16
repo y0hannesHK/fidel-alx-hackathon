@@ -43,7 +43,9 @@ export async function api(path, { method = 'GET', json, form } = {}) {
     throw new ApiError(0, 'Could not reach the Fidel server. Check the connection.');
   }
   const isJson = response.headers.get('content-type')?.includes('json');
-  const data = isJson ? await response.json() : await response.text();
+  // 204 No Content (e.g. after a delete) has an empty body, even when labelled JSON.
+  const text = await response.text();
+  const data = isJson && text ? JSON.parse(text) : text;
   if (!response.ok) throw new ApiError(response.status, describe(data, response.status));
   return data;
 }

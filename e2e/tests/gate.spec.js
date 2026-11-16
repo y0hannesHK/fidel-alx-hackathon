@@ -109,6 +109,8 @@ const STUDIO_PAGES = [
   { name: 'Studio jobs', hash: '#/jobs', heading: 'Jobs' },
   { name: 'Studio certificates', hash: '#/certificates', heading: 'Certificates' },
   { name: 'Studio glossary', hash: '#/glossary', heading: /Glossary/ },
+  // Switched off or on, depending on FIDEL_LTI_ENABLED; lti.spec.js checks both.
+  { name: 'Studio LMS connections', hash: '#/lms', heading: 'LMS connections' },
 ];
 
 async function seriousAxeIssues(page) {

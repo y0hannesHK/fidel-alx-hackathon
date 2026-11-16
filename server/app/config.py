@@ -44,6 +44,9 @@ class Settings:
     omniasr_url: str  # Omnilingual ASR, e.g. http://omniasr:8001 (speech-to-text for omniasr_languages)
     omniasr_languages: list[str]  # spoken languages it handles instead of Whisper, e.g. ['am', 'om']
     tts_url: str  # ToucanTTS, e.g. http://toucan:8002 (machine-read Amharic recordings)
+    # LTI 1.3: learning platforms (Moodle, Canvas) open Fidel lessons. Off by
+    # default; when off, every /lti/ address and the LMS connections API answer 404.
+    lti_enabled: bool
 
 
 def load_settings() -> Settings:
@@ -66,6 +69,7 @@ def load_settings() -> Settings:
         omniasr_url=os.environ.get("FIDEL_OMNIASR_URL", "").strip().rstrip("/"),
         omniasr_languages=[c.strip() for c in os.environ.get("FIDEL_OMNIASR_LANGUAGES", "am,om").split(",") if c.strip()],
         tts_url=os.environ.get("FIDEL_TTS_URL", "").strip().rstrip("/"),
+        lti_enabled=os.environ.get("FIDEL_LTI_ENABLED", "").strip().lower() in ("1", "true", "yes", "on"),
     )
 
 

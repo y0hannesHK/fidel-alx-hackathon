@@ -3,6 +3,7 @@
 import { api, ApiError, token, uploadWithProgress } from './api.js';
 import { lessonPage } from './lesson.js';
 import { certificatesPage, glossaryPage, jobsPage } from './career.js';
+import { lmsPage } from './lms.js';
 import { h, say, uid } from './util.js';
 
 const main = document.getElementById('main');
@@ -29,6 +30,7 @@ async function route() {
     else if (location.hash === '#/jobs') await jobsPage(main);
     else if (location.hash === '#/certificates') await certificatesPage(main);
     else if (location.hash === '#/glossary') await glossaryPage(main);
+    else if (location.hash === '#/lms') await lmsPage(main);
     else await homePage();
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {

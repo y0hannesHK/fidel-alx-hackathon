@@ -12,6 +12,7 @@
   /savanna/           ALX's Savanna starter pages with Fidel added, if set up
   /media/             demo media from data/demo (git-ignored)
   /api/docs, /docs    interactive API documentation (Swagger UI)
+  /lti/               LTI 1.3 for Moodle and Canvas (only if FIDEL_LTI_ENABLED; see app/api/lti.py)
 """
 
 import logging
@@ -27,8 +28,9 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from .api import auth, caption_reports, certificates, editing, engines, glossary, jobs, lessons, offline, questions, speak, webhooks
+from .api import auth, caption_reports, certificates, editing, engines, glossary, jobs, lessons, lti, offline, questions, speak, webhooks
 from .config import settings
+from .lti import keys as lti_keys
 
 logging.basicConfig(level=logging.INFO)
 
@@ -37,6 +39,9 @@ logging.basicConfig(level=logging.INFO)
 async def lifespan(app: FastAPI):
     # Jobs that were running when the server stopped will never finish.
     lessons.db.fail_interrupted_steps()
+    # LTI: make Fidel's key pair now (once; it is kept in data/lti/), not during a learner's launch.
+    if settings.lti_enabled:
+        lti_keys.key_pair()
     yield
 
 
@@ -112,6 +117,8 @@ app.include_router(engines.router)
 app.include_router(caption_reports.router)  # Package D: learners report caption problems
 app.include_router(speak.router)  # Forms: "Listen" through the optional voice engine
 app.include_router(questions.router)  # Package E: learners ask about a moment (text, voice note, sign language)
+app.include_router(lti.public)  # LTI 1.3: /lti/... (404 unless FIDEL_LTI_ENABLED)
+app.include_router(lti.staff)  # LTI 1.3: registering learning platforms (staff)
 
 
 @app.get("/health", tags=["system"])

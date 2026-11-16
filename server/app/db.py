@@ -90,6 +90,21 @@ CREATE TABLE IF NOT EXISTS questions (
     created_at  TEXT NOT NULL,
     updated_at  TEXT NOT NULL
 );
+
+-- LTI 1.3: learning platforms (Moodle, Canvas) allowed to open Fidel lessons (api/lti.py).
+-- Details about the platform only; nothing about learners.
+CREATE TABLE IF NOT EXISTS lti_platforms (
+    id              TEXT PRIMARY KEY,
+    name            TEXT NOT NULL,          -- for staff, e.g. "ALX Moodle"
+    issuer          TEXT NOT NULL,          -- the platform's id (Moodle: "Platform ID"), a URL
+    client_id       TEXT NOT NULL,          -- the id the platform gave Fidel
+    deployment_ids  TEXT NOT NULL,          -- JSON list: the platform's deployments of Fidel
+    auth_login_url  TEXT NOT NULL,          -- where Fidel sends the learner to sign in (Moodle: auth.php)
+    auth_token_url  TEXT NOT NULL,          -- where Fidel asks for a gradebook token (Moodle: token.php)
+    key_set_url     TEXT NOT NULL,          -- the platform's public keys (Moodle: certs.php)
+    created_at      TEXT NOT NULL,
+    UNIQUE (issuer, client_id)
+);
 """
 
 # Columns added after the first version. Older databases get them on start.
@@ -264,3 +279,39 @@ class Database:
     def delete_webhook(self, hook_id: str) -> bool:
         with self.connect() as db:
             return db.execute("DELETE FROM webhooks WHERE id = ?", (hook_id,)).rowcount > 0
+
+    # --- LTI platforms -----------------------------------------------------------------
+
+    @staticmethod
+    def _platform(row) -> dict:
+        return {**dict(row), "deployment_ids": json.loads(row["deployment_ids"])}
+
+    def add_lti_platform(self, platform: dict) -> bool:
+        """False if this issuer and client id are registered already."""
+        with self.connect() as db:
+            try:
+                db.execute(
+                    "INSERT INTO lti_platforms (id, name, issuer, client_id, deployment_ids, auth_login_url, "
+                    "auth_token_url, key_set_url, created_at) VALUES (:id, :name, :issuer, :client_id, "
+                    ":deployment_ids, :auth_login_url, :auth_token_url, :key_set_url, :created_at)",
+                    {**platform, "deployment_ids": json.dumps(platform["deployment_ids"]), "created_at": now()},
+                )
+            except sqlite3.IntegrityError:
+                return False
+        return True
+
+    def list_lti_platforms(self) -> list[dict]:
+        with self.connect() as db:
+            return [self._platform(r) for r in db.execute("SELECT * FROM lti_platforms ORDER BY created_at")]
+
+    def find_lti_platform(self, issuer: str, client_id: str | None = None) -> list[dict]:
+        """Platforms with this issuer (and client id, if given). Used by the launch checks."""
+        query, args = "SELECT * FROM lti_platforms WHERE issuer = ?", [issuer]
+        if client_id is not None:
+            query, args = query + " AND client_id = ?", args + [client_id]
+        with self.connect() as db:
+            return [self._platform(r) for r in db.execute(query, args)]
+
+    def delete_lti_platform(self, platform_id: str) -> bool:
+        with self.connect() as db:
+            return db.execute("DELETE FROM lti_platforms WHERE id = ?", (platform_id,)).rowcount > 0
