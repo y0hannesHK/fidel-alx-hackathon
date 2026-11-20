@@ -33,7 +33,7 @@ non-commercial (NC) licence as a default.
 
 | Name | Licence | Use |
 |---|---|---|
-| [MDN flower sample](https://github.com/mdn/interactive-examples/tree/main/live-examples/media/cc0-videos) (`flower.mp4`, `flower.webm`) | CC0 1.0 Universal ([license](https://github.com/mdn/interactive-examples/blob/main/LICENSE)) | Locally hosted sample for the mock player's playback demonstration and synthetic QA video; Digital Bridge captions and sign-language content are not attached |
+| [MDN flower sample](https://github.com/mdn/interactive-examples/tree/main/live-examples/media/cc0-videos) (`flower.mp4`, `flower.webm`) | CC0 1.0 Universal ([license](https://github.com/mdn/interactive-examples/blob/main/LICENSE)) | Optional silent `?source=flower` playback sample and synthetic QA video; lesson captions and sign-language content are not attached |
 
 The optional `?source=qa` fixture combines the CC0 flower video with a local
 Windows text-to-speech narration and a WebVTT track timed to that narration.
@@ -61,6 +61,27 @@ separate permissions. The build downloads the required CWASA XSLT, shaders, and
 common avatar archive from the upstream host, verifies their SHA-256 hashes, and
 serves them unchanged. The BSL output is experimental and has not been verified
 by a human interpreter.
+
+## Experimental Ethiopian Sign Language (EthSL) integration
+
+The EthSL avatar is a client-side, canvas-based renderer that fingerspells
+Amharic captions using hand-shape images from the Mendeley Amharic Sign Language
+dataset.
+
+| Name | Source | Licence | Use |
+|---|---|---|---|
+| Amharic Sign Language Dataset | [Mendeley Data DOI: 10.17632/5d3nkyhsrf.1](https://data.mendeley.com/datasets/5d3nkyhsrf/1) — Isayas Feyera, Addis Ababa Science and Technology University | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Static gesture images for the 10 EthSL fingerspelling classes (ቸ ኘ ከ ለ መ ነ ቀ ሀ በ ሰ), used as reference hand-shape images in the EthSL avatar |
+
+The dataset images are **not** shipped in the repository. They must be manually
+downloaded from the Mendeley link above, extracted from `Amharic_Sign_Language.rar`
+(SHA-256: `4c3d92545110bb27933384c339f83eff40d7d43f6928330e297cd83d0d24a51b`), and
+placed in `data/ethasl-public/ethasl/fingerspelling/` as:
+`be.jpg`, `che.jpg`, `gne.jpg`, `ha.jpg`, `ke.jpg`, `le.jpg`, `me.jpg`,
+`ne.jpg`, `qe.jpg`, `se.jpg`.
+
+SVG placeholder hand-shapes are auto-generated and used when the real images are
+not present. The EthSL output is **experimental, machine-generated fingerspelling**
+and has not been verified by a human EthSL interpreter.
 
 ## Build and test tools (not shipped)
 

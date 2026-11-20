@@ -3,7 +3,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const PAGE = '/demo/savanna-mock/?source=lesson';
+const PAGE = '/demo/savanna-mock/';
 
 // Open the lesson and wait until Fidel's panel is built (Able Player ready).
 async function openLesson(page) {
@@ -11,8 +11,8 @@ async function openLesson(page) {
   await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 15_000 });
 }
 
-test('default mock page plays its local CC0 sample without mismatched captions', async ({ page }) => {
-  await page.goto('/demo/savanna-mock/');
+test('optional CC0 sample plays without mismatched captions', async ({ page }) => {
+  await page.goto('/demo/savanna-mock/?source=flower');
   await expect(page.locator('fidel-player .fidel-panel')).toBeVisible({ timeout: 15_000 });
   const video = page.locator('fidel-player .able-media-container video');
   await expect.poll(() => video.evaluate((v) => v.readyState >= 2 && v.duration > 0)).toBe(true);
@@ -32,8 +32,20 @@ test('default mock page plays its local CC0 sample without mismatched captions',
   await expect(page.locator('.fidel-panel')).toContainText('This lesson does not have a sign language video yet.');
 });
 
+test('default lesson uses the supplied video, English captions, and Kozha BSL', async ({ page }) => {
+  await openLesson(page);
+  const video = page.locator('fidel-player .able-media-container video');
+  await expect.poll(() => video.evaluate((v) => v.readyState >= 2 && v.duration > 150)).toBe(true);
+  expect(await video.evaluate((v) => v.currentSrc)).toContain('/media/original/lesson.mp4');
+  await expect(page.locator('fidel-player .able-media-container track[kind="captions"]')).toHaveCount(2);
+  await expect(page.locator('.fidel-panel').getByRole('radio', { name: 'English' })).toBeChecked();
+  await expect(page.locator('fidel-player .able-captions-wrapper')).toHaveAttribute('lang', 'en');
+  await expect(page.getByRole('region', { name: 'Experimental British Sign Language avatar' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Show sign language' })).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('shows an accessible error when every video source fails', async ({ page }) => {
-  await page.route('**/demo/media/flower.*', (route) => route.abort());
+  await page.route('**/media/original/lesson.mp4', (route) => route.abort());
   await page.goto('/demo/savanna-mock/');
   await expect(page.locator('fidel-player .fidel-video-error')).toBeVisible();
   await expect(page.locator('fidel-player .fidel-video-error')).toContainText('could not be loaded');

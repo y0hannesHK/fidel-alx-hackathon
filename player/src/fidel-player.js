@@ -13,12 +13,15 @@
 //   src, src-webm, poster            video files
 //   captions-en, captions-am, captions-om   WebVTT captions (English, Amharic, Afaan Oromo)
 //   captions-am-status, captions-om-status  "draft" (machine-made) or "reviewed"
+//   captions-default                  initial caption language when no preference is saved
 //   chapters-en, chapters-am         WebVTT chapter titles ("chapters" = English)
 //   descriptions-en, descriptions-am audio description text ("descriptions" = English)
 //   sign                             sign-language video (WebM or MP4)
 //   sign-provider="kozha-bsl"        experimental BSL avatar for English captions
+//   sign-provider="ethasl"           experimental EthSL avatar for Amharic captions
 //   sign-visible="true"              show the configured sign window on startup
 //   kozha-origin                     self-hosted Kozha base URL, e.g. http://localhost:8001
+//   ethasl-origin                    self-hosted EthSL base URL, e.g. http://localhost:8001
 //   src-small                        small video for low-data mode
 //   offline-page, offline-page-video one-page offline lesson (audio + text / + video)
 //   offline-pack                     offline pack (.zip)
@@ -395,7 +398,7 @@ export class FidelPlayer extends HTMLElement {
 
     // Captions: language, position, look.
     const captionLangs = player.captions.map((track) => track.language);
-    const wanted = this.prefs.captionLang;
+    const wanted = this.prefs.captionLang ?? this.getAttribute('captions-default');
     if (wanted === 'off' || captionLangs.includes(wanted)) selectCaptions(player, wanted);
     markCaptionLanguage(player);
     placeCaptions(player, this, this.prefs.captionPosition);
@@ -411,14 +414,28 @@ export class FidelPlayer extends HTMLElement {
 
     // Sign language window.
     const signProvider = this.getAttribute('sign-provider');
-    this.sign = new SignWindow(player, this, this.signDock, signProvider === 'kozha-bsl'
-      ? {
-          provider: 'kozha-bsl',
-          kozhaOrigin: this.getAttribute('kozha-origin'),
-          parentOrigin: window.location.origin,
-        }
+    this.sign = new SignWindow(player, this, this.signDock,
+      signProvider === 'kozha-bsl'
+        ? {
+            provider: 'kozha-bsl',
+            kozhaOrigin: this.getAttribute('kozha-origin'),
+            parentOrigin: window.location.origin,
+          }
+      : signProvider === 'ethasl'
+        ? {
+            provider: 'ethasl',
+            ethaslOrigin: this.getAttribute('ethasl-origin') || this.getAttribute('kozha-origin'),
+            parentOrigin: window.location.origin,
+          }
+      : signProvider === 'both'
+        ? {
+            provider: 'both',
+            kozhaOrigin: this.getAttribute('kozha-origin'),
+            ethaslOrigin: this.getAttribute('ethasl-origin') || this.getAttribute('kozha-origin'),
+            parentOrigin: window.location.origin,
+          }
       : undefined);
-    if (signProvider === 'kozha-bsl') {
+    if (signProvider === 'kozha-bsl' || signProvider === 'ethasl' || signProvider === 'both') {
       this.updateSignCues();
     }
     if (this.sign.available) {
@@ -666,24 +683,58 @@ export class FidelPlayer extends HTMLElement {
   }
 
   updateSignCues(language = currentCaptionLang(this.ablePlayer || {})) {
-    if (this.sign?.provider !== 'kozha-bsl') return;
+    const provider = this.sign?.provider;
+    if (!provider || provider === 'video') return;
     const signWindow = this.sign;
     const requestId = (this.signCueRequest || 0) + 1;
     this.signCueRequest = requestId;
     this.loadCaptionText()
       .then((tracks) => {
         if (this.sign !== signWindow || requestId !== this.signCueRequest) return;
-        if (language === 'en') {
-          const english = tracks.find((track) => track.lang === 'en');
-          signWindow.setCues(english?.cues || [], {
+
+        if (provider === 'both') {
+          // Switch the displayed sub-avatar based on current caption language
+          signWindow.switchBothAvatar(language);
+
+          if (language === 'off') {
+            // Captions are off — tell both sub-avatars to show a "turn on captions" message
+            const offMsg = t(this.uiLang, 'signNeedsCaptionsAny');
+            signWindow.setCues([], { language: 'off', unavailableMessage: offMsg });
+            return;
+          }
+
+          // Always send BOTH cue sets so each controller knows its data
+          const enTrack = tracks.find((t) => t.lang === 'en');
+          const amTrack = tracks.find((t) => t.lang === 'am');
+          signWindow.setCues(enTrack?.cues || [], {
             language: 'en',
             unavailableMessage: t(this.uiLang, 'signNoEnglishCaptions'),
           });
+          signWindow.setCues(amTrack?.cues || [], {
+            language: 'am',
+            unavailableMessage: t(this.uiLang, 'signNoAmharicCaptions'),
+          });
           return;
         }
+
+        const isEthASL = provider === 'ethasl';
+        const targetLang = isEthASL ? 'am' : 'en';
+
+        if (language === targetLang) {
+          const track = tracks.find((t) => t.lang === targetLang);
+          signWindow.setCues(track?.cues || [], {
+            language: targetLang,
+            unavailableMessage: t(this.uiLang, isEthASL ? 'signNoAmharicCaptions' : 'signNoEnglishCaptions'),
+          });
+          return;
+        }
+        // Wrong language selected — tell avatar it's unavailable
+        const msgKey = isEthASL
+          ? (language === 'off' ? 'signNeedsCaptions' : 'signAmharicOnly')
+          : (language === 'off' ? 'signNeedsCaptions' : 'signEnglishOnly');
         signWindow.setCues([], {
           language,
-          unavailableMessage: t(this.uiLang, language === 'off' ? 'signNeedsCaptions' : 'signEnglishOnly'),
+          unavailableMessage: t(this.uiLang, msgKey),
         });
       })
       .catch((error) => {

@@ -29,7 +29,12 @@ services:
     ports:
       - "${KOZHA_BIND:-127.0.0.1}:${KOZHA_PORT:-8001}:8000"
     volumes:
+      # Fidel sign-language frame files (BSL frame + EthSL frame + EthSL sign images)
       - ./kozha-integration:/app/public/fidel-sign:ro
+      # EthSL sign gesture images (Mendeley dataset 10.17632/5d3nkyhsrf.1, CC BY 4.0)
+      # Place extracted dataset images as: ./data/ethasl-public/ethasl/fingerspelling/SIGN.jpg
+      # SVG placeholders are pre-generated in kozha-integration/ethasl/fingerspelling/
+      - ./data/ethasl-public/ethasl:/app/public/data/ethasl:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/chat2hamnosys/health')"]
       interval: 15s

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="am">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>የኢትዮጵያ የምልክት ቋንቋ አቫታር / Ethiopian Sign Language Avatar</title>
+  <link rel="stylesheet" href="/cwa/cwasa.css">
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { margin: 0; color: #172033; background: #f7f8fa; }
+    #status { margin: 0; padding: 0.5rem 0.75rem; font-size: 0.95rem; }
+    .stage { position: relative; width: 100%; aspect-ratio: 4 / 3; min-height: 12rem; overflow: hidden; }
+    .CWASAAvatar.av0 { width: 100% !important; height: 100% !important; display: flex; align-items: center; justify-content: center; }
+    .CWASAAvatar.av0 canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .CWASAGUI.av0 { display: none !important; }
+  </style>
+  <script defer src="/cwa/allcsa.js"></script>
+  <script defer src="/sigml-validator.js"></script>
+  <script defer src="/fidel-sign/ethasl-frame.js?v=20261120-2"></script>
+</head>
+<body>
+  <p id="status" role="status" aria-live="polite" lang="am">የኢትዮጵያ የምልክት ቋንቋ አቫታር በመጫን ላይ ነው…</p>
+  <div class="stage" role="img" aria-label="የኢትዮጵያ የምልክት ቋንቋ አቫታር / Ethiopian Sign Language avatar">
+    <div class="CWASAAvatar av0"></div>
+    <div class="CWASAGUI av0" aria-hidden="true"></div>
+  </div>
+</body>
+</html>

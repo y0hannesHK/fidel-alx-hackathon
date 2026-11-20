@@ -60,21 +60,23 @@ The starter is downloaded, not stored in this repository (it is ALX's).
 Fidel resets the few host styles that would otherwise reach it (Bootstrap's
 large floated `<legend>`, light-blue links) only inside its own elements.
 
-The default mock page plays a locally hosted CC0 sample video. It
-demonstrates the real player and controls without attaching unrelated captions.
-Use `?source=lesson` to open the owner-provided Digital Bridge clip with its
-English and draft Amharic caption tracks. The clip is kept out of git at
-`data/demo/original/lesson.mp4`; provide an authorized copy there to make this
-mode available. The separate `?source=original` mode uses locally generated
-Whisper draft captions for a supplied video. See
+The default mock page uses the owner-provided lesson video at
+`data/demo/original/lesson.mp4` with English captions and an Amharic draft.
+Those captions match this lesson; the Amharic translation and caption timing
+still need review. The video is local and git-ignored. To use your own copy,
+place it at that path. The default page enables English captions and the
+experimental Kozha BSL avatar; the English captions drive the avatar.
+`?source=flower` opens the bundled silent CC0 sample without captions or sign
+output. `?source=original` uses local Whisper-generated English draft captions
+for the supplied video. See
 `.\scripts\make-captioned-video.ps1 'C:\path\to\your-video.mp4'` for that
 workflow.
 
 The lesson page uses the local Kozha service to produce an **experimental,
 unverified BSL avatar** from the active English caption cue. This is not EthSL,
 not a human interpretation, and its animation timing may differ from the
-video. English caption timings are estimated and need review; the Amharic
-captions remain an unreviewed draft and are not sent to Kozha.
+video. English captions are marked as a draft and require review; the Amharic
+captions are also an unreviewed draft and are not sent to Kozha.
 
 The original Digital Bridge lesson uses English captions and an Amharic
 machine-translation draft. The Amharic file is explicitly marked as unreviewed;
@@ -83,10 +85,10 @@ The project does not include Afaan Oromoo captions for this lesson. Add a
 language track only after the translation is checked against the spoken
 transcript by a fluent speaker.
 
-For a quick player demonstration without these recordings, open the default
-mock page. It intentionally has no captions or sign output because the flower
-sample has no speech. To test English captions and the experimental BSL path
-without the Digital Bridge recording, run `.\scripts\make-qa-video.ps1` while
+For a quick player demonstration without the lesson recording, open
+`?source=flower`. It intentionally has no captions or sign output because the
+flower sample has no speech. To test English captions and the experimental BSL path
+without the lesson recording, run `.\scripts\make-qa-video.ps1` while
 Docker Compose is running and an English Windows text-to-speech voice is
 installed, then open
 `http://localhost:8000/demo/savanna-mock/?source=qa`. This creates a separate
@@ -232,6 +234,7 @@ is approximate.
 | `src`, `src-webm`, `src-small` | Video (MP4), optional WebM, optional small video for "Use less data". |
 | `poster` | Image shown before playing. |
 | `captions-en`, `captions-am`, `captions-om`, `captions-am-status`, `captions-om-status` | Captions in English, Amharic, Afaan Oromo (WebVTT); status `draft` shows the "not yet reviewed" notice. |
+| `captions-default` | Initial caption language when no saved preference exists, e.g. `en`. |
 | `chapters-en` (or `chapters`), `chapters-am` | Chapter titles (WebVTT). |
 | `descriptions-en` (or `descriptions`), `descriptions-am` | Audio description text (WebVTT). |
 | `description-recordings` | JSON: recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
@@ -509,7 +512,7 @@ Demo media: with the authorized original recordings in `assets/`,
 `sh scripts/make-demo-session.sh` creates the recorded session for
 `/demo/savanna-mock/session.html`. The lesson script does not create
 `data/demo/sign.webm`; supply a genuine synchronized EthSL recording separately.
-The default player sample is bundled as `demo/media/flower.mp4` and
+The optional silent player sample is bundled as `demo/media/flower.mp4` and
 `demo/media/flower.webm` (CC0; see [LICENSES.md](LICENSES.md)).
 
 ## Credits

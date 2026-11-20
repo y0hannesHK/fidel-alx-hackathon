@@ -7,7 +7,7 @@
 
   <!-- Fidel install: these two lines plus the <fidel-player> tag below. -->
   <link rel="stylesheet" href="/embed/v1/fidel.css">
-  <script src="/embed/v1/fidel.js?v=20261115-4" defer></script>
+  <script src="/embed/v1/fidel.js?v=20261120-1" defer></script>
 
   <!-- Styles for this mock page only (not part of Fidel). -->
   <style>
@@ -102,20 +102,23 @@
   </footer>
   <script>
     const source = new URLSearchParams(location.search).get('source');
-    if (source === 'lesson') {
+    if (source === null || source === 'lesson') {
       const player = document.getElementById('lesson-player');
+      player.removeAttribute('src-webm');
       player.setAttribute('src', '/media/original/lesson.mp4');
       player.setAttribute('captions-en', '/demo/media/en.vtt');
       player.setAttribute('captions-am', '/demo/media/am.vtt');
+      player.setAttribute('captions-default', 'en');
       player.setAttribute('captions-en-status', 'draft');
       player.setAttribute('captions-am-status', 'draft');
       player.setAttribute('chapters', '/demo/media/chapters.vtt');
       player.setAttribute('chapters-am', '/demo/media/chapters-am.vtt');
-      player.setAttribute('sign-provider', 'kozha-bsl');
+      player.setAttribute('sign-provider', 'both');
       player.setAttribute('sign-visible', 'true');
       const kozhaOrigin = new URL(location.origin);
       kozhaOrigin.port = '8001';
       player.setAttribute('kozha-origin', kozhaOrigin.origin);
+      player.setAttribute('ethasl-origin', kozhaOrigin.origin);
       document.getElementById('page-title').textContent = 'Lesson 1: Why accessible tech education matters';
       document.getElementById('video-heading').textContent = 'Lesson video';
       document.getElementById('about-heading').textContent = 'About this lesson';
@@ -125,12 +128,13 @@
       document.getElementById('breadcrumb-section').textContent = 'Week 1';
       document.getElementById('breadcrumb-current').textContent = 'Lesson 1';
       document.getElementById('media-note').textContent =
-        'The owner-provided Digital Bridge clip plays locally with English captions adapted from the Zoom transcript; caption timing is estimated and needs review. Amharic captions are an unreviewed draft. The self-hosted Kozha BSL avatar is experimental and unverified.';
+        'The owner-provided Digital Bridge clip plays locally with English captions adapted from the Zoom transcript; caption timing is estimated and needs review. Amharic captions are an unreviewed draft. BSL (English) and Ethiopian Sign Language / አማርኛ (Amharic) avatars are experimental and unverified — the sign window switches automatically when you change caption language.';
       document.title = 'Accessible tech careers – Lesson 1 – Savanna (mock)';
     } else if (source === 'qa') {
       const player = document.getElementById('lesson-player');
       player.setAttribute('src', '/media/qa/lesson.mp4');
       player.setAttribute('captions-en', '/media/qa/captions-en.vtt');
+      player.setAttribute('captions-default', 'en');
       player.setAttribute('sign-provider', 'kozha-bsl');
       player.setAttribute('sign-visible', 'true');
       const kozhaOrigin = new URL(location.origin);
@@ -149,8 +153,10 @@
       document.title = 'Synthetic captions and BSL test – Savanna (mock)';
     } else if (source === 'original') {
       const player = document.getElementById('lesson-player');
+      player.removeAttribute('src-webm');
       player.setAttribute('src', '/media/original/lesson.mp4');
       player.setAttribute('captions-en', '/media/original/captions-en.vtt');
+      player.setAttribute('captions-default', 'en');
       player.setAttribute('sign-provider', 'kozha-bsl');
       player.setAttribute('sign-visible', 'true');
       const kozhaOrigin = new URL(location.origin);
@@ -167,6 +173,60 @@
       document.getElementById('media-note').textContent =
         'English captions were generated locally by Whisper as a draft. Review them against the source audio. The BSL output is experimental and unverified; it is not a human interpretation or EthSL.';
       document.title = 'Original test video with draft captions – Savanna (mock)';
+    } else if (source === 'ethasl') {
+      // Both BSL (English) and EthSL (Amharic) - same page, switches with caption language
+      const player = document.getElementById('lesson-player');
+      player.removeAttribute('src-webm');
+      player.setAttribute('src', '/media/original/lesson.mp4');
+      player.setAttribute('captions-en', '/demo/media/en.vtt');
+      player.setAttribute('captions-am', '/demo/media/am.vtt');
+      player.setAttribute('captions-default', 'en');
+      player.setAttribute('captions-en-status', 'draft');
+      player.setAttribute('captions-am-status', 'draft');
+      const signOrigin = new URL(location.origin);
+      signOrigin.port = '8001';
+      player.setAttribute('sign-provider', 'both');
+      player.setAttribute('sign-visible', 'true');
+      player.setAttribute('kozha-origin', signOrigin.origin);
+      player.setAttribute('ethasl-origin', signOrigin.origin);
+      document.getElementById('page-title').textContent = 'Sign Language: BSL (English) + EthSL (Amharic)';
+      document.getElementById('video-heading').textContent = 'Sign language avatar — switches with caption language';
+      document.getElementById('about-heading').textContent = 'About the dual sign avatar';
+      document.getElementById('about-copy').textContent =
+        'English captions drive the experimental BSL avatar (Kozha/CWASA). Amharic captions drive the experimental Ethiopian Sign Language avatar — Amharic text is translated to English signs using the same 3D Kozha character. Switch caption language to switch the avatar.';
+      document.getElementById('breadcrumb-course').textContent = 'Fidel QA';
+      document.getElementById('breadcrumb-section').textContent = 'Sign Language Test';
+      document.getElementById('breadcrumb-current').textContent = 'BSL + EthSL';
+      document.getElementById('media-note').textContent =
+        'Dual avatar: select English captions for BSL, select Amharic captions for EthSL. Both use the same 3D Kozha character. Output is experimental and not human-verified.';
+      document.title = 'BSL + EthSL sign language – Savanna (mock)';
+    } else if (source === 'both') {
+      // Combined demo: BSL (English) + EthSL (Amharic) — avatar switches with caption language
+      const player = document.getElementById('lesson-player');
+      player.removeAttribute('src-webm');
+      player.setAttribute('src', '/media/original/lesson.mp4');
+      player.setAttribute('captions-en', '/demo/media/en.vtt');
+      player.setAttribute('captions-am', '/demo/media/am.vtt');
+      player.setAttribute('captions-default', 'en');
+      player.setAttribute('captions-en-status', 'draft');
+      player.setAttribute('captions-am-status', 'draft');
+      const signOrigin = new URL(location.origin);
+      signOrigin.port = '8001';
+      player.setAttribute('sign-provider', 'both');
+      player.setAttribute('sign-visible', 'true');
+      player.setAttribute('kozha-origin', signOrigin.origin);
+      player.setAttribute('ethasl-origin', signOrigin.origin);
+      document.getElementById('page-title').textContent = 'Dual sign language: BSL (English) + EthSL (Amharic)';
+      document.getElementById('video-heading').textContent = 'Sign language avatar — switches with caption language';
+      document.getElementById('about-heading').textContent = 'About the dual sign avatar';
+      document.getElementById('about-copy').textContent =
+        'Switch caption language to see the sign avatar change: English captions drive the experimental BSL avatar (Kozha/CWASA), Amharic captions drive the experimental Ethiopian Sign Language avatar (EthSL, Mendeley dataset 10.17632/5d3nkyhsrf.1). Both outputs are machine-generated and not human-verified.';
+      document.getElementById('breadcrumb-course').textContent = 'Fidel QA';
+      document.getElementById('breadcrumb-section').textContent = 'Sign Language Test';
+      document.getElementById('breadcrumb-current').textContent = 'BSL + EthSL';
+      document.getElementById('media-note').textContent =
+        'Dual avatar mode: select English captions for BSL, select Amharic captions for EthSL. Switching caption language automatically switches the sign avatar. All output is experimental and unverified.';
+      document.title = 'Dual sign language (BSL + EthSL) test – Savanna (mock)';
     }
   </script>
 </body>

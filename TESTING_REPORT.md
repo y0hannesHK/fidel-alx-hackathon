@@ -3,6 +3,11 @@
 **Date:** 2026-11-15
 **Scope:** Fidel/Savanna demo, player, upload API, media-processing pipeline, captions, translation, sign-language processing and synchronization.
 
+**Current demo configuration (2026-11-20):** The default page now uses the
+user-provided `data/demo/original/lesson.mp4`, the matching English and draft
+Amharic tracks, and the self-hosted Kozha BSL integration. The file remains
+git-ignored. `?source=flower` opens the silent CC0 fallback.
+
 ## Executive result
 
 Docker is healthy. The owner-provided 159-second H.264/AAC video is available locally in both the Digital Bridge lesson route and a separate Whisper-caption QA route. The English/Amharic interface buttons now select only their matching caption and transcript track. A live browser check confirmed Amharic-only captions/transcript and an Amharic BSL limitation notice; English captions and the English BSL avatar played across multiple cue changes without JavaScript errors. Caption timing/translation and sign meaning still need human review. No video was sent to an external service. The actual upload API pipeline, Amharic/Oromo speech recognition, and EthSL remain incomplete. Whisper small is downloaded; MADLAD is not.
@@ -22,7 +27,7 @@ The BSL corpus contains limited reviewed entries; other words are fingerspelled 
 - The backend test suite passes inside Docker (56 passed). Its upload test uses a generated 3-second synthetic video and fake speech-to-text/translation providers; it is not a real lesson-quality test.
 - Player unit tests pass (27) and the player production build succeeds. The full Playwright suite could not launch in the CLI because its Chromium executable is not installed; the language-switch and avatar path were instead checked in the live browser.
 - The live database has no Digital Bridge lesson records or sign clip. The owner-provided video and draft captions are under git-ignored `/app/data/demo/original`; the synthetic CC0 fixture is under `/app/data/demo/qa`.
-- The owner-provided clip is local and not committed. `?source=lesson` pairs it with the matching Zoom-derived English and Amharic caption files. Their timing/translation review limitations are shown on the page.
+- The owner-provided clip is local and not committed. The default route and `?source=lesson` pair it with the matching English and Amharic caption files. Their timing/translation review limitations are shown on the page.
 - Whisper small is downloaded locally; MADLAD is not. The original CC0 flower sample is silent and not an ASR fixture; its separate synthetic QA derivative has its own generated narration and matching WebVTT.
 - Two videos found in an adjacent desktop project were inspected but not adopted: its `lesson.mp4` is about 10 seconds while its fraction-lesson VTT cues continue to 116 seconds, and the video frames do not establish that transcript as its narration; `animation ved.mp4` is a real-estate/TikTok montage, not an EthSL clip. Neither is safe to pair with the lesson captions or sign panel.
 - The newly provided YouTube URL identifies “DISCIPLINE | An Animated Short Film” by Day One Films and exposes an English auto-generated caption track. It does not expose Amharic or EthSL media. The Fidel player expects MP4/WebM plus WebVTT and cannot use a YouTube watch URL as its media source; an iframe test did not produce playable video in this browser (unsupported codec warning/black frame). The video was not downloaded or transcribed.
@@ -62,7 +67,11 @@ No dataset or model was downloaded or integrated. The restricted research videos
 | Afaan Oromoo | Player/API caption track and machine-translation draft path exist. Speech-to-text and interface translations are not implemented; generated Oromo text requires fluent review. |
 | Ethiopian Sign Language (EthSL) | A manually supplied companion video can be encoded and synchronized by elapsed time. There is no supplied recording, automated language recognition, semantic matching, or human verification in this repository. |
 
-The default silent CC0 sample intentionally shows neither lesson captions nor sign video. `?source=lesson` plays the owner-provided Digital Bridge clip with its lesson captions; `?source=original` plays that same local clip with Whisper-generated draft captions. The separate QA derivative uses only its own synthetic narration and matching captions.
+The default page plays the owner-provided Digital Bridge clip with English and
+draft Amharic captions and the Kozha BSL avatar. `?source=flower` selects the
+silent CC0 fallback; `?source=original` uses Whisper-generated English draft
+captions for the same local video. The separate QA derivative uses only its
+own synthetic narration and matching captions.
 
 ## Browser and build checks
 
