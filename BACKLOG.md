@@ -10,7 +10,22 @@ Known issues and agreed follow-ups, with the phase they are planned for.
   gradebook shows 100. Still to do (docs/manual-testing.md, "LTI"): Moodle's
   "New window" container, Chrome with third-party cookies blocked, the gradebook
   down then Try again, Moodle in Amharic, and NVDA on the picker and the lesson
-  page; screenshots for the README.
+  page; screenshots for the README. (Narrator, keyboard only, on the live Moodle
+  lesson page: done 20 Nov, docs/manual-testing.md, "Results".)
+- **LTI lesson page: every message in both languages** (found with Narrator,
+  20 Nov). Each message is shown in English and Amharic; a screen reader reads
+  both, and with no Amharic voice Narrator says "Amharic" after every English
+  sentence. Plan: start in the course's language (the launch gives the locale)
+  with an "English | አማርኛ" switch the learner can use at any time,
+  remembered; each message then read once. Not locked to the course language:
+  learners may switch languages during a course. Captions are not affected.
+- **Player timeline speaks during playback** (found with Narrator, 20 Nov).
+  When focus is on the timeline slider while the video plays, its value changes
+  every second and the screen reader reads it out ("18, 20 seconds, 22…") over
+  the lesson. Plan: while playing, keep the slider's spoken value still (the
+  bar still moves); update it when the learner moves the timeline (arrow keys,
+  one announcement per key press) or when the video pauses. Note: arrow keys on
+  the timeline seek, by design (standard slider); Tab moves to Pause.
 - **LTI Amharic text to review** (written with machine help): the messages in
   `server/app/lti/pages.py` (problems, picker), `server/app/lti/lti-lesson.js`
   (saving to the course) and `server/app/templates/lti-lesson.html`.
