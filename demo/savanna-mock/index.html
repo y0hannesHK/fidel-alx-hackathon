@@ -87,6 +87,22 @@
         sign="/media/sign.webm"
         lang="en">
       </fidel-player>
+      <script>
+        // Optional: ?sign=bsl swaps the recorded sign video for the experimental
+        // British Sign Language avatar (needs: docker compose --profile bsl-avatar up -d).
+        // Runs before fidel.js (deferred), so the player is built with these settings.
+        if (new URLSearchParams(location.search).get('sign') === 'bsl') {
+          const player = document.getElementById('lesson-player');
+          player.removeAttribute('sign');
+          player.setAttribute('sign-provider', 'kozha-bsl');
+          player.setAttribute('kozha-origin', `${location.protocol}//${location.hostname}:8001`);
+        }
+      </script>
+      <p class="fidel-note">
+        Experimental: <a href="?sign=bsl">show a British Sign Language avatar</a> for the English
+        captions (BSL, not Ethiopian Sign Language; machine-made, not an interpreter; needs the
+        optional <code>bsl-avatar</code> service).
+      </p>
     </section>
 
     <section class="card" aria-labelledby="about-heading">

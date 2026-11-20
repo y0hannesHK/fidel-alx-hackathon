@@ -246,6 +246,8 @@ does not receive our accessibility fixes, and small edits can break them
 | `descriptions-en` (or `descriptions`), `descriptions-am`, `descriptions-om` | Audio description text (WebVTT). |
 | `description-recordings` | JSON: recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
 | `sign` | Sign-language video (WebM or MP4). |
+| `sign-provider="kozha-bsl"`, `kozha-origin` | Experimental British Sign Language avatar for the English captions, instead of a sign video (see "Optional British Sign Language avatar"). `kozha-origin` is the address of the `kozha` service, e.g. `http://localhost:8001`. |
+| `sign-visible` | `true`: show the sign window as soon as the player is ready. |
 | `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
 | `offline-page-size`, `offline-page-video-size`, `offline-pack-size` | Sizes in bytes, shown on the download buttons (filled in from the lesson). |
 | `document-html-en`, `document-html-am`, `document-pdf-en`, `document-pdf-am`, `document-brf-en`, `document-brf-am` | The lesson document as a web page, tagged PDF and Braille (filled in from the lesson). |
@@ -1440,6 +1442,38 @@ What changes:
   guess. `TOUCAN_DURATION_SCALE=1.25` (on the `toucan` service) speaks 25%
   slower. See [docs/speech-engines.md](docs/speech-engines.md) for why.
 - How they were chosen and measured: [docs/speech-engines.md](docs/speech-engines.md).
+
+### Optional British Sign Language avatar (experimental)
+
+An avatar that signs the **English** captions in **British Sign Language
+(BSL)** while the video plays. It is **not Ethiopian Sign Language**: no
+text-to-sign system for EthSL exists yet. It shows how automatic signing works;
+real EthSL comes from interpreter videos (the `sign` attribute) and, later, an
+EthSL sign dictionary made with Deaf signers.
+
+- **Off by default.** It runs in its own container (the `bsl-avatar` profile):
+
+  ```sh
+  docker compose --profile bsl-avatar up -d --build
+  ```
+
+  Then open the lesson demo with `?sign=bsl`:
+  http://localhost:8000/demo/savanna-mock/?sign=bsl
+- **How it works:** each English caption goes to the local `kozha` service
+  ([Kozha](https://github.com/zhan-a/Kozha), pinned commit), which turns it into
+  BSL signs from the DictaSign BSL dictionary (about 880 signs) and fingerspells
+  other words; the CWASA avatar signs them in the sign window, following play,
+  pause, seek and speed. This step runs offline (spaCy on the server). Kozha's
+  other features that call outside services (speech upload, sign authoring with
+  an AI key) are not used and need keys we do not set.
+- **Non-commercial only.** The BSL dictionary is CC BY-NC-SA and the avatar
+  engine CC BY-ND (see [LICENSES.md](LICENSES.md)). The first build downloads
+  Kozha from GitHub and the avatar files from the University of East Anglia
+  (checked with SHA-256).
+- **Limits:** machine-made and not checked by a BSL interpreter; English word
+  order, not BSL grammar; timing follows the captions only roughly. Amharic
+  captions are not sent (the window says so). The avatar is loaded from port
+  8001, so on a public server it needs its own HTTPS address.
 
 ## Hardware and models
 

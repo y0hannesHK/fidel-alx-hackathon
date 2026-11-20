@@ -51,3 +51,25 @@ services:
     volumes:
       - ./data/models:/models
     restart: unless-stopped
+
+  # ---- Optional British Sign Language avatar (off unless its profile is named) ----
+  # Experimental, NON-COMMERCIAL: English captions to BSL with Kozha and the
+  # CWASA avatar (see LICENSES.md). It is BSL, not Ethiopian Sign Language.
+  # The browser loads the avatar from this service directly, so it publishes a
+  # port (local only by default).
+  #   docker compose --profile bsl-avatar up -d --build
+  kozha:
+    profiles: ["bsl-avatar"]
+    build:
+      context: .
+      dockerfile: Dockerfile.kozha
+    ports:
+      - "${KOZHA_BIND:-127.0.0.1}:${KOZHA_PORT:-8001}:8000"
+    volumes:
+      - ./kozha-integration:/app/public/fidel-sign:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/chat2hamnosys/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped

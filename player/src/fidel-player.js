@@ -16,6 +16,9 @@
 //   chapters-en, chapters-am         WebVTT chapter titles ("chapters" = English)
 //   descriptions-en, descriptions-am, descriptions-om  audio description text ("descriptions" = English)
 //   sign                             sign-language video (WebM or MP4)
+//   sign-provider="kozha-bsl"        experimental BSL avatar for English captions
+//   sign-visible="true"              show the configured sign window on startup
+//   kozha-origin                     self-hosted Kozha base URL, e.g. http://localhost:8001
 //   src-small                        small video for low-data mode
 //   offline-page, offline-page-video one-page offline lesson (audio + text / + video)
 //   offline-pack                     offline pack (.zip)
@@ -59,6 +62,10 @@ function whenReady(player, timeoutMs = 15000) {
 }
 
 export class FidelPlayer extends HTMLElement {
+  static get observedAttributes() {
+    return ['sign-visible'];
+  }
+
   connectedCallback() {
     // connectedCallback runs again if the element is moved; build only once.
     if (this.ablePlayer || this.building) return;
@@ -88,6 +95,12 @@ export class FidelPlayer extends HTMLElement {
       const target = chooser.getAttribute('for');
       return target ? target === this.id : true;
     });
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name !== 'sign-visible' || oldValue === newValue || !this.sign?.available) return;
+    this.sign.setVisible(newValue === 'true');
+    this.panel?.setSignVisible(this.sign.visible);
   }
 
   disconnectedCallback() {
@@ -156,18 +169,7 @@ export class FidelPlayer extends HTMLElement {
     });
 
     const video = this.buildVideo(lang, this.transcript.bodyId);
-    // If no video file can be loaded, say so (instead of an empty black box).
-    const sources = [...video.querySelectorAll('source')];
-    sources.at(-1)?.addEventListener('error', () => {
-      // The browser updates networkState just after this event: check a moment later.
-      setTimeout(() => {
-        if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE && !this.querySelector('.fidel-video-error')) {
-          const lowDataHint = this.getAttribute('src-small') && !this.prefs.lowData ? ` ${t(lang, 'videoErrorLowData')}` : '';
-          this.statusArea.prepend(h('p', { class: 'fidel-error fidel-video-error' }, t(lang, 'videoError') + lowDataHint));
-          emit(this, 'fidel-error', { message: 'video could not be loaded' });
-        }
-      }, 100);
-    });
+    this.bindVideoStatus(video, lang);
     playerSlot.append(video);
     this.replaceChildren(
       h(
@@ -291,6 +293,30 @@ export class FidelPlayer extends HTMLElement {
     return video;
   }
 
+  /** If no video file can be loaded, say so (instead of an empty black box).
+   *  Each <source> fails on its own (the video element may not fire 'error'),
+   *  so wait until every source has failed: an earlier one failing is normal
+   *  when a later one works. */
+  bindVideoStatus(video, lang) {
+    let shown = false;
+    const showError = () => {
+      if (shown || this.querySelector('.fidel-video-error')) return;
+      shown = true;
+      const lowDataHint = this.getAttribute('src-small') && !this.prefs.lowData ? ` ${t(lang, 'videoErrorLowData')}` : '';
+      this.statusArea.prepend(h('p', { class: 'fidel-error fidel-video-error', role: 'alert' }, t(lang, 'videoError') + lowDataHint));
+      emit(this, 'fidel-error', { message: 'video could not be loaded' });
+    };
+    video.addEventListener('error', showError);
+    const sources = [...video.querySelectorAll('source')];
+    const failed = new Set();
+    for (const source of sources) {
+      source.addEventListener('error', () => {
+        failed.add(source);
+        if (failed.size === sources.length) showError();
+      });
+    }
+  }
+
   /**
    * Chapter titles must be read in their real language (WCAG 3.1.2). If the
    * transcript is in Amharic but there are only English chapters, Able Player
@@ -380,11 +406,22 @@ export class FidelPlayer extends HTMLElement {
     }
 
     // Sign language window.
-    this.sign = new SignWindow(player, this, this.signDock);
+    const signProvider = this.getAttribute('sign-provider');
+    this.sign = new SignWindow(player, this, this.signDock, signProvider === 'kozha-bsl'
+      ? {
+          provider: 'kozha-bsl',
+          kozhaOrigin: this.getAttribute('kozha-origin'),
+          parentOrigin: window.location.origin,
+        }
+      : undefined);
+    if (signProvider === 'kozha-bsl') {
+      this.updateSignCues();
+    }
     if (this.sign.available) {
       this.sign.setLayout(this.prefs.signLayout);
       this.sign.setSize(this.prefs.signSize);
       this.sign.setCorner(this.prefs.signCorner);
+      if (this.getAttribute('sign-visible') === 'true') this.sign.setVisible(true);
     }
 
     // Playback speed (Able Player's Faster/Slower buttons change it).
@@ -482,6 +519,7 @@ export class FidelPlayer extends HTMLElement {
         selectCaptions(this.ablePlayer, lang);
         emit(this, 'fidel-captions-change', { lang });
         this.savePrefs({ captionLang: lang });
+        this.updateSignCues(lang);
         this.updateDraftNotice();
       },
       captionSize: (size) => {
@@ -532,6 +570,7 @@ export class FidelPlayer extends HTMLElement {
     if (lang !== this.prefs.captionLang) {
       this.savePrefs({ captionLang: lang });
       emit(this, 'fidel-captions-change', { lang });
+      this.updateSignCues(lang);
     }
     this.updateDraftNotice();
   }
@@ -599,6 +638,37 @@ export class FidelPlayer extends HTMLElement {
       );
     }
     return this.captionText;
+  }
+
+  updateSignCues(language = currentCaptionLang(this.ablePlayer || {})) {
+    if (this.sign?.provider !== 'kozha-bsl') return;
+    const signWindow = this.sign;
+    const requestId = (this.signCueRequest || 0) + 1;
+    this.signCueRequest = requestId;
+    this.loadCaptionText()
+      .then((tracks) => {
+        if (this.sign !== signWindow || requestId !== this.signCueRequest) return;
+        if (language === 'en') {
+          const english = tracks.find((track) => track.lang === 'en');
+          signWindow.setCues(english?.cues || [], {
+            language: 'en',
+            unavailableMessage: t(this.uiLang, 'signNoEnglishCaptions'),
+          });
+          return;
+        }
+        signWindow.setCues([], {
+          language,
+          unavailableMessage: t(this.uiLang, language === 'off' ? 'signNeedsCaptions' : 'signEnglishOnly'),
+        });
+      })
+      .catch((error) => {
+        if (this.sign === signWindow && requestId === this.signCueRequest) {
+          signWindow.updateStatus({
+            type: 'error',
+            message: `Caption cues for the sign avatar could not be loaded: ${error.message}`,
+          });
+        }
+      });
   }
 
   playFrom(seconds) {
