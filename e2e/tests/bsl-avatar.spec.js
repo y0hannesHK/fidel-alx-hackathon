@@ -48,6 +48,25 @@ test('without ?sign=bsl the lesson keeps its recorded sign video and never loads
   expect(kozhaRequests).toEqual([]);
 });
 
+test('the BSL link shows only when this server has the BSL videos', async ({ page }) => {
+  // Without the videos (as on a fresh install): no link; asking anyway says why.
+  await page.route('**/media/sign-bsl.webm', (route) => route.fulfill({ status: 404, body: '' }));
+  await page.goto(PAGE);
+  await expect(page.locator('fidel-player .able-control-row')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#bsl-link')).toBeHidden();
+  await page.goto(`${PAGE}?sign=bsl`);
+  await expect(page.locator('#bsl-missing')).toBeVisible();
+  await expect(page.locator('#bsl-note')).toBeHidden();
+  await page.unroute('**/media/sign-bsl.webm');
+
+  // With the videos: the link is there.
+  await page.route('**/media/sign-bsl.webm', (route) => (route.request().method() === 'HEAD'
+    ? route.fulfill({ status: 200, body: '' }) : route.continue()));
+  await page.goto(PAGE);
+  await expect(page.locator('#bsl-link')).toBeVisible();
+  await expect(page.locator('#bsl-link a')).toHaveAttribute('href', '?sign=bsl');
+});
+
 test.describe('pre-made BSL avatar video (?sign=bsl)', () => {
   test.beforeEach(async ({ request }) => {
     const response = await request.head('/media/sign-bsl.webm');

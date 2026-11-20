@@ -84,6 +84,10 @@
         each caption until the signer finishes. BSL is not Ethiopian Sign Language.
         Non-commercial demonstration.
       </p>
+      <p class="fidel-note" id="bsl-missing" role="status" hidden>
+        The British Sign Language avatar videos have not been made on this server yet
+        (<code>sh scripts/bsl-video/make.sh</code>).
+      </p>
       <fidel-player
         id="lesson-player"
         src="/media/lesson.mp4"
@@ -115,8 +119,20 @@
           player.setAttribute('sign-provider', 'kozha-bsl');
           player.setAttribute('kozha-origin', `${location.protocol}//${location.hostname}:8001`);
         }
+        // Offer the BSL link only when this server has the BSL videos (they are made
+        // per server and not kept in git). Asked for anyway: say they are missing.
+        fetch('/media/sign-bsl.webm', { method: 'HEAD' })
+          .then((response) => response.ok)
+          .catch(() => false)
+          .then((available) => {
+            if (available) document.getElementById('bsl-link').hidden = false;
+            else if (signMode === 'bsl') {
+              document.getElementById('bsl-note').hidden = true;
+              document.getElementById('bsl-missing').hidden = false;
+            }
+          });
       </script>
-      <p class="fidel-note">
+      <p class="fidel-note" id="bsl-link" hidden>
         Experimental: <a href="?sign=bsl">show a British Sign Language avatar</a> in the sign window
         (BSL, not Ethiopian Sign Language; machine-made, not an interpreter).
       </p>
