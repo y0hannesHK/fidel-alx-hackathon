@@ -3,13 +3,14 @@
 // recorder-page.mjs. Output: out/clips/NN.webm (one per caption that has signs),
 // out/clips/idle.webm (avatar standing still), out/timeline.json.
 //
-//   node record.mjs <playwright-module-dir> <en.vtt> <out-dir> <polyfill.js> [reviewed=true|false]
+//   node record.mjs <playwright-module-dir> <en.vtt> <out-dir> <polyfill.js> [reviewed=true|false] [signs|all]
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 
-const [pwDir, vttPath, outDir, polyfill, reviewedArg = 'true'] = process.argv.slice(2);
+const [pwDir, vttPath, outDir, polyfill, reviewedArg = 'true', wordsArg = 'signs'] = process.argv.slice(2);
 const reviewed = reviewedArg !== 'false';
+const allWords = wordsArg === 'all'; // also fingerspell words that have no BSL sign
 const { chromium } = await import(pathToFileURL(join(pwDir, 'node_modules/@playwright/test/index.mjs')).href);
 const { openAvatarPage } = await import(pathToFileURL(join(import.meta.dirname, 'recorder-page.mjs')).href);
 
@@ -30,6 +31,7 @@ const page = await openAvatarPage(browser, polyfill, { width: 640, height: 600 }
 
 // Helpers inside the avatar page: signs-only SiGML (no fingerspelling), and a
 // canvas recorder that starts just before signing and stops when the avatar is idle.
+await page.evaluate((all) => { window.__allWords = all; }, allWords);
 await page.evaluate(() => {
   window.__signsOnly = (plan) => {
     const tokens = String(plan.final || '').split(/\s+/).filter((t) => /[a-z]/i.test(t));
@@ -38,7 +40,9 @@ await page.evaluate(() => {
     tokens.forEach((token, i) => {
       const r = reviews[i];
       const sign = r?.force_fingerspell ? null : (signs.get(token) || baseGloss.get(glossBase(token)));
-      if (sign) { blocks.push(sign); used.push(token); } else skipped.push(token);
+      if (sign) { blocks.push(sign); used.push(token); return; }
+      const letters = window.__allWords ? fingerspell(token) : [];
+      if (letters.length) { blocks.push(...letters); used.push(`${token.toUpperCase()}(spelled)`); } else skipped.push(token);
     });
     return { sigml: blocks.length ? `<?xml version="1.0" encoding="utf-8"?><sigml>${blocks.join('')}</sigml>` : '', used, skipped };
   };
@@ -95,5 +99,5 @@ for (const [i, cue] of cues.entries()) {
   timeline.push(row);
   console.log(`${i} [${cue.start.toFixed(1)}-${cue.end.toFixed(1)}s] signed ${r.used.length} (${r.used.join(' ')}) clip ${row.clip_s}s`);
 }
-writeFileSync(join(outDir, 'timeline.json'), JSON.stringify({ reviewed_only: reviewed, coverage, cues: timeline }, null, 2));
+writeFileSync(join(outDir, 'timeline.json'), JSON.stringify({ reviewed_only: reviewed, words: allWords ? 'all' : 'signs', coverage, cues: timeline }, null, 2));
 await browser.close();

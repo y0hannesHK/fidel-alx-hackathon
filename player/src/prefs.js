@@ -13,6 +13,7 @@ export const DEFAULT_PREFS = {
   signLayout: 'docked', // 'docked' (beside the video) | 'floating' (over it)
   signSize: 'medium', // 'small' | 'medium' | 'large'
   signCorner: 'bottom-right',
+  signWait: false, // true = sign every word; the lesson pauses until the signer finishes each caption
   playbackRate: 1,
   lowData: false, // true = play the small video rendition
   simpleWords: false, // <fidel-simple-mode>: show the simple version (Package A)

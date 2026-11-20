@@ -179,3 +179,78 @@ test('canplay on the sign video does not jump it again when it is already in ste
   assert.equal(seeks, 1);
   assert.equal(time, 30);
 });
+
+// "Wait for the signer": caption 1 (0-5 s) takes 9 s to sign; caption 2 fits.
+const WAIT_TIMING = {
+  cues: [
+    { start: 0, next: 5, signStart: 0, signEnd: 9 },
+    { start: 5, next: 10, signStart: 9, signEnd: 11 },
+  ],
+};
+
+function waitSetup() {
+  const main = new Media();
+  const sign = new Media();
+  const states = [];
+  const controller = new SignSyncController(main, sign, { timing: WAIT_TIMING, onState: (s) => states.push(s.type) });
+  main.paused = false;
+  sign.paused = false;
+  return { main, sign, states, controller };
+}
+
+test('wait mode: maps lesson time to the sign video\'s own timeline', () => {
+  const { controller } = waitSetup();
+  assert.equal(controller.signTimeFor(2), 2);
+  assert.equal(controller.signTimeFor(6), 10); // caption 2 starts at sign time 9
+});
+
+test('wait mode: pauses the lesson before the next caption while the signer is still signing, then goes on', () => {
+  const { main, sign, states } = waitSetup();
+  main.currentTime = 4.8;
+  sign.currentTime = 4.8;
+  main.emit('timeupdate');
+  assert.equal(main.paused, true, 'lesson waits');
+  assert.ok(states.includes('waiting'));
+
+  main.emit('pause'); // the lesson's own pause event must not stop the signer
+  assert.equal(sign.paused, false);
+
+  sign.currentTime = 7;
+  sign.emit('timeupdate');
+  assert.equal(main.paused, true, 'still signing caption 1');
+
+  sign.currentTime = 9;
+  sign.emit('timeupdate');
+  assert.equal(main.currentTime, 5, 'lesson moves to caption 2');
+  assert.equal(main.paused, false, 'and plays on');
+  assert.equal(states.at(-1), 'ready');
+});
+
+test('wait mode: no wait when the signing fits in the caption\'s time', () => {
+  const { main, sign, states } = waitSetup();
+  main.currentTime = 9.8;
+  sign.currentTime = 13.8;
+  main.emit('timeupdate');
+  assert.equal(main.paused, false);
+  assert.ok(!states.includes('waiting'));
+});
+
+test('wait mode: Play during the wait skips to the next caption, signer included', () => {
+  const { main, sign } = waitSetup();
+  main.currentTime = 4.8;
+  sign.currentTime = 5;
+  main.emit('timeupdate');
+  assert.equal(main.paused, true);
+
+  main.paused = false; // the learner presses Play
+  main.emit('play');
+  assert.equal(main.currentTime, 5);
+  main.emit('seeked');
+  assert.equal(sign.currentTime, 9, 'signer jumps to caption 2');
+});
+
+test('wait mode: turning timing off goes back to the shared timeline', () => {
+  const { controller } = waitSetup();
+  controller.setTiming(null);
+  assert.equal(controller.signTimeFor(6), 6);
+});

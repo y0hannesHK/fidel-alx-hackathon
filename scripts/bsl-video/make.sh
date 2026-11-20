@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-# Make the BSL avatar video for the demo lesson: data/demo/sign-bsl.webm
+# Make the BSL avatar videos for the demo lesson: data/demo/sign-bsl.webm (signs only)
+# and sign-bsl-all.webm + .json (every word, "Wait for the signer")
 #
 # Needs: Docker, Node (for Playwright, already used by e2e/), and the optional
 # avatar service running:  docker compose --profile bsl-avatar up -d --build
@@ -27,8 +28,13 @@ if [ ! -f "$POLY" ]; then
 fi
 echo "$POLY_SHA256  $POLY" | sha256sum -c -
 
-node scripts/bsl-video/record.mjs "$ROOT/e2e" demo/media/en.vtt "$WORK/out" "$POLY" true
+# 1. Signs only, keeping pace with the lesson.  2. Every word (the rest
+#    fingerspelled), with a timing file: the lesson waits for the signer.
+node scripts/bsl-video/record.mjs "$ROOT/e2e" demo/media/en.vtt "$WORK/out" "$POLY" true signs
+node scripts/bsl-video/record.mjs "$ROOT/e2e" demo/media/en.vtt "$WORK/out-all" "$POLY" true all
 DURATION=$(docker compose run --rm --no-deps -T server ffprobe -v error -show_entries format=duration -of csv=p=0 /app/data/demo/lesson.mp4)
 docker compose run --rm --no-deps -T -v "$ROOT/scripts/bsl-video:/s:ro" server \
-  python /s/assemble.py /app/data/bsl-video/out/timeline.json /app/data/bsl-video/out/clips /app/data/demo/sign-bsl.webm "$DURATION"
-echo "Done: data/demo/sign-bsl.webm  (open /demo/savanna-mock/?sign=bsl)"
+  python /s/assemble.py /app/data/bsl-video/out/timeline.json /app/data/bsl-video/out/clips /app/data/demo/sign-bsl.webm "$DURATION" keep
+docker compose run --rm --no-deps -T -v "$ROOT/scripts/bsl-video:/s:ro" server \
+  python /s/assemble.py /app/data/bsl-video/out-all/timeline.json /app/data/bsl-video/out-all/clips /app/data/demo/sign-bsl-all.webm "$DURATION" wait
+echo "Done: data/demo/sign-bsl.webm, sign-bsl-all.webm, sign-bsl-all.json  (open /demo/savanna-mock/?sign=bsl)"

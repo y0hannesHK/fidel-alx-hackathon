@@ -19,12 +19,20 @@ export const SIGN_SIZES = { small: 200, medium: 320, large: 480 };
 export const SIGN_CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 
 export class SignWindow {
-  constructor(player, host, dock, { provider = 'video', kozhaOrigin, parentOrigin } = {}) {
+  /**
+   * fullSrc, fullTimingUrl: an optional second sign video that signs every word
+   * on its own, longer timeline, and its timing file ("Wait for the signer":
+   * the lesson pauses until the signer finishes each caption).
+   */
+  constructor(player, host, dock, { provider = 'video', kozhaOrigin, parentOrigin, fullSrc, fullTimingUrl } = {}) {
     this.player = player;
     this.host = host; // <fidel-player>
     this.dock = dock; // container beside the video for docked layout
     this.provider = provider;
     this.status = null;
+    this.fullSrc = fullSrc || null;
+    this.fullTimingUrl = fullTimingUrl || null;
+    this.waitMode = false;
     if (provider === 'kozha-bsl') {
       this.createKozhaWindow(kozhaOrigin, parentOrigin);
     } else {
@@ -103,6 +111,45 @@ export class SignWindow {
     }
   }
 
+  /** Can the learner choose "Wait for the signer"? */
+  get canWait() {
+    return this.provider === 'video' && Boolean(this.win && this.fullSrc && this.fullTimingUrl && this.player.signVideo);
+  }
+
+  /** Switch between the normal sign video (same timeline as the lesson) and the
+   *  "every word" sign video, for which the lesson waits for the signer. */
+  async setWaitMode(on) {
+    if (!this.canWait || Boolean(on) === this.waitMode) return true;
+    const video = this.player.signVideo;
+    if (on) {
+      try {
+        if (!this.fullTiming) {
+          const response = await fetch(this.fullTimingUrl);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          this.fullTiming = await response.json();
+        }
+      } catch {
+        this.updateStatus({ type: 'error' });
+        return false;
+      }
+      // Able Player moves the sign video to the lesson's time on seek and pauses
+      // it with the lesson. With its own timeline, the controller does both.
+      this.ableSyncSignVideo ??= this.player.syncSignVideo;
+      this.player.syncSignVideo = () => {};
+      this.waitMode = true;
+      this.syncController?.setTiming(this.fullTiming);
+      video.src = this.fullSrc;
+    } else {
+      this.waitMode = false;
+      this.syncController?.setTiming(null);
+      if (this.ableSyncSignVideo) this.player.syncSignVideo = this.ableSyncSignVideo;
+      // Back to the <source> elements Able Player made.
+      video.removeAttribute('src');
+    }
+    video.load(); // 'loadedmetadata' then moves it to the right place
+    return true;
+  }
+
   updateStatus(state) {
     if (this.provider === 'kozha-bsl') {
       if (!this.status) return;
@@ -127,12 +174,15 @@ export class SignWindow {
       this.status = null;
       return;
     }
-    if (state.type !== 'error' && (state.type !== 'loading' || !this.visible)) return;
+    if (state.type !== 'error' && (!['loading', 'waiting'].includes(state.type) || !this.visible)) return;
     if (!this.status) {
       this.status = h('p', { class: 'fidel-sign-status', role: 'status', 'aria-live': 'polite' });
       this.host.querySelector('.fidel-status')?.append(this.status);
     }
-    if (state.type === 'error') {
+    if (state.type === 'waiting') {
+      this.status.setAttribute('role', 'status');
+      this.status.textContent = t(this.host.uiLang, 'signWaiting');
+    } else if (state.type === 'error') {
       this.status.setAttribute('role', 'alert');
       this.status.textContent = t(this.host.uiLang, 'signVideoError');
     } else {

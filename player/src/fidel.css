@@ -556,3 +556,8 @@ fidel-player button.able-ctl {
   display: inline-block;
   min-height: 24px;
 }
+/* "Wait for the signer" button and its explanation. */
+.fidel-sign-wait .fidel-hint {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.9375rem;
+}

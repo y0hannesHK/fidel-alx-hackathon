@@ -78,8 +78,11 @@
       <p class="fidel-note" id="bsl-note" hidden>
         <strong>Sign window: British Sign Language avatar (experimental).</strong>
         Made by a machine from the English captions, not by an interpreter, and not checked by
-        BSL signers. It signs only the words that have a BSL sign (about a third of them).
-        BSL is not Ethiopian Sign Language. Non-commercial demonstration.
+        BSL signers. It signs the words that have a BSL sign (about a third of them) and keeps
+        pace with the lesson. To see every word signed (the others are fingerspelled), choose
+        <em>Wait for the signer</em> in the Sign language settings: the video then pauses after
+        each caption until the signer finishes. BSL is not Ethiopian Sign Language.
+        Non-commercial demonstration.
       </p>
       <fidel-player
         id="lesson-player"
@@ -95,14 +98,17 @@
       </fidel-player>
       <script>
         // Runs before fidel.js (deferred), so the player is built with these settings.
-        //   ?sign=bsl       a BSL avatar video made in advance for this lesson
-        //                   (data/demo/sign-bsl.webm, see README "BSL avatar video").
+        //   ?sign=bsl       BSL avatar videos made in advance for this lesson
+        //                   (scripts/bsl-video/make.sh): signs only, keeping pace, and
+        //                   every word with a timing file ("Wait for the signer").
         //   ?sign=bsl-live  the live avatar (docker compose --profile bsl-avatar up -d);
         //                   needs XSLT in the browser, which Chrome 158+ no longer has.
         const signMode = new URLSearchParams(location.search).get('sign');
         const player = document.getElementById('lesson-player');
         if (signMode === 'bsl') {
           player.setAttribute('sign', '/media/sign-bsl.webm');
+          player.setAttribute('sign-full', '/media/sign-bsl-all.webm');
+          player.setAttribute('sign-full-timing', '/media/sign-bsl-all.json');
           document.getElementById('bsl-note').hidden = false;
         } else if (signMode === 'bsl-live') {
           player.removeAttribute('sign');

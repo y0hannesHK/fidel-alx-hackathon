@@ -18,6 +18,9 @@
 //   sign                             sign-language video (WebM or MP4)
 //   sign-provider="kozha-bsl"        experimental BSL avatar for English captions
 //   sign-visible="true"              show the configured sign window on startup
+//   sign-full, sign-full-timing      a second sign video that signs every word, on its
+//                                    own timeline, and its timing JSON: offers "Wait for
+//                                    the signer" (the lesson pauses until each caption is signed)
 //   kozha-origin                     self-hosted Kozha base URL, e.g. http://localhost:8001
 //   src-small                        small video for low-data mode
 //   offline-page, offline-page-video one-page offline lesson (audio + text / + video)
@@ -413,7 +416,10 @@ export class FidelPlayer extends HTMLElement {
           kozhaOrigin: this.getAttribute('kozha-origin'),
           parentOrigin: window.location.origin,
         }
-      : undefined);
+      : {
+          fullSrc: this.getAttribute('sign-full'),
+          fullTimingUrl: this.getAttribute('sign-full-timing'),
+        });
     if (signProvider === 'kozha-bsl') {
       this.updateSignCues();
     }
@@ -422,6 +428,7 @@ export class FidelPlayer extends HTMLElement {
       this.sign.setSize(this.prefs.signSize);
       this.sign.setCorner(this.prefs.signCorner);
       if (this.getAttribute('sign-visible') === 'true') this.sign.setVisible(true);
+      if (this.sign.canWait && this.prefs.signWait) this.sign.setWaitMode(true);
     }
 
     // Playback speed (Able Player's Faster/Slower buttons change it).
@@ -439,6 +446,7 @@ export class FidelPlayer extends HTMLElement {
       captionLangs,
       captionLang: currentCaptionLang(player),
       hasSign: this.sign.available,
+      hasSignWait: this.sign.canWait,
       signVisible: this.sign.visible,
       hasSmallVideo: Boolean(this.getAttribute('src-small')),
       offline: {
@@ -544,6 +552,16 @@ export class FidelPlayer extends HTMLElement {
         this.panel.setSignVisible(this.sign.visible);
         // Able Player moves focus into the sign window; keep it on our button.
         toggle?.focus();
+      },
+      signWait: async (signWait) => {
+        this.savePrefs({ signWait });
+        this.panel?.setSignWait(signWait);
+        const ok = await this.sign.setWaitMode(signWait);
+        if (!ok) {
+          this.savePrefs({ signWait: false });
+          this.panel?.setSignWait(false);
+        }
+        emit(this, 'fidel-sign-wait-change', { signWait: signWait && ok });
       },
       signLayout: (signLayout) => {
         this.savePrefs({ signLayout });

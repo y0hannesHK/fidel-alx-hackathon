@@ -6,6 +6,7 @@
 //                 run only when the Kozha service answers on port 8001.
 // The first test always runs: without ?sign the page must not touch Kozha.
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 const PAGE = '/demo/savanna-mock/';
 const KOZHA = process.env.FIDEL_KOZHA_URL || 'http://localhost:8001';
@@ -81,6 +82,81 @@ test.describe('pre-made BSL avatar video (?sign=bsl)', () => {
     await expect.poll(() => sign.evaluate((v) => v.paused)).toBe(false);
     // It is playing, so no "Loading the sign-language video…" notice is left on screen.
     await expect(page.locator('fidel-player .fidel-sign-status')).toHaveCount(0, { timeout: 5_000 });
+  });
+});
+
+test.describe('"Wait for the signer" (every word, ?sign=bsl)', () => {
+  test.beforeEach(async ({ request }) => {
+    const ok = (await request.head('/media/sign-bsl-all.webm')).ok() && (await request.head('/media/sign-bsl-all.json')).ok();
+    test.skip(!ok, 'sign-bsl-all.webm/.json are not there (made by scripts/bsl-video/make.sh)');
+  });
+
+  test('the lesson pauses until the signer finishes the caption, then goes on by itself', async ({ page }) => {
+    test.setTimeout(90_000);
+    const timing = await (await page.request.get('/media/sign-bsl-all.json')).json();
+    const first = timing.cues.find((c) => c.signEnd - c.signStart > c.next - c.start + 1);
+    await page.goto(`${PAGE}?sign=bsl`);
+    const panel = page.locator('.fidel-panel');
+    await showSign(page).click();
+    const wait = panel.getByRole('button', { name: /Wait for the signer/ });
+    await wait.click();
+    await expect(wait).toHaveAttribute('aria-pressed', 'true');
+    const sign = page.locator('fidel-player .able-sign-window video');
+    await expect.poll(() => sign.evaluate((v) => v.currentSrc)).toMatch(/sign-bsl-all\.webm/);
+
+    const main = page.locator('fidel-player video').first();
+    await main.evaluate((v, t) => { v.currentTime = t; }, Math.max(0, first.next - 3));
+    await playButton(page).focus();
+    await playButton(page).press('Enter');
+
+    // The lesson stops just before the next caption, and says why.
+    await expect.poll(() => main.evaluate((v) => v.paused), { timeout: 10_000 }).toBe(true);
+    const stoppedAt = await main.evaluate((v) => v.currentTime);
+    expect(stoppedAt).toBeLessThan(first.next);
+    expect(stoppedAt).toBeGreaterThan(first.next - 1);
+    await expect(page.locator('fidel-player .fidel-sign-status')).toContainText('Waiting for the signer');
+    expect(await sign.evaluate((v) => v.paused)).toBe(false);
+
+    // When the signer is done, the lesson plays on from the next caption, signer in step.
+    await expect.poll(() => main.evaluate((v) => !v.paused && v.currentTime >= 0), { timeout: (first.signEnd - first.signStart) * 1000 + 10_000 }).toBe(true);
+    await expect.poll(() => main.evaluate((v) => v.currentTime)).toBeGreaterThanOrEqual(first.next);
+    const signNow = await sign.evaluate((v) => v.currentTime);
+    expect(signNow).toBeGreaterThanOrEqual(first.signEnd - 0.5);
+    await expect(page.locator('fidel-player .fidel-sign-status')).toHaveCount(0);
+  });
+
+  test('axe: no critical or serious issues with the setting on, during a wait', async ({ page }) => {
+    const timing = await (await page.request.get('/media/sign-bsl-all.json')).json();
+    const first = timing.cues.find((c) => c.signEnd - c.signStart > c.next - c.start + 1);
+    await page.goto(`${PAGE}?sign=bsl`);
+    await showSign(page).click();
+    await page.locator('.fidel-panel').getByRole('button', { name: /Wait for the signer/ }).click();
+    const main = page.locator('fidel-player video').first();
+    await main.evaluate((v, t) => { v.currentTime = t; }, Math.max(0, first.next - 2));
+    await playButton(page).focus();
+    await playButton(page).press('Enter');
+    await expect(page.locator('fidel-player .fidel-sign-status')).toContainText('Waiting for the signer', { timeout: 10_000 });
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+    const blocking = results.violations.filter((v) => v.impact === 'critical' || v.impact === 'serious')
+      .map((v) => `${v.id}: ${v.help} -> ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`);
+    expect(blocking).toEqual([]);
+  });
+
+  test('Play during the wait skips it', async ({ page }) => {
+    const timing = await (await page.request.get('/media/sign-bsl-all.json')).json();
+    const first = timing.cues.find((c) => c.signEnd - c.signStart > c.next - c.start + 1);
+    await page.goto(`${PAGE}?sign=bsl`);
+    await showSign(page).click();
+    await page.locator('.fidel-panel').getByRole('button', { name: /Wait for the signer/ }).click();
+    const main = page.locator('fidel-player video').first();
+    await main.evaluate((v, t) => { v.currentTime = t; }, Math.max(0, first.next - 2));
+    await playButton(page).focus();
+    await playButton(page).press('Enter');
+    await expect.poll(() => main.evaluate((v) => v.paused), { timeout: 10_000 }).toBe(true);
+    await playButton(page).focus();
+    await playButton(page).press('Enter');
+    await expect.poll(() => main.evaluate((v) => !v.paused && v.currentTime >= 0)).toBe(true);
+    expect(await main.evaluate((v) => v.currentTime)).toBeGreaterThanOrEqual(first.next - 0.1);
   });
 });
 
