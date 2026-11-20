@@ -55,8 +55,6 @@ export class SignWindow {
       'aria-label': 'Experimental British Sign Language avatar',
     });
     this.win.style.display = 'none';
-    this.warning = h('p', { class: 'fidel-kozha-sign-warning', lang: 'en' });
-    this.win.append(this.warning);
     this.status = h('p', { class: 'fidel-sign-status', role: 'status', 'aria-live': 'polite' }, 'Show the sign window to load the experimental BSL avatar.');
     this.win.append(this.status);
     this.dock.append(this.win);
@@ -69,7 +67,6 @@ export class SignWindow {
       if (base.origin === new URL(parentOrigin).origin) {
         throw new Error('The Kozha frame must use a separate origin from the Fidel player.');
       }
-      this.warning.textContent = `Experimental BSL avatar using Kozha, the DictaSign BSL corpus, and CWASA. English captions are sent to ${base.origin}; use a service you control. Output is machine-generated, unverified, and may be inaccurate; it is not a human interpreter. Non-commercial use only.`;
       this.targetOrigin = base.origin;
       this.frameUrl = new URL('/fidel-sign/frame.html', base);
       this.frameUrl.searchParams.set('parent', parentOrigin);
@@ -106,8 +103,6 @@ export class SignWindow {
       lang: 'am',
     });
     this.win.style.display = 'none';
-    this.warning = h('p', { class: 'fidel-kozha-sign-warning', lang: 'am' });
-    this.win.append(this.warning);
     this.status = h('p', {
       class: 'fidel-sign-status',
       role: 'status',
@@ -124,7 +119,6 @@ export class SignWindow {
       if (base.origin === new URL(parentOrigin).origin) {
         throw new Error('The EthSL frame must use a separate origin from the Fidel player.');
       }
-      this.warning.textContent = `Experimental Ethiopian Sign Language avatar. Amharic captions are processed locally at ${base.origin}. Output is machine-generated and not human-verified; it is not a human interpreter.`;
       this.targetOrigin = base.origin;
       this.frameUrl = new URL('/fidel-sign/ethasl-frame.html', base);
       this.frameUrl.searchParams.set('parent', parentOrigin);
@@ -165,8 +159,6 @@ export class SignWindow {
       'aria-label': 'Sign language avatar',
     });
     this.win.style.display = 'none';
-    this.warning = h('p', { class: 'fidel-kozha-sign-warning', lang: 'en' });
-    this.win.append(this.warning);
     this.status = h('p', { class: 'fidel-sign-status', role: 'status', 'aria-live': 'polite' },
       'Show the sign window to load the sign language avatars.');
     this.win.append(this.status);
@@ -185,9 +177,6 @@ export class SignWindow {
     this.ethaslSyncController = null;
     this.ethaslFrameUrl = null;
     this.ethaslTargetOrigin = null;
-
-    // Warn text
-    const warnParts = [];
 
     try {
       const kozhaBase = new URL(kozhaOrigin);
@@ -220,7 +209,6 @@ export class SignWindow {
           this.updateStatus({ type: 'loading', message: 'Loading BSL avatar…' });
         }
       });
-      warnParts.push(`English → BSL via Kozha at ${kozhaBase.origin}`);
     } catch (error) {
       console.warn('BSL (Kozha) not configured:', error.message);
     }
@@ -256,14 +244,9 @@ export class SignWindow {
           this.updateStatus({ type: 'loading', message: 'Loading Amharic Sign Language avatar…' });
         }
       });
-      warnParts.push(`Amharic → EthSL at ${ethaslBase.origin}`);
     } catch (error) {
       console.warn('EthSL not configured:', error.message);
     }
-
-    this.warning.textContent = warnParts.length
-      ? `Experimental sign language avatars: ${warnParts.join('; ')}. Output is machine-generated and not human-verified.`
-      : 'Sign language avatars could not be configured.';
 
     // Default to BSL (English)
     this.activeSub = 'bsl';

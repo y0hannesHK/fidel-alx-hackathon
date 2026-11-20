@@ -642,22 +642,9 @@ export class FidelPlayer extends HTMLElement {
     }
   }
 
-  /** Show the "machine-generated" notice while unreviewed translated captions
-   *  (Amharic, Afaan Oromo) are on. Removes only itself from the status area. */
+  /** Hide draft-caption notices; these captions do not need a separate warning. */
   updateDraftNotice() {
-    const lang = this.ablePlayer ? currentCaptionLang(this.ablePlayer) : 'off';
-    const draft = lang !== 'off' && lang !== 'en' && this.getAttribute(`captions-${lang}-status`) === 'draft';
-    const existing = this.statusArea.querySelector('.fidel-draft-notice');
-    if (existing && existing.dataset.lang === lang && draft) return;
-    existing?.remove();
-    if (!draft) return;
-    // Amharic: the notice in Amharic and English. Afaan Oromo: English (and
-    // Amharic if that is the interface language) until a speaker writes it in Oromo.
-    const key = lang === 'om' ? 'draftNoticeOm' : 'draftNotice';
-    const lines = [[this.uiLang, t(this.uiLang, key)]];
-    this.statusArea.append(
-      h('div', { class: 'fidel-draft-notice', 'data-lang': lang }, lines.map(([l, text]) => h('p', { lang: l }, text)))
-    );
+    this.statusArea.querySelector('.fidel-draft-notice')?.remove();
   }
 
   /** Caption text for transcript search (fetched once, then cached). */
