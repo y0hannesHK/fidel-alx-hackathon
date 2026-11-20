@@ -75,6 +75,12 @@
 
     <section class="card" aria-labelledby="video-heading">
       <h2 id="video-heading">Lesson video</h2>
+      <p class="fidel-note" id="bsl-note" hidden>
+        <strong>Sign window: British Sign Language avatar (experimental).</strong>
+        Made by a machine from the English captions, not by an interpreter, and not checked by
+        BSL signers. It signs only the words that have a BSL sign (about a third of them).
+        BSL is not Ethiopian Sign Language. Non-commercial demonstration.
+      </p>
       <fidel-player
         id="lesson-player"
         src="/media/lesson.mp4"
@@ -88,20 +94,25 @@
         lang="en">
       </fidel-player>
       <script>
-        // Optional: ?sign=bsl swaps the recorded sign video for the experimental
-        // British Sign Language avatar (needs: docker compose --profile bsl-avatar up -d).
         // Runs before fidel.js (deferred), so the player is built with these settings.
-        if (new URLSearchParams(location.search).get('sign') === 'bsl') {
-          const player = document.getElementById('lesson-player');
+        //   ?sign=bsl       a BSL avatar video made in advance for this lesson
+        //                   (data/demo/sign-bsl.webm, see README "BSL avatar video").
+        //   ?sign=bsl-live  the live avatar (docker compose --profile bsl-avatar up -d);
+        //                   needs XSLT in the browser, which Chrome 158+ no longer has.
+        const signMode = new URLSearchParams(location.search).get('sign');
+        const player = document.getElementById('lesson-player');
+        if (signMode === 'bsl') {
+          player.setAttribute('sign', '/media/sign-bsl.webm');
+          document.getElementById('bsl-note').hidden = false;
+        } else if (signMode === 'bsl-live') {
           player.removeAttribute('sign');
           player.setAttribute('sign-provider', 'kozha-bsl');
           player.setAttribute('kozha-origin', `${location.protocol}//${location.hostname}:8001`);
         }
       </script>
       <p class="fidel-note">
-        Experimental: <a href="?sign=bsl">show a British Sign Language avatar</a> for the English
-        captions (BSL, not Ethiopian Sign Language; machine-made, not an interpreter; needs the
-        optional <code>bsl-avatar</code> service).
+        Experimental: <a href="?sign=bsl">show a British Sign Language avatar</a> in the sign window
+        (BSL, not Ethiopian Sign Language; machine-made, not an interpreter).
       </p>
     </section>
 

@@ -42,6 +42,7 @@ remain in that service and are not copied into Fidel's player bundle.
 | [Kozha](https://github.com/zhan-a/Kozha) | commit `ce93d533b24740879df1e84cbb5341dfa575fc1f` | MIT | Self-hosted English-caption to BSL gloss planning |
 | DictaSign BSL sign corpus | Kozha's `hamnosys_bsl_version1.sigml` | [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/) | BSL vocabulary; attribution, share-alike, and non-commercial use |
 | CWASA avatar engine | Kozha's `public/cwa` assets plus SHA-256-verified support assets from the [Virtual Humans Group server](https://vhg.cmp.uea.ac.uk/tech/jas/vhg2024/) | CC BY-ND | Renders SiGML as an avatar; served unmodified |
+| [XSLT polyfill](https://github.com/mfreed7/xslt_polyfill) | commit `ba5175c4`, SHA-256 checked | BSD-3-Clause | Used only by `scripts/bsl-video/make.sh` to record the BSL video in a local browser; not shipped |
 
 The included BSL demonstration is therefore **non-commercial only**. Do not
 modify the CWASA assets or use the integration commercially without obtaining

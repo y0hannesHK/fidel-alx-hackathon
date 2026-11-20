@@ -27,9 +27,16 @@ export class SignSyncController {
     this.listen(sign, 'loadedmetadata', () => this.sync());
     this.listen(sign, 'canplay', () => {
       this.onState({ type: 'ready' });
-      this.sync();
+      // Only move the sign video if it has drifted. Always moving it here made a
+      // loop: every jump fires 'canplay' again (about 80 jumps a second).
+      this.sync(false);
     });
     this.listen(sign, 'playing', () => this.onState({ type: 'ready' }));
+    // A short 'waiting' can happen while the sign video keeps playing, and no
+    // 'playing' event follows. If its time moves on, it is playing: clear "Loading".
+    this.listen(sign, 'timeupdate', () => {
+      if (!sign.paused && sign.currentTime > 0) this.onState({ type: 'ready' });
+    });
     this.listen(sign, 'waiting', () => this.onState({ type: 'loading' }));
     this.listen(sign, 'stalled', () => this.onState({ type: 'loading' }));
     this.listen(sign, 'error', () => {
@@ -58,12 +65,14 @@ export class SignSyncController {
     }
   }
 
-  sync() {
+  /** Match position, speed and play/pause. force: move the sign video even if
+   *  it is already close (after the learner seeks or starts playing). */
+  sync(force = true) {
     if (!this.enabled()) {
       this.pause();
       return;
     }
-    this.syncPosition();
+    this.syncPosition(force);
     this.syncRate();
     if (this.main.paused || this.main.ended || this.main.seeking) {
       this.pause();

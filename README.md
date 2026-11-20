@@ -1446,34 +1446,45 @@ What changes:
 ### Optional British Sign Language avatar (experimental)
 
 An avatar that signs the **English** captions in **British Sign Language
-(BSL)** while the video plays. It is **not Ethiopian Sign Language**: no
-text-to-sign system for EthSL exists yet. It shows how automatic signing works;
-real EthSL comes from interpreter videos (the `sign` attribute) and, later, an
-EthSL sign dictionary made with Deaf signers.
+(BSL)**. It is **not Ethiopian Sign Language**: no text-to-sign system for EthSL
+exists yet. It shows how automatic signing works; real EthSL comes from
+interpreter videos (the `sign` attribute) and, later, an EthSL sign dictionary
+made with Deaf signers.
 
-- **Off by default.** It runs in its own container (the `bsl-avatar` profile):
+**Demo:** http://localhost:8000/demo/savanna-mock/?sign=bsl plays a BSL avatar
+video made in advance for that lesson, in the normal sign window (it stays in
+step with the lesson like any sign video). Learners download only the video
+(about 2 MB for 2 min 39 s); nothing else runs.
 
-  ```sh
-  docker compose --profile bsl-avatar up -d --build
-  ```
+**Make the video** (once per lesson; for now the demo lesson):
 
-  Then open the lesson demo with `?sign=bsl`:
-  http://localhost:8000/demo/savanna-mock/?sign=bsl
-- **How it works:** each English caption goes to the local `kozha` service
-  ([Kozha](https://github.com/zhan-a/Kozha), pinned commit), which turns it into
-  BSL signs from the DictaSign BSL dictionary (about 880 signs) and fingerspells
-  other words; the CWASA avatar signs them in the sign window, following play,
-  pause, seek and speed. This step runs offline (spaCy on the server). Kozha's
-  other features that call outside services (speech upload, sign authoring with
-  an AI key) are not used and need keys we do not set.
+```sh
+docker compose --profile bsl-avatar up -d --build   # the Kozha service, off by default
+sh scripts/bsl-video/make.sh                          # writes data/demo/sign-bsl.webm
+```
+
+- For each English caption, the local `kozha` service
+  ([Kozha](https://github.com/zhan-a/Kozha), pinned commit) finds BSL signs in
+  the DictaSign BSL dictionary; the CWASA avatar signs them in a browser on your
+  machine; each caption's signing is recorded and placed at the caption's time.
+- **Signs only, no fingerspelling.** About a third of the words have a BSL sign
+  (45 of 144 in the demo lesson); spelling the rest letter by letter would take
+  longer than the lesson. Captions with no BSL sign show the avatar at rest.
+- The avatar engine needs XSLT, which Chrome 158 and later no longer have. For
+  the recording only, `make.sh` loads a pinned
+  [XSLT polyfill](https://github.com/mfreed7/xslt_polyfill) (BSD-3-Clause,
+  checked with SHA-256) into Playwright's browser. It is not sent to learners.
+
+**Live avatar** (`?sign=bsl-live`, `sign-provider="kozha-bsl"`): signs each
+caption as the video plays, from the running `kozha` service. Because of the
+missing XSLT it only signs in browsers that still have XSLT, so the demo uses
+the video instead.
+
 - **Non-commercial only.** The BSL dictionary is CC BY-NC-SA and the avatar
-  engine CC BY-ND (see [LICENSES.md](LICENSES.md)). The first build downloads
-  Kozha from GitHub and the avatar files from the University of East Anglia
-  (checked with SHA-256).
+  engine CC BY-ND (see [LICENSES.md](LICENSES.md)).
 - **Limits:** machine-made and not checked by a BSL interpreter; English word
-  order, not BSL grammar; timing follows the captions only roughly. Amharic
-  captions are not sent (the window says so). The avatar is loaded from port
-  8001, so on a public server it needs its own HTTPS address.
+  order, not BSL grammar; only words that have a sign. The demo page says so
+  above the video.
 
 ## Hardware and models
 

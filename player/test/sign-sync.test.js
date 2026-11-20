@@ -133,3 +133,49 @@ test('reports sign-media errors and removes listeners on destroy', () => {
   main.emit('play');
   assert.equal(sign.paused, true);
 });
+
+test('clears "loading" once the sign video is moving again after a short wait', () => {
+  const main = new Media();
+  const sign = new Media();
+  const states = [];
+  new SignSyncController(main, sign, { onState: (state) => states.push(state.type) });
+
+  sign.paused = false;
+  sign.emit('waiting');
+  assert.deepEqual(states, ['loading']);
+
+  // Paused or at the start: not proof that it plays.
+  sign.paused = true;
+  sign.currentTime = 4;
+  sign.emit('timeupdate');
+  assert.deepEqual(states, ['loading']);
+
+  sign.paused = false;
+  sign.emit('timeupdate');
+  assert.deepEqual(states, ['loading', 'ready']);
+});
+
+test('canplay on the sign video does not jump it again when it is already in step (no seek loop)', () => {
+  const main = new Media();
+  const sign = new Media();
+  new SignSyncController(main, sign);
+  main.paused = false;
+  main.currentTime = 30;
+  sign.paused = false;
+  sign.currentTime = 30.1;
+
+  let seeks = 0;
+  const realSign = sign;
+  let time = realSign.currentTime;
+  Object.defineProperty(realSign, 'currentTime', {
+    get: () => time,
+    set: (value) => { seeks += 1; time = value; },
+  });
+  for (let i = 0; i < 10; i += 1) sign.emit('canplay');
+  assert.equal(seeks, 0);
+
+  time = 25; // drifted: one correction
+  sign.emit('canplay');
+  assert.equal(seeks, 1);
+  assert.equal(time, 30);
+});
