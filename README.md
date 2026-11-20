@@ -246,6 +246,9 @@ does not receive our accessibility fixes, and small edits can break them
 | `descriptions-en` (or `descriptions`), `descriptions-am`, `descriptions-om` | Audio description text (WebVTT). |
 | `description-recordings` | JSON: recorded descriptions, e.g. `{"am":[{"start":12.5,"url":"d1.opus"}]}`. |
 | `sign` | Sign-language video (WebM or MP4). |
+| `sign-provider="kozha-bsl"`, `kozha-origin` | Experimental British Sign Language avatar for the English captions, instead of a sign video (see "Optional British Sign Language avatar"). `kozha-origin` is the address of the `kozha` service, e.g. `http://localhost:8001`. |
+| `sign-visible` | `true`: show the sign window as soon as the player is ready. |
+| `sign-full`, `sign-full-timing` | A second sign video that signs every word on its own, longer timeline, and its timing JSON (`{"cues":[{"start","next","signStart","signEnd"}]}`). Adds the setting "Wait for the signer": the lesson pauses after each caption until the signer finishes. |
 | `offline-page`, `offline-page-video`, `offline-pack` | Offline downloads. |
 | `offline-page-size`, `offline-page-video-size`, `offline-pack-size` | Sizes in bytes, shown on the download buttons (filled in from the lesson). |
 | `document-html-en`, `document-html-am`, `document-pdf-en`, `document-pdf-am`, `document-brf-en`, `document-brf-am` | The lesson document as a web page, tagged PDF and Braille (filled in from the lesson). |
@@ -1440,6 +1443,61 @@ What changes:
   guess. `TOUCAN_DURATION_SCALE=1.25` (on the `toucan` service) speaks 25%
   slower. See [docs/speech-engines.md](docs/speech-engines.md) for why.
 - How they were chosen and measured: [docs/speech-engines.md](docs/speech-engines.md).
+
+### Optional British Sign Language avatar (experimental)
+
+An avatar that signs the **English** captions in **British Sign Language
+(BSL)**. It is **not Ethiopian Sign Language**: no text-to-sign system for EthSL
+exists yet. It shows how automatic signing works; real EthSL comes from
+interpreter videos (the `sign` attribute) and, later, an EthSL sign dictionary
+made with Deaf signers.
+
+**Demo:** http://localhost:8000/demo/savanna-mock/?sign=bsl plays a BSL avatar
+video made in advance for that lesson, in the normal sign window. Learners
+download only the video; nothing else runs. Two versions, chosen in the
+player's Sign language settings:
+
+| Setting | What is signed | Timing | Size (demo lesson) |
+|---|---|---|---|
+| Off (default) | words that have a BSL sign (45 of 144) | keeps pace with the lesson | about 2 MB |
+| **Wait for the signer** | every word: signs, and fingerspelling for the rest | the lesson pauses after each caption until the signer finishes (7 min 7 s of signing for a 2 min 39 s lesson); Play skips a wait | about 3.6 MB |
+
+The choice is saved in the browser like the other settings.
+
+**Make the videos** (once per lesson; for now the demo lesson):
+
+```sh
+docker compose --profile bsl-avatar up -d --build   # the Kozha service, off by default
+sh scripts/bsl-video/make.sh                          # writes data/demo/sign-bsl.webm, sign-bsl-all.webm/.json
+```
+
+- For each English caption, the local `kozha` service
+  ([Kozha](https://github.com/zhan-a/Kozha), pinned commit) finds BSL signs in
+  the DictaSign BSL dictionary; the CWASA avatar signs them in a browser on your
+  machine; each caption's signing is recorded and placed at the caption's time.
+- **Signs only** (default video): about a third of the words have a BSL sign
+  (45 of 144 in the demo lesson); spelling the rest letter by letter takes much
+  longer than the lesson. Captions with no BSL sign show the avatar at rest.
+- **Every word** ("Wait for the signer"): each caption's signing at normal speed,
+  never cut. The timing file (`sign-bsl-all.json`) lists, per caption, where its
+  signing starts and ends in the sign video; the player pauses the lesson when
+  the next caption is due and the signer is not done. Player attributes:
+  `sign-full` (the video) and `sign-full-timing` (the JSON).
+- The avatar engine needs XSLT, which Chrome 158 and later no longer have. For
+  the recording only, `make.sh` loads a pinned
+  [XSLT polyfill](https://github.com/mfreed7/xslt_polyfill) (BSD-3-Clause,
+  checked with SHA-256) into Playwright's browser. It is not sent to learners.
+
+**Live avatar** (`?sign=bsl-live`, `sign-provider="kozha-bsl"`): signs each
+caption as the video plays, from the running `kozha` service. Because of the
+missing XSLT it only signs in browsers that still have XSLT, so the demo uses
+the video instead.
+
+- **Non-commercial only.** The BSL dictionary is CC BY-NC-SA and the avatar
+  engine CC BY-ND (see [LICENSES.md](LICENSES.md)).
+- **Limits:** machine-made and not checked by a BSL interpreter; English word
+  order, not BSL grammar; only words that have a sign. The demo page says so
+  above the video.
 
 ## Hardware and models
 

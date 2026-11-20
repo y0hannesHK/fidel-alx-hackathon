@@ -125,6 +125,7 @@ export function buildPanel(options) {
 
   // --- Sign language ---------------------------------------------------------
   let signToggle = null;
+  let signWaitToggle = null;
   let cornerGroup = null;
   let signBody;
   if (!options.hasSign) {
@@ -156,8 +157,28 @@ export function buildPanel(options) {
         )
       )
     );
+    // "Wait for the signer": only when the lesson has an every-word sign video.
+    let signWaitRow = null;
+    if (options.hasSignWait) {
+      const hintId = `${idPrefix}-sign-wait-hint`;
+      signWaitToggle = h(
+        'button',
+        {
+          type: 'button',
+          class: 'fidel-button',
+          'aria-pressed': String(Boolean(prefs.signWait)),
+          'aria-describedby': hintId,
+          onclick: () => on.signWait(signWaitToggle.getAttribute('aria-pressed') !== 'true'),
+        },
+        tr('signWait')
+      );
+      signWaitRow = h('div', { class: 'fidel-sign-wait' },
+        signWaitToggle,
+        h('p', { id: hintId, class: 'fidel-hint' }, tr('signWaitHint')));
+    }
     signBody = [
       signToggle,
+      signWaitRow,
       radioGroup({
         legend: tr('signPlace'),
         name: name('sign-layout'),
@@ -255,6 +276,9 @@ export function buildPanel(options) {
     },
     setSignVisible(visible) {
       signToggle?.setAttribute('aria-pressed', String(visible));
+    },
+    setSignWait(on) {
+      signWaitToggle?.setAttribute('aria-pressed', String(Boolean(on)));
     },
   };
 }

@@ -1,0 +1,63 @@
+# syntax=docker/dockerfile:1
+
+FROM python:3.12-slim AS builder
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
+
+ARG KOZHA_REVISION=ce93d533b24740879df1e84cbb5341dfa575fc1f
+
+RUN python -c "import io,tarfile,urllib.request; data=urllib.request.urlopen('https://codeload.github.com/zhan-a/Kozha/tar.gz/' + '${KOZHA_REVISION}').read(); tarfile.open(fileobj=io.BytesIO(data), mode='r:gz').extractall('/tmp/kozha', filter='data')" \
+ && source_dir="$(find /tmp/kozha -mindepth 1 -maxdepth 1 -type d -print -quit)" \
+ && mkdir -p /src/kozha \
+ && cp -a "$source_dir"/. /src/kozha/ \
+ && rm -rf /tmp/kozha
+
+COPY kozha-integration/fetch-cwasa-assets.py /tmp/fetch-cwasa-assets.py
+RUN python /tmp/fetch-cwasa-assets.py /src/kozha/public \
+ && rm /tmp/fetch-cwasa-assets.py
+
+RUN python -m venv "$VIRTUAL_ENV" \
+ && pip install --upgrade pip wheel setuptools
+
+WORKDIR /src/kozha
+
+RUN pip install --only-binary=:all: -r backend/chat2hamnosys/requirements.txt \
+ && pip install --only-binary=:all: "uvicorn[standard]" gunicorn "spacy>=3.8.0" \
+ && pip install --no-deps "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0.tar.gz"
+
+FROM python:3.12-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH \
+    PYTHONPATH=/app/server \
+    KOZHA_HOME=/app \
+    CHAT2HAMNOSYS_DATA_DIR=/app/data \
+    CHAT2HAMNOSYS_LOG_DIR=/app/logs
+
+WORKDIR /app
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder --chown=10001:10001 /src/kozha/backend /app/backend
+COPY --from=builder --chown=10001:10001 /src/kozha/server /app/server
+COPY --from=builder --chown=10001:10001 /src/kozha/public /app/public
+COPY --from=builder --chown=10001:10001 /src/kozha/data /app/data
+
+RUN install -d -o 10001 -g 10001 -m 0775 \
+        /app/data/authored_signs \
+        /app/data/preview_cache \
+        /app/data/chat2hamnosys \
+        /app/logs
+
+USER 10001:10001
+
+EXPOSE 8000
+
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

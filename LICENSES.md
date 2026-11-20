@@ -30,6 +30,27 @@ non-commercial (NC) licence as a default.
 | [Pango](https://pango.gnome.org/), [HarfBuzz](https://harfbuzz.github.io/) (Debian packages) | distro | LGPL-2.0+ / MIT | Text layout for WeasyPrint |
 | [FFmpeg](https://ffmpeg.org/) (Debian package) | distro | LGPL-2.1+ / GPL-2+ (Debian build) | Media processing, run as a separate program |
 
+## Optional Kozha BSL integration
+
+Off by default (Compose profile `bsl-avatar`). The `kozha` Compose service builds the pinned
+[Kozha source](https://github.com/zhan-a/Kozha/tree/ce93d533b24740879df1e84cbb5341dfa575fc1f)
+and serves its BSL planner, dictionary, and CWASA avatar locally. Its assets
+remain in that service and are not copied into Fidel's player bundle.
+
+| Name | Version / source | Licence | Use |
+|---|---|---|---|
+| [Kozha](https://github.com/zhan-a/Kozha) | commit `ce93d533b24740879df1e84cbb5341dfa575fc1f` | MIT | Self-hosted English-caption to BSL gloss planning |
+| DictaSign BSL sign corpus | Kozha's `hamnosys_bsl_version1.sigml` | [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/) | BSL vocabulary; attribution, share-alike, and non-commercial use |
+| CWASA avatar engine | Kozha's `public/cwa` assets plus SHA-256-verified support assets from the [Virtual Humans Group server](https://vhg.cmp.uea.ac.uk/tech/jas/vhg2024/) | CC BY-ND | Renders SiGML as an avatar; served unmodified |
+| [XSLT polyfill](https://github.com/mfreed7/xslt_polyfill) | commit `ba5175c4`, SHA-256 checked | BSD-3-Clause | Used only by `scripts/bsl-video/make.sh` to record the BSL video in a local browser; not shipped |
+
+The included BSL demonstration is therefore **non-commercial only**. Do not
+modify the CWASA assets or use the integration commercially without obtaining
+separate permissions. The build downloads the required CWASA XSLT, shaders, and
+common avatar archive from the upstream host, verifies their SHA-256 hashes, and
+serves them unchanged. The BSL output is experimental and has not been verified
+by a human interpreter.
+
 ## Build and test tools (not shipped)
 
 | Name | Licence |

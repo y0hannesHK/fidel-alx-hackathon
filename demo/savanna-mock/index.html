@@ -75,6 +75,19 @@
 
     <section class="card" aria-labelledby="video-heading">
       <h2 id="video-heading">Lesson video</h2>
+      <p class="fidel-note" id="bsl-note" hidden>
+        <strong>Sign window: British Sign Language avatar (experimental).</strong>
+        Made by a machine from the English captions, not by an interpreter, and not checked by
+        BSL signers. It signs the words that have a BSL sign (about a third of them) and keeps
+        pace with the lesson. To see every word signed (the others are fingerspelled), choose
+        <em>Wait for the signer</em> in the Sign language settings: the video then pauses after
+        each caption until the signer finishes. BSL is not Ethiopian Sign Language.
+        Non-commercial demonstration.
+      </p>
+      <p class="fidel-note" id="bsl-missing" role="status" hidden>
+        The British Sign Language avatar videos have not been made on this server yet
+        (<code>sh scripts/bsl-video/make.sh</code>).
+      </p>
       <fidel-player
         id="lesson-player"
         src="/media/lesson.mp4"
@@ -87,6 +100,42 @@
         sign="/media/sign.webm"
         lang="en">
       </fidel-player>
+      <script>
+        // Runs before fidel.js (deferred), so the player is built with these settings.
+        //   ?sign=bsl       BSL avatar videos made in advance for this lesson
+        //                   (scripts/bsl-video/make.sh): signs only, keeping pace, and
+        //                   every word with a timing file ("Wait for the signer").
+        //   ?sign=bsl-live  the live avatar (docker compose --profile bsl-avatar up -d);
+        //                   needs XSLT in the browser, which Chrome 158+ no longer has.
+        const signMode = new URLSearchParams(location.search).get('sign');
+        const player = document.getElementById('lesson-player');
+        if (signMode === 'bsl') {
+          player.setAttribute('sign', '/media/sign-bsl.webm');
+          player.setAttribute('sign-full', '/media/sign-bsl-all.webm');
+          player.setAttribute('sign-full-timing', '/media/sign-bsl-all.json');
+          document.getElementById('bsl-note').hidden = false;
+        } else if (signMode === 'bsl-live') {
+          player.removeAttribute('sign');
+          player.setAttribute('sign-provider', 'kozha-bsl');
+          player.setAttribute('kozha-origin', `${location.protocol}//${location.hostname}:8001`);
+        }
+        // Offer the BSL link only when this server has the BSL videos (they are made
+        // per server and not kept in git). Asked for anyway: say they are missing.
+        fetch('/media/sign-bsl.webm', { method: 'HEAD' })
+          .then((response) => response.ok)
+          .catch(() => false)
+          .then((available) => {
+            if (available) document.getElementById('bsl-link').hidden = false;
+            else if (signMode === 'bsl') {
+              document.getElementById('bsl-note').hidden = true;
+              document.getElementById('bsl-missing').hidden = false;
+            }
+          });
+      </script>
+      <p class="fidel-note" id="bsl-link" hidden>
+        Experimental: <a href="?sign=bsl">show a British Sign Language avatar</a> in the sign window
+        (BSL, not Ethiopian Sign Language; machine-made, not an interpreter).
+      </p>
     </section>
 
     <section class="card" aria-labelledby="about-heading">
