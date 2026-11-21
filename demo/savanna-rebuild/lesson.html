@@ -4,9 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tech education as an equalizer – Savanna (accessible rebuild, demo)</title>
-  <!-- Fidel: the same two lines as on any other page. -->
+  <!-- Fidel: the same two lines as on any other page. On this page fidel.js is
+       loaded at the end of <body>, once the sign video is chosen (see there). -->
   <link rel="stylesheet" href="/embed/v1/fidel.css">
-  <script src="/embed/v1/fidel.js" defer></script>
+  <script>
+    // Ask early whether this server has the BSL avatar videos (made per server by
+    // scripts/bsl-video/make.sh, not kept in git).
+    window.bslVideos = fetch('/media/sign-bsl.webm', { method: 'HEAD' })
+      .then((response) => response.ok).catch(() => false);
+  </script>
   <link rel="stylesheet" href="savanna.css">
 </head>
 <body>
@@ -67,7 +73,15 @@
 
           <div id="lesson">
             <div id="lesson-content">
-              <p class="lesson-meta">Lesson 4 of 6. A video of 2 minutes 39 seconds, with English and Amharic captions, a transcript you can search, and Ethiopian Sign Language.</p>
+              <p class="lesson-meta">Lesson 4 of 6. A video of 2 minutes 39 seconds, with English and Amharic captions, a transcript you can search, and a sign-language window.</p>
+              <p class="fidel-note" id="bsl-note" hidden>
+                <strong>Sign window: British Sign Language avatar (experimental).</strong>
+                Made by a machine from the English captions, not by an interpreter, and not
+                checked by BSL signers. It signs the words that have a BSL sign and keeps pace
+                with the lesson; to see every word signed, choose <em>Wait for the signer</em>
+                in the Sign language settings. BSL is not Ethiopian Sign Language: the same
+                window will show Ethiopian Sign Language clips. Non-commercial demonstration.
+              </p>
 
               <fidel-lesson-formats for="lesson-player" heading-level="2"></fidel-lesson-formats>
 
@@ -132,5 +146,23 @@
 
   <script src="savanna.js"></script>
   <script src="lesson.js"></script>
+  <script>
+    // The player reads its sign video once, when it is built, so choose it before
+    // fidel.js loads: the BSL avatar when this server has its videos, otherwise the
+    // default sign video. Never wait more than 3 seconds for the answer.
+    const tooSlow = new Promise((resolve) => setTimeout(() => resolve(false), 3000));
+    Promise.race([window.bslVideos, tooSlow]).then((bsl) => {
+      const player = document.getElementById('lesson-player');
+      if (bsl && player) {
+        player.setAttribute('sign', '/media/sign-bsl.webm');
+        player.setAttribute('sign-full', '/media/sign-bsl-all.webm');
+        player.setAttribute('sign-full-timing', '/media/sign-bsl-all.json');
+        document.getElementById('bsl-note').hidden = false;
+      }
+      const fidel = document.createElement('script');
+      fidel.src = '/embed/v1/fidel.js';
+      document.head.append(fidel);
+    });
+  </script>
 </body>
 </html>

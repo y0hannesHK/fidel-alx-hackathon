@@ -67,6 +67,26 @@ test('the BSL link shows only when this server has the BSL videos', async ({ pag
   await expect(page.locator('#bsl-link a')).toHaveAttribute('href', '?sign=bsl');
 });
 
+test('Savanna rebuild lesson: the BSL avatar in the sign window when the server has it', async ({ page }) => {
+  const REBUILD = '/demo/savanna-rebuild/lesson.html';
+  // Without the videos: the default sign video, no BSL note.
+  await page.route('**/media/sign-bsl.webm', (route) => route.fulfill({ status: 404, body: '' }));
+  await page.goto(REBUILD);
+  await expect(page.locator('fidel-player .able-control-row')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#lesson-player')).toHaveAttribute('sign', '/media/sign.webm');
+  await expect(page.locator('#bsl-note')).toBeHidden();
+  await page.unroute('**/media/sign-bsl.webm');
+
+  // With the videos: the BSL avatar, every-word version too, and the note saying what it is.
+  await page.route('**/media/sign-bsl.webm', (route) => (route.request().method() === 'HEAD'
+    ? route.fulfill({ status: 200, body: '' }) : route.continue()));
+  await page.goto(REBUILD);
+  await expect(page.locator('fidel-player .able-control-row')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#lesson-player')).toHaveAttribute('sign', '/media/sign-bsl.webm');
+  await expect(page.locator('#lesson-player')).toHaveAttribute('sign-full', '/media/sign-bsl-all.webm');
+  await expect(page.locator('#bsl-note')).toContainText('not Ethiopian Sign Language');
+});
+
 test.describe('pre-made BSL avatar video (?sign=bsl)', () => {
   test.beforeEach(async ({ request }) => {
     const response = await request.head('/media/sign-bsl.webm');
